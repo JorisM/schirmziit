@@ -19,6 +19,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let listener = tokio::net::TcpListener::bind(&bind).await?;
     tracing::info!(%bind, "nestling-server listening");
 
-    axum::serve(listener, app_with_rate_limits(AppState::new(pool, config))).await?;
+    // into_make_service_with_connect_info is load-bearing, not boilerplate: the
+    // rate limiter's key extractor needs a client IP. Behind Traefik it uses
+    // X-Forwarded-For, but a direct hit (Gatus, a port-forward, local dev) has
+    // no such header and would 500 on every auth request without the peer
+    // address to fall back to.
+    axum::serve(
+        listener,
+        app_with_rate_limits(AppState::new(pool, config))
+            .into_make_service_with_connect_info::<std::net::SocketAddr>(),
+    )
+    .await?;
     Ok(())
 }

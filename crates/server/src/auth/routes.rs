@@ -184,9 +184,14 @@ async fn issue_session(state: &AppState, parent_id: Uuid) -> Result<CookieJar, A
     .execute(&state.pool)
     .await?;
 
+    // Secure only when the instance is actually served over TLS. Hard-coding
+    // `true` means a self-hoster on http://localhost (or anyone doing local dev)
+    // can never log in: the browser stores the cookie and then refuses to send
+    // it back. Production sets PUBLIC_URL to https, so this stays Secure there.
+    let over_tls = state.config.public_url.starts_with("https://");
     let cookie = Cookie::build((SESSION_COOKIE, token))
         .http_only(true)
-        .secure(true)
+        .secure(over_tls)
         .same_site(SameSite::Lax)
         .path("/")
         .max_age(time::Duration::days(state.config.session_ttl_days))

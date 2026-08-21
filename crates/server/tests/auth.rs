@@ -207,3 +207,26 @@ async fn the_deployed_router_rate_limits_auth_attempts_per_ip(pool: PgPool) {
         "expected a 429 within 25 rapid attempts, got {statuses:?}"
     );
 }
+
+#[sqlx::test]
+async fn the_session_cookie_drops_secure_when_the_instance_is_not_on_tls(pool: PgPool) {
+    // Otherwise local development and http-only self-hosting cannot log in at
+    // all: the browser stores the cookie and refuses to send it back.
+    let mut config = Config::for_tests();
+    config.public_url = "http://localhost:8099".into();
+    let router = app(AppState::new(pool, config));
+
+    let response = router
+        .oneshot(post("/v1/auth/register", credentials("a@example.com")))
+        .await
+        .unwrap();
+
+    let cookie = response
+        .headers()
+        .get(header::SET_COOKIE)
+        .unwrap()
+        .to_str()
+        .unwrap();
+    assert!(!cookie.contains("Secure"), "got {cookie}");
+    assert!(cookie.contains("HttpOnly"), "HttpOnly must not be affected");
+}

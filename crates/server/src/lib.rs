@@ -5,6 +5,7 @@ pub mod error;
 pub mod openapi;
 pub mod retention;
 pub mod routes;
+pub mod static_files;
 
 use axum::{Json, Router, routing::get};
 use chrono::{DateTime, Utc};
@@ -72,6 +73,7 @@ fn build(state: AppState, rate_limit: bool) -> Router {
         .merge(routes::ingest::router())
         .merge(routes::usage::router())
         .merge(routes::purge::router())
+        .fallback(static_files::handler)
         .with_state(state)
 }
 

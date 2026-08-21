@@ -1,0 +1,27 @@
+# Build the dashboard first; the Rust binary embeds web/dist via rust-embed.
+FROM node:24-alpine AS web
+WORKDIR /build
+COPY web/package.json web/pnpm-lock.yaml web/pnpm-workspace.yaml ./web/
+RUN corepack enable && cd web && pnpm install --frozen-lockfile
+COPY api/ ./api/
+COPY web/ ./web/
+RUN cd web && pnpm build
+
+FROM rust:1-bookworm AS build
+WORKDIR /src
+COPY Cargo.toml Cargo.lock ./
+COPY crates/ crates/
+COPY .sqlx/ .sqlx/
+COPY --from=web /build/web/dist web/dist
+# The committed offline data is what lets the image build without a database,
+# while keeping every query compile-time checked.
+ENV SQLX_OFFLINE=true
+RUN cargo build --release --bin nestling-server
+
+FROM debian:bookworm-slim
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=build /src/target/release/nestling-server /usr/local/bin/nestling-server
+EXPOSE 8080
+ENTRYPOINT ["/usr/local/bin/nestling-server"]

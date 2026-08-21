@@ -1,0 +1,22 @@
+use nestling_server::{AppState, app, config::Config, db};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    tracing_subscriber::fmt()
+        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+        .init();
+
+    let config = Config::from_env()?;
+    let url = std::env::var("DATABASE_URL")?;
+    let pool = db::connect(&url).await?;
+
+    // Migrations run on startup: upgrading is `docker pull` plus a restart.
+    sqlx::migrate!("./migrations").run(&pool).await?;
+
+    let bind = std::env::var("BIND_ADDR").unwrap_or_else(|_| "0.0.0.0:8080".into());
+    let listener = tokio::net::TcpListener::bind(&bind).await?;
+    tracing::info!(%bind, "nestling-server listening");
+
+    axum::serve(listener, app(AppState::new(pool, config))).await?;
+    Ok(())
+}

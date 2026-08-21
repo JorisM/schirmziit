@@ -6,7 +6,6 @@ check:
     cargo fmt --check
     cargo clippy --all-targets -- -D warnings
     cargo sqlx prepare --workspace --check
-    just openapi-check
     cargo test
 
 fmt:

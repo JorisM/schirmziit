@@ -1,4 +1,4 @@
-use nestling_server::{AppState, app, config::Config, db};
+use nestling_server::{AppState, app_with_rate_limits, config::Config, db};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -17,6 +17,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let listener = tokio::net::TcpListener::bind(&bind).await?;
     tracing::info!(%bind, "nestling-server listening");
 
-    axum::serve(listener, app(AppState::new(pool, config))).await?;
+    axum::serve(listener, app_with_rate_limits(AppState::new(pool, config))).await?;
     Ok(())
 }

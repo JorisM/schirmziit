@@ -2,7 +2,11 @@ container_engine := if `uname` == "Darwin" { "docker" } else { "podman" }
 
 export DATABASE_URL := env("DATABASE_URL", "postgres://postgres:nestling@localhost:5433/nestling")
 
-check:
+# The whole gate: formatting, lints, SQL-vs-schema, Rust->spec->TypeScript
+# parity, and every test on both sides.
+check: rust-check web-check
+
+rust-check:
     cargo fmt --check
     cargo clippy --all-targets -- -D warnings
     cargo sqlx prepare --workspace --check
@@ -29,7 +33,7 @@ gen:
 gen-check: gen
     git diff --exit-code web/src/api/schema.d.ts
 
-web-check:
+web-check: gen-check
     cd web && pnpm tsc -b --noEmit && pnpm vitest run
 
 # Uses podman on shire, docker on the Mac; both accept the same arguments.

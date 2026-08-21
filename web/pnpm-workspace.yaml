@@ -1,0 +1,4 @@
+# msw's postinstall only sets up the browser service worker; the tests use
+# msw/node, so the build script is deliberately declined.
+allowBuilds:
+  msw: false

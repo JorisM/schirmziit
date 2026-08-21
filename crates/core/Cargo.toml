@@ -6,6 +6,9 @@ version.workspace = true
 [lib]
 name = "nestling_core"
 path = "src/lib.rs"
+# cdylib for the Android/iOS .so; rlib so crates/server can keep depending on it
+# as a normal Rust library.
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 chrono.workspace = true

@@ -1,3 +1,9 @@
 /target
 /web/node_modules
 /web/dist/assets
+/android/app/src/main/jniLibs
+/android/app/src/main/kotlin/ch/jorisda/nestling/core
+/android/.gradle
+/android/build
+/android/app/build
+/android/local.properties

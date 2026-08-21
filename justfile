@@ -43,3 +43,15 @@ db-up:
 
 db-down:
     {{ container_engine }} rm -f nestling-pg
+
+# ─── Android agent ───────────────────────────────────────────────────
+# $HOME/.cargo/bin must precede /opt/homebrew/bin: Homebrew's rust shadows
+# rustup and has no Android std. See android/README.md.
+android-bindings:
+    cargo ndk -t arm64-v8a -t x86_64 -o android/app/src/main/jniLibs build -p nestling-core --release
+    cargo run --quiet --bin uniffi-bindgen -- generate \
+        --library target/aarch64-linux-android/release/libnestling_core.so \
+        --language kotlin --out-dir android/app/src/main/kotlin
+
+android-check: android-bindings
+    cd android && ./gradlew test

@@ -5,10 +5,27 @@
 | Tool | Version | Install |
 |---|---|---|
 | JDK | 21.0.12 (Homebrew openjdk@21) | `brew install openjdk@21` |
-| Android SDK | platform 36, build-tools 36.1.0, platform-tools 37.0.1 | `brew install --cask android-commandlinetools` |
+| Android SDK | platforms 36 + 37.1, build-tools 36.1.0 + 37.0.0, platform-tools 37.0.1 | `brew install --cask android-commandlinetools` |
 | NDK | 29.0.14206865 (newest stable; r30 is still rc) | `sdkmanager "ndk;29.0.14206865"` |
 | Rust targets | aarch64-linux-android, x86_64-linux-android | `rustup target add …` |
 | cargo-ndk | 4.x | `cargo install cargo-ndk` |
+| Gradle | 9.7.1 (wrapper committed) | `brew install gradle` once, then `gradle wrapper` |
+| AGP | 9.3.1 | — |
+| Kotlin | 2.4.10 (via AGP's built-in Kotlin) | — |
+| KSP | 2.3.11 | — |
+| UniFFI | 0.32 | — |
+
+## Version constraints learned the hard way
+
+- **AGP 8.x does not work with Gradle >= 9.6** — it relies on `InternalProblems`,
+  removed there. AGP 9.3.1 + Gradle 9.7.1 is the combination that builds.
+- **AGP 9 has Kotlin support built in.** Applying `org.jetbrains.kotlin.android`
+  is a hard error; the plugin list must not include it.
+- **compileSdk must be 37**, not 36: Compose BOM 2026.08.00 ships artifacts that
+  require API 37 and `checkDebugAarMetadata` fails otherwise.
+- JVM unit tests need a **host** build of the core (`libnestling_core.dylib` in
+  `app/src/test/resources/darwin-aarch64/`), which `just android-bindings`
+  produces. Without it every test fails with `UnsatisfiedLinkError`.
 
 Environment (add to your shell rc):
 

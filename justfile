@@ -52,6 +52,12 @@ android-bindings:
     cargo run --quiet --bin uniffi-bindgen -- generate \
         --library target/aarch64-linux-android/release/libnestling_core.so \
         --language kotlin --out-dir android/app/src/main/kotlin
+    # JVM unit tests load the core through JNA, which needs a HOST build in an
+    # <os>-<arch> resource dir. On an Intel Mac use darwin-x86-64; on Linux CI,
+    # linux-x86-64 with the .so.
+    cargo build -p nestling-core --release
+    mkdir -p android/app/src/test/resources/darwin-aarch64
+    cp target/release/libnestling_core.dylib android/app/src/test/resources/darwin-aarch64/
 
 android-check: android-bindings
     cd android && ./gradlew test

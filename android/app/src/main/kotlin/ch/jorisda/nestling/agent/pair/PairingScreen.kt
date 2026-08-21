@@ -11,6 +11,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,7 +31,11 @@ import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 
 @Composable
-fun PairingScreen(settings: AgentSettings, onPaired: () -> Unit) {
+fun PairingScreen(
+    settings: AgentSettings,
+    incoming: EnrollPayload? = null,
+    onPaired: () -> Unit,
+) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var manualUrl by remember { mutableStateOf("https://") }
@@ -59,6 +64,12 @@ fun PairingScreen(settings: AgentSettings, onPaired: () -> Unit) {
                 status = "pairing failed: ${failure.message}"
             }
         }
+    }
+
+    // A payload that arrived by deep link pairs on its own; the parent already
+    // did the scanning in whatever app opened us.
+    LaunchedEffect(incoming) {
+        if (incoming != null) pair(incoming)
     }
 
     val scanner = rememberLauncherForActivityResult(ScanContract()) { result ->

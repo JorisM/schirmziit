@@ -30,10 +30,14 @@ class Collector(
     fun collect(): Int {
         val now = nowMillis()
         val carry = dao.carryOver()
-        // Start from the open app's start, else one window back: WorkManager may
-        // fire late, and re-reading an already-collected span is harmless
-        // because the queue and the server both key on the hour.
-        val from = carry?.sinceMillis ?: (now - DEFAULT_LOOKBACK_MS)
+        // Always look back a full window, and further if an app has been open
+        // longer. Starting at the carry-over watermark alone re-derives only
+        // PART of the current hour, and because both the queue and the server
+        // replace an hour rather than adding to it, the shorter recomputation
+        // silently overwrites the fuller one — totals shrink between syncs.
+        // Re-reading an already-collected span is harmless: hours are keyed, and
+        // a re-opened session starts at the same instant so it adds nothing.
+        val from = minOf(carry?.sinceMillis ?: Long.MAX_VALUE, now - DEFAULT_LOOKBACK_MS)
 
         val events = source.events(from, now)
         dao.appendRaw(events.map { RawEventRow(atMillis = it.atMillis, json = it.kind.toString()) })

@@ -6,6 +6,12 @@
          requested in-app, the user grants it in Settings. -->
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
+    <!-- Android 11+ package visibility hides other apps from PackageManager, so
+         getApplicationLabel falls back to raw ids like com.audiobookshelf.app and
+         the dashboard shows package names instead of "Audiobookshelf". A
+         screen-time reporter has to resolve every app it measures. -->
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.CAMERA" />
@@ -25,6 +31,16 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- The dashboard's QR payload. With this, any camera or scanner app
+                 opens us with the code already in hand, instead of the parent
+                 having to launch the app and scan a second time. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="nestling" android:host="enroll" />
+                <data android:scheme="nestling" android:host="sync" />
             </intent-filter>
         </activity>
     </application>

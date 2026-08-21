@@ -141,6 +141,50 @@ class CollectorTest {
     }
 
     @Test
+    fun `re-collecting an hour must not shrink its total`() {
+        // Regression: collect() used to start at the carry-over watermark, so a
+        // later run re-derived only the part of the hour AFTER that watermark.
+        // Because both the queue and the server replace an hour rather than
+        // adding to it, the shorter recomputation overwrote the fuller one.
+        // Observed on a real Fairphone as totals dropping 3.2 -> 1.8 minutes.
+        //
+        // The shape that reproduces it: com.a is used, then another app takes
+        // the foreground (setting the watermark), then com.a is used again in
+        // the same hour.
+        val events = listOf(
+            RawEvent(noon, EventKind.Resumed("com.a")),
+            RawEvent(noon + 600_000, EventKind.Paused("com.a")),
+            RawEvent(noon + 700_000, EventKind.Resumed("com.b")),
+            RawEvent(noon + 900_000, EventKind.Resumed("com.a")),
+            RawEvent(noon + 1_200_000, EventKind.Paused("com.a")),
+        )
+
+        collector(events, noon + 800_000).collect()
+        assertEquals("watermark should be the still-open app", "com.b", db.queue().carryOver()?.packageName)
+        val afterFirst = foregroundMsFor("com.a")
+        assertEquals(600_000, afterFirst)
+
+        collector(events, noon + 1_500_000).collect()
+        val afterSecond = foregroundMsFor("com.a")
+
+        assertTrue(
+            "re-collecting lost earlier usage: had ${afterFirst}ms, now ${afterSecond}ms",
+            afterSecond >= afterFirst,
+        )
+        assertEquals("both sessions in the hour", 900_000, afterSecond)
+    }
+
+    private fun foregroundMsFor(packageName: String): Long =
+        db.queue().pending().sumOf { row ->
+            val hour = org.json.JSONObject(row.json).getJSONArray("hours").getJSONObject(0)
+            val apps = hour.getJSONArray("apps")
+            (0 until apps.length())
+                .map { apps.getJSONObject(it) }
+                .filter { it.getString("package") == packageName }
+                .sumOf { it.getLong("foreground_ms") }
+        }
+
+    @Test
     fun `raw events are kept for debugging and pruned past the window`() {
         val stale = RawEvent(noon - 8 * 24 * hour, EventKind.Unlock)
         val fresh = RawEvent(noon, EventKind.Unlock)

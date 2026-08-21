@@ -6,6 +6,7 @@ import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
@@ -50,6 +51,20 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
         const val UNIQUE_NAME = "nestling-sync"
         // WorkManager's floor is 15 minutes; the spec's cadence is 30.
         private const val INTERVAL_MINUTES = 30L
+
+        /**
+         * Run one sync as soon as the network allows. Backs the status screen's
+         * "Send now" button, and the nestling://sync debug link.
+         */
+        fun runNow(context: Context) {
+            WorkManager.getInstance(context).enqueue(
+                OneTimeWorkRequestBuilder<SyncWorker>()
+                    .setConstraints(
+                        Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
+                    )
+                    .build(),
+            )
+        }
 
         fun schedule(context: Context) {
             val request = PeriodicWorkRequestBuilder<SyncWorker>(INTERVAL_MINUTES, TimeUnit.MINUTES)

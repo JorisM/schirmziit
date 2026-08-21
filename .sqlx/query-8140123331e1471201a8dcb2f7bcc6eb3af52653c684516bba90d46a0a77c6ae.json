@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM device_hours WHERE hour_start < $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "8140123331e1471201a8dcb2f7bcc6eb3af52653c684516bba90d46a0a77c6ae"
+}

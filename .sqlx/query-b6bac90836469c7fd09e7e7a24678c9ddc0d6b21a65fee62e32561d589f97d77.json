@@ -1,0 +1,63 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT u.package,\n                      COALESCE(p.label, u.package) AS \"label!\",\n                      u.hour_start,\n                      SUM(u.foreground_ms)::bigint AS \"ms!\",\n                      SUM(u.launch_count)::int      AS \"launches!\"\n               FROM usage_hours u\n               JOIN devices d ON d.id = u.device_id\n               LEFT JOIN packages p ON p.family_id = d.family_id AND p.package = u.package\n               WHERE d.child_id = $1 AND u.hour_start >= $2 AND u.hour_start < $3\n               GROUP BY u.package, \"label!\", u.hour_start\n               ORDER BY u.package, u.hour_start",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "package",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "usage_hours",
+            "name": "package"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "label!",
+        "type_info": "Text",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "hour_start",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "usage_hours",
+            "name": "hour_start"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "ms!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 4,
+        "name": "launches!",
+        "type_info": "Int4",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      null,
+      false,
+      null,
+      null
+    ]
+  },
+  "hash": "b6bac90836469c7fd09e7e7a24678c9ddc0d6b21a65fee62e32561d589f97d77"
+}

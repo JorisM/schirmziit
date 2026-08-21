@@ -2,6 +2,7 @@ pub mod auth;
 pub mod config;
 pub mod db;
 pub mod error;
+pub mod retention;
 pub mod routes;
 
 use axum::{Json, Router, routing::get};
@@ -68,6 +69,8 @@ fn build(state: AppState, rate_limit: bool) -> Router {
         .merge(routes::children::router())
         .merge(routes::enroll::router())
         .merge(routes::ingest::router())
+        .merge(routes::usage::router())
+        .merge(routes::purge::router())
         .with_state(state)
 }
 

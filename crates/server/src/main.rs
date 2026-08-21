@@ -1,4 +1,4 @@
-use nestling_server::{AppState, app_with_rate_limits, config::Config, db};
+use nestling_server::{AppState, app_with_rate_limits, config::Config, db, retention};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -12,6 +12,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Migrations run on startup: upgrading is `docker pull` plus a restart.
     sqlx::migrate!("./migrations").run(&pool).await?;
+
+    retention::spawn(pool.clone(), config.clone());
 
     let bind = std::env::var("BIND_ADDR").unwrap_or_else(|_| "0.0.0.0:8080".into());
     let listener = tokio::net::TcpListener::bind(&bind).await?;

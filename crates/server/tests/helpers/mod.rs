@@ -134,6 +134,18 @@ impl TestApp {
         Response { status, json }
     }
 
+    /// GET with a device bearer token and no session cookie: proves the parent
+    /// surface refuses a device identity.
+    pub async fn get_as_device(&self, uri: &str, token: &str) -> Response {
+        let request = Request::builder()
+            .uri(uri)
+            .header(header::AUTHORIZATION, format!("Bearer {token}"))
+            .body(Body::empty())
+            .unwrap();
+        let (status, json, _) = self.send(request).await;
+        Response { status, json }
+    }
+
     /// Create a child and return its id.
     pub async fn create_child(&self, name: &str) -> String {
         let child = self

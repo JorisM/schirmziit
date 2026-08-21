@@ -11,6 +11,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
 
     <application
+        android:name=".NestlingApp"
         android:label="Nestling"
         android:allowBackup="false"
         android:supportsRtl="true"

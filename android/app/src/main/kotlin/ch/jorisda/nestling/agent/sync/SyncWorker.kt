@@ -1,0 +1,69 @@
+package ch.jorisda.nestling.agent.sync
+
+import android.content.Context
+import androidx.work.BackoffPolicy
+import androidx.work.Constraints
+import androidx.work.CoroutineWorker
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.WorkerParameters
+import ch.jorisda.nestling.agent.core.CoreBridge
+import ch.jorisda.nestling.agent.notify.OngoingNotice
+import ch.jorisda.nestling.agent.store.AgentDatabase
+import ch.jorisda.nestling.agent.store.AgentStore
+import ch.jorisda.nestling.agent.usage.AndroidUsageSource
+import java.util.concurrent.TimeUnit
+import okhttp3.OkHttpClient
+
+class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
+
+    override suspend fun doWork(): Result {
+        val store = AgentStore(applicationContext)
+        val source = AndroidUsageSource(applicationContext)
+
+        if (!source.hasPermission()) {
+            // Nothing to retry until the user re-grants; surface it instead of
+            // failing silently, which is indistinguishable from an unused phone.
+            store.lastError = "usage access permission was revoked"
+            OngoingNotice.update(applicationContext, store)
+            return Result.success()
+        }
+
+        val collector = Collector(
+            bridge = CoreBridge(),
+            source = source,
+            dao = AgentDatabase.get(applicationContext).queue(),
+            store = store,
+        )
+        collector.collect()
+
+        val baseUrl = store.baseUrl ?: return Result.success()
+        val outcome = collector.sync(NestlingClient(baseUrl, OkHttpClient()))
+        OngoingNotice.update(applicationContext, store)
+
+        return if (outcome.error == null) Result.success() else Result.retry()
+    }
+
+    companion object {
+        const val UNIQUE_NAME = "nestling-sync"
+        // WorkManager's floor is 15 minutes; the spec's cadence is 30.
+        private const val INTERVAL_MINUTES = 30L
+
+        fun schedule(context: Context) {
+            val request = PeriodicWorkRequestBuilder<SyncWorker>(INTERVAL_MINUTES, TimeUnit.MINUTES)
+                .setConstraints(
+                    Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
+                )
+                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 5, TimeUnit.MINUTES)
+                .build()
+
+            WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+                UNIQUE_NAME,
+                ExistingPeriodicWorkPolicy.KEEP,
+                request,
+            )
+        }
+    }
+}

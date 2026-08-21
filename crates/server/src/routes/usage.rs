@@ -18,7 +18,68 @@ pub fn router() -> Router<AppState> {
         .route("/v1/children/{id}/summary", get(summary))
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Serialize, utoipa::ToSchema)]
+pub struct DeviceStatus {
+    pub id: Uuid,
+    pub label: String,
+    pub last_seen_at: Option<DateTime<Utc>>,
+    pub stale: bool,
+}
+
+#[derive(serde::Serialize, utoipa::ToSchema)]
+pub struct Point {
+    /// RFC3339 instant for hourly buckets, `YYYY-MM-DD` for daily ones.
+    pub start: String,
+    pub foreground_ms: i64,
+    pub launch_count: i32,
+}
+
+#[derive(serde::Serialize, utoipa::ToSchema)]
+pub struct Series {
+    pub package: String,
+    pub label: String,
+    pub points: Vec<Point>,
+}
+
+#[derive(serde::Serialize, utoipa::ToSchema)]
+pub struct DeviceTotal {
+    pub start: String,
+    pub screen_on_ms: i64,
+    pub unlock_count: i32,
+}
+
+#[derive(serde::Serialize, utoipa::ToSchema)]
+pub struct UsageResponse {
+    pub child_id: Uuid,
+    pub from: NaiveDate,
+    pub to: NaiveDate,
+    pub bucket: String,
+    pub tz: String,
+    pub devices: Vec<DeviceStatus>,
+    pub series: Vec<Series>,
+    pub device_totals: Vec<DeviceTotal>,
+}
+
+#[derive(serde::Serialize, utoipa::ToSchema)]
+pub struct TopApp {
+    pub package: String,
+    pub label: String,
+    pub foreground_ms: i64,
+}
+
+#[derive(serde::Serialize, utoipa::ToSchema)]
+pub struct SummaryResponse {
+    pub child_id: Uuid,
+    pub date: NaiveDate,
+    pub tz: String,
+    pub total_ms: i64,
+    pub unlock_count: i64,
+    pub first_activity: Option<String>,
+    pub last_activity: Option<String>,
+    pub top_apps: Vec<TopApp>,
+}
+
+#[derive(serde::Deserialize, utoipa::IntoParams)]
 pub struct UsageQuery {
     from: NaiveDate,
     to: NaiveDate,
@@ -59,26 +120,36 @@ fn bounds(
     Ok((start.with_timezone(&Utc), end.with_timezone(&Utc)))
 }
 
-fn device_json(
+fn device_status(
     id: Uuid,
-    label: &str,
+    label: String,
     last_seen_at: Option<DateTime<Utc>>,
     now: DateTime<Utc>,
-) -> serde_json::Value {
-    serde_json::json!({
-        "id": id,
-        "label": label,
-        "last_seen_at": last_seen_at,
-        "stale": last_seen_at.is_none_or(|seen| now - seen > Duration::minutes(STALE_AFTER_MINUTES)),
-    })
+) -> DeviceStatus {
+    DeviceStatus {
+        id,
+        label,
+        last_seen_at,
+        stale: last_seen_at.is_none_or(|seen| now - seen > Duration::minutes(STALE_AFTER_MINUTES)),
+    }
 }
 
+#[utoipa::path(
+    get, path = "/v1/children/{id}/usage",
+    params(("id" = Uuid, Path, description = "Child id"), UsageQuery),
+    responses(
+        (status = 200, description = "Usage series for the requested local dates", body = UsageResponse),
+        (status = 404, description = "No such child in this family"),
+        (status = 422, description = "Unknown timezone"),
+    ),
+    tag = "usage"
+)]
 pub async fn usage(
     parent: Parent,
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
     Query(q): Query<UsageQuery>,
-) -> Result<Json<serde_json::Value>, ApiError> {
+) -> Result<Json<UsageResponse>, ApiError> {
     let child_id = scope::child_of_family(&state.pool, parent.family_id, id).await?;
     let tz = zone(&q.tz)?;
     let (start, end) = bounds(q.from, q.to, tz)?;
@@ -91,14 +162,14 @@ pub async fn usage(
     .await?;
 
     let now = Utc::now();
-    let devices_json: Vec<serde_json::Value> = devices
-        .iter()
-        .map(|d| device_json(d.id, &d.label, d.last_seen_at, now))
+    let devices_json: Vec<DeviceStatus> = devices
+        .into_iter()
+        .map(|d| device_status(d.id, d.label, d.last_seen_at, now))
         .collect();
 
     // Summed across all of a child's devices: one child has one screen-time
     // number, phone plus tablet.
-    let mut series: BTreeMap<String, (String, Vec<serde_json::Value>)> = BTreeMap::new();
+    let mut series: BTreeMap<String, (String, Vec<Point>)> = BTreeMap::new();
 
     if q.bucket == "day" {
         let rows = sqlx::query!(
@@ -126,11 +197,11 @@ pub async fn usage(
                 .entry(r.package.clone())
                 .or_insert_with(|| (r.label.clone(), Vec::new()))
                 .1
-                .push(serde_json::json!({
-                    "start": r.day,
-                    "foreground_ms": r.ms,
-                    "launch_count": r.launches
-                }));
+                .push(Point {
+                    start: r.day.to_string(),
+                    foreground_ms: r.ms,
+                    launch_count: r.launches,
+                });
         }
     } else {
         let rows = sqlx::query!(
@@ -157,11 +228,11 @@ pub async fn usage(
                 .entry(r.package.clone())
                 .or_insert_with(|| (r.label.clone(), Vec::new()))
                 .1
-                .push(serde_json::json!({
-                    "start": r.hour_start.with_timezone(&tz).to_rfc3339(),
-                    "foreground_ms": r.ms,
-                    "launch_count": r.launches
-                }));
+                .push(Point {
+                    start: r.hour_start.with_timezone(&tz).to_rfc3339(),
+                    foreground_ms: r.ms,
+                    launch_count: r.launches,
+                });
         }
     }
 
@@ -180,42 +251,54 @@ pub async fn usage(
     .fetch_all(&state.pool)
     .await?;
 
-    Ok(Json(serde_json::json!({
-        "child_id": child_id,
-        "from": q.from,
-        "to": q.to,
-        "bucket": q.bucket,
-        "tz": q.tz,
-        "devices": devices_json,
-        "series": series
+    Ok(Json(UsageResponse {
+        child_id,
+        from: q.from,
+        to: q.to,
+        bucket: q.bucket,
+        tz: q.tz,
+        devices: devices_json,
+        series: series
             .into_iter()
-            .map(|(package, (label, points))| serde_json::json!({
-                "package": package, "label": label, "points": points
-            }))
-            .collect::<Vec<_>>(),
-        "device_totals": totals
+            .map(|(package, (label, points))| Series {
+                package,
+                label,
+                points,
+            })
+            .collect(),
+        device_totals: totals
             .iter()
-            .map(|t| serde_json::json!({
-                "start": t.hour_start.with_timezone(&tz).to_rfc3339(),
-                "screen_on_ms": t.screen_on_ms,
-                "unlock_count": t.unlock_count
-            }))
-            .collect::<Vec<_>>(),
-    })))
+            .map(|t| DeviceTotal {
+                start: t.hour_start.with_timezone(&tz).to_rfc3339(),
+                screen_on_ms: t.screen_on_ms,
+                unlock_count: t.unlock_count,
+            })
+            .collect(),
+    }))
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, utoipa::IntoParams)]
 pub struct SummaryQuery {
     date: NaiveDate,
     tz: String,
 }
 
+#[utoipa::path(
+    get, path = "/v1/children/{id}/summary",
+    params(("id" = Uuid, Path, description = "Child id"), SummaryQuery),
+    responses(
+        (status = 200, description = "One local day, summarised", body = SummaryResponse),
+        (status = 404, description = "No such child in this family"),
+        (status = 422, description = "Unknown timezone"),
+    ),
+    tag = "usage"
+)]
 pub async fn summary(
     parent: Parent,
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
     Query(q): Query<SummaryQuery>,
-) -> Result<Json<serde_json::Value>, ApiError> {
+) -> Result<Json<SummaryResponse>, ApiError> {
     let child_id = scope::child_of_family(&state.pool, parent.family_id, id).await?;
     let tz = zone(&q.tz)?;
     let (start, end) = bounds(q.date, q.date, tz)?;
@@ -250,18 +333,30 @@ pub async fn summary(
     .fetch_one(&state.pool)
     .await?;
 
-    Ok(Json(serde_json::json!({
-        "child_id": child_id,
-        "date": q.date,
-        "tz": q.tz,
-        "total_ms": rows.iter().map(|r| r.ms).sum::<i64>(),
-        "unlock_count": unlocks.unwrap_or(0),
-        "first_activity": rows.iter().map(|r| r.first).min().map(|t| t.with_timezone(&tz).to_rfc3339()),
-        "last_activity": rows.iter().map(|r| r.last).max().map(|t| t.with_timezone(&tz).to_rfc3339()),
-        "top_apps": rows.iter().take(10)
-            .map(|r| serde_json::json!({
-                "package": r.package, "label": r.label, "foreground_ms": r.ms
-            }))
-            .collect::<Vec<_>>(),
-    })))
+    Ok(Json(SummaryResponse {
+        child_id,
+        date: q.date,
+        tz: q.tz,
+        total_ms: rows.iter().map(|r| r.ms).sum::<i64>(),
+        unlock_count: unlocks.unwrap_or(0),
+        first_activity: rows
+            .iter()
+            .map(|r| r.first)
+            .min()
+            .map(|t| t.with_timezone(&tz).to_rfc3339()),
+        last_activity: rows
+            .iter()
+            .map(|r| r.last)
+            .max()
+            .map(|t| t.with_timezone(&tz).to_rfc3339()),
+        top_apps: rows
+            .iter()
+            .take(10)
+            .map(|r| TopApp {
+                package: r.package.clone(),
+                label: r.label.clone(),
+                foreground_ms: r.ms,
+            })
+            .collect(),
+    }))
 }

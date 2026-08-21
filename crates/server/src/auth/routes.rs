@@ -14,10 +14,22 @@ use axum_extra::extract::cookie::{Cookie, SameSite};
 use chrono::{Duration, Utc};
 use uuid::Uuid;
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, utoipa::ToSchema)]
 pub struct Credentials {
     pub email: String,
     pub password: String,
+}
+
+#[derive(serde::Serialize, utoipa::ToSchema)]
+pub struct RegisteredResponse {
+    pub family_id: Uuid,
+}
+
+#[derive(serde::Serialize, utoipa::ToSchema)]
+pub struct MeResponse {
+    pub id: Uuid,
+    pub email: String,
+    pub family_id: Uuid,
 }
 
 pub fn router() -> Router<AppState> {
@@ -28,6 +40,16 @@ pub fn router() -> Router<AppState> {
         .route("/v1/me", get(me))
 }
 
+#[utoipa::path(
+    post, path = "/v1/auth/register", request_body = Credentials,
+    responses(
+        (status = 201, description = "Family and first parent created", body = RegisteredResponse),
+        (status = 403, description = "Registration disabled"),
+        (status = 409, description = "Email already registered"),
+        (status = 422, description = "Password too short"),
+    ),
+    tag = "auth"
+)]
 pub async fn register(
     State(state): State<AppState>,
     Json(body): Json<Credentials>,
@@ -85,10 +107,19 @@ pub async fn register(
     Ok((
         StatusCode::CREATED,
         jar,
-        Json(serde_json::json!({ "family_id": family_id })),
+        Json(RegisteredResponse { family_id }),
     ))
 }
 
+#[utoipa::path(
+    post, path = "/v1/auth/login", request_body = Credentials,
+    responses(
+        (status = 200, description = "Session cookie issued"),
+        (status = 401, description = "Invalid credentials"),
+        (status = 429, description = "Too many attempts from this IP"),
+    ),
+    tag = "auth"
+)]
 pub async fn login(
     State(state): State<AppState>,
     Json(body): Json<Credentials>,
@@ -109,6 +140,11 @@ pub async fn login(
     Ok((StatusCode::OK, jar, Json(serde_json::json!({ "ok": true }))))
 }
 
+#[utoipa::path(
+    post, path = "/v1/auth/logout",
+    responses((status = 204, description = "Session deleted")),
+    tag = "auth"
+)]
 pub async fn logout(State(state): State<AppState>, jar: CookieJar) -> Result<StatusCode, ApiError> {
     if let Some(raw) = jar.get(SESSION_COOKIE) {
         sqlx::query!(
@@ -121,12 +157,20 @@ pub async fn logout(State(state): State<AppState>, jar: CookieJar) -> Result<Sta
     Ok(StatusCode::NO_CONTENT)
 }
 
-pub async fn me(parent: Parent) -> Json<serde_json::Value> {
-    Json(serde_json::json!({
-        "id": parent.id,
-        "email": parent.email,
-        "family_id": parent.family_id,
-    }))
+#[utoipa::path(
+    get, path = "/v1/me",
+    responses(
+        (status = 200, description = "The signed-in parent", body = MeResponse),
+        (status = 401, description = "Not authenticated"),
+    ),
+    tag = "auth"
+)]
+pub async fn me(parent: Parent) -> Json<MeResponse> {
+    Json(MeResponse {
+        id: parent.id,
+        email: parent.email,
+        family_id: parent.family_id,
+    })
 }
 
 async fn issue_session(state: &AppState, parent_id: Uuid) -> Result<CookieJar, ApiError> {

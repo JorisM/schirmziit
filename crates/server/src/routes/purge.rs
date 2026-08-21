@@ -12,11 +12,27 @@ pub fn router() -> Router<AppState> {
 
 /// Deletes for real and reports what went, so "delete my child's data" is
 /// verifiable rather than a promise.
+#[derive(serde::Serialize, utoipa::ToSchema)]
+pub struct PurgeResponse {
+    pub deleted_usage_hours: u64,
+    pub deleted_device_hours: u64,
+    pub deleted_usage_days: u64,
+}
+
+#[utoipa::path(
+    delete, path = "/v1/children/{id}/data",
+    params(("id" = Uuid, Path, description = "Child id")),
+    responses(
+        (status = 200, description = "Rows actually deleted", body = PurgeResponse),
+        (status = 404, description = "No such child in this family"),
+    ),
+    tag = "children"
+)]
 pub async fn purge(
     parent: Parent,
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
-) -> Result<Json<serde_json::Value>, ApiError> {
+) -> Result<Json<PurgeResponse>, ApiError> {
     let child_id = scope::child_of_family(&state.pool, parent.family_id, id).await?;
     let mut tx = state.pool.begin().await?;
 
@@ -44,9 +60,9 @@ pub async fn purge(
         .rows_affected();
 
     tx.commit().await?;
-    Ok(Json(serde_json::json!({
-        "deleted_usage_hours": usage_hours,
-        "deleted_device_hours": device_hours,
-        "deleted_usage_days": usage_days,
-    })))
+    Ok(Json(PurgeResponse {
+        deleted_usage_hours: usage_hours,
+        deleted_device_hours: device_hours,
+        deleted_usage_days: usage_days,
+    }))
 }

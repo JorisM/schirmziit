@@ -1,0 +1,1088 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Nestling API",
+    "description": "",
+    "license": {
+      "name": ""
+    },
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/v1/auth/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Credentials"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Session cookie issued"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          },
+          "429": {
+            "description": "Too many attempts from this IP"
+          }
+        }
+      }
+    },
+    "/v1/auth/logout": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "logout",
+        "responses": {
+          "204": {
+            "description": "Session deleted"
+          }
+        }
+      }
+    },
+    "/v1/auth/register": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "register",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Credentials"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Family and first parent created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisteredResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Registration disabled"
+          },
+          "409": {
+            "description": "Email already registered"
+          },
+          "422": {
+            "description": "Password too short"
+          }
+        }
+      }
+    },
+    "/v1/children": {
+      "get": {
+        "tags": [
+          "children"
+        ],
+        "operationId": "list",
+        "responses": {
+          "200": {
+            "description": "Children in this family",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChildResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "children"
+        ],
+        "operationId": "create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewChild"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Child created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChildResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated"
+          },
+          "422": {
+            "description": "Empty display name"
+          }
+        }
+      }
+    },
+    "/v1/children/{id}": {
+      "delete": {
+        "tags": [
+          "children"
+        ],
+        "operationId": "soft_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Child id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Soft deleted"
+          },
+          "404": {
+            "description": "No such child in this family"
+          }
+        }
+      }
+    },
+    "/v1/children/{id}/data": {
+      "delete": {
+        "tags": [
+          "children"
+        ],
+        "operationId": "purge",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Child id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rows actually deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurgeResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such child in this family"
+          }
+        }
+      }
+    },
+    "/v1/children/{id}/enrollments": {
+      "post": {
+        "tags": [
+          "devices"
+        ],
+        "operationId": "mint_enrollment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Child id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "One-time enrollment code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrollmentResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such child in this family"
+          }
+        }
+      }
+    },
+    "/v1/children/{id}/summary": {
+      "get": {
+        "tags": [
+          "usage"
+        ],
+        "operationId": "summary",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Child id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "tz",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One local day, summarised",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SummaryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such child in this family"
+          },
+          "422": {
+            "description": "Unknown timezone"
+          }
+        }
+      }
+    },
+    "/v1/children/{id}/usage": {
+      "get": {
+        "tags": [
+          "usage"
+        ],
+        "operationId": "usage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Child id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "bucket",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tz",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usage series for the requested local dates",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such child in this family"
+          },
+          "422": {
+            "description": "Unknown timezone"
+          }
+        }
+      }
+    },
+    "/v1/devices": {
+      "get": {
+        "tags": [
+          "devices"
+        ],
+        "operationId": "list_devices",
+        "responses": {
+          "200": {
+            "description": "Devices in this family",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeviceResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated"
+          }
+        }
+      }
+    },
+    "/v1/devices/{id}": {
+      "delete": {
+        "tags": [
+          "devices"
+        ],
+        "operationId": "revoke_device",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Device id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Token revoked"
+          },
+          "404": {
+            "description": "No such device in this family"
+          }
+        }
+      }
+    },
+    "/v1/enroll": {
+      "post": {
+        "tags": [
+          "devices"
+        ],
+        "operationId": "enroll",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnrollRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Device enrolled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrolledResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown, expired or already-used code"
+          }
+        }
+      }
+    },
+    "/v1/ingest": {
+      "post": {
+        "tags": [
+          "ingest"
+        ],
+        "operationId": "ingest",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IngestRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Per-row accept/reject result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IngestResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unsupported schema version"
+          },
+          "401": {
+            "description": "Unknown or revoked device token"
+          },
+          "413": {
+            "description": "Too many hours in one batch"
+          },
+          "429": {
+            "description": "Device rate limit"
+          }
+        },
+        "security": [
+          {
+            "device_token": []
+          }
+        ]
+      }
+    },
+    "/v1/me": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "me",
+        "responses": {
+          "200": {
+            "description": "The signed-in parent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ChildResponse": {
+        "type": "object",
+        "required": [
+          "id",
+          "display_name"
+        ],
+        "properties": {
+          "display_name": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "Credentials": {
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "DeviceResponse": {
+        "type": "object",
+        "required": [
+          "id",
+          "child_id",
+          "platform",
+          "model",
+          "label",
+          "revoked",
+          "stale"
+        ],
+        "properties": {
+          "child_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "label": {
+            "type": "string"
+          },
+          "last_seen_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "model": {
+            "type": "string"
+          },
+          "platform": {
+            "type": "string"
+          },
+          "revoked": {
+            "type": "boolean"
+          },
+          "stale": {
+            "type": "boolean"
+          }
+        }
+      },
+      "DeviceStatus": {
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "stale"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "label": {
+            "type": "string"
+          },
+          "last_seen_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "stale": {
+            "type": "boolean"
+          }
+        }
+      },
+      "DeviceTotal": {
+        "type": "object",
+        "required": [
+          "start",
+          "screen_on_ms",
+          "unlock_count"
+        ],
+        "properties": {
+          "screen_on_ms": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "start": {
+            "type": "string"
+          },
+          "unlock_count": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "EnrollRequest": {
+        "type": "object",
+        "required": [
+          "code",
+          "platform",
+          "model",
+          "label"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "platform": {
+            "type": "string"
+          }
+        }
+      },
+      "EnrolledResponse": {
+        "type": "object",
+        "required": [
+          "device_id",
+          "token"
+        ],
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "token": {
+            "type": "string",
+            "description": "Long-lived, write-only. Shown once; only its hash is stored."
+          }
+        }
+      },
+      "EnrollmentResponse": {
+        "type": "object",
+        "required": [
+          "code",
+          "expires_at",
+          "qr_payload"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "qr_payload": {
+            "type": "string"
+          }
+        }
+      },
+      "IngestApp": {
+        "type": "object",
+        "required": [
+          "package",
+          "label",
+          "foreground_ms",
+          "launch_count"
+        ],
+        "properties": {
+          "foreground_ms": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "label": {
+            "type": "string"
+          },
+          "launch_count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "package": {
+            "type": "string"
+          }
+        }
+      },
+      "IngestHour": {
+        "type": "object",
+        "required": [
+          "hour_start",
+          "tz",
+          "computed_at",
+          "screen_on_ms",
+          "unlock_count",
+          "apps"
+        ],
+        "properties": {
+          "apps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IngestApp"
+            }
+          },
+          "computed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "hour_start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "screen_on_ms": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "tz": {
+            "type": "string"
+          },
+          "unlock_count": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "IngestRequest": {
+        "type": "object",
+        "required": [
+          "schema",
+          "device_time",
+          "hours"
+        ],
+        "properties": {
+          "device_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "hours": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IngestHour"
+            }
+          },
+          "schema": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        }
+      },
+      "IngestResponse": {
+        "type": "object",
+        "required": [
+          "accepted",
+          "rejected"
+        ],
+        "properties": {
+          "accepted": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "rejected": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Rejected"
+            }
+          }
+        }
+      },
+      "MeResponse": {
+        "type": "object",
+        "required": [
+          "id",
+          "email",
+          "family_id"
+        ],
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "family_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "NewChild": {
+        "type": "object",
+        "required": [
+          "display_name"
+        ],
+        "properties": {
+          "display_name": {
+            "type": "string"
+          }
+        }
+      },
+      "Point": {
+        "type": "object",
+        "required": [
+          "start",
+          "foreground_ms",
+          "launch_count"
+        ],
+        "properties": {
+          "foreground_ms": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "launch_count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "start": {
+            "type": "string",
+            "description": "RFC3339 instant for hourly buckets, `YYYY-MM-DD` for daily ones."
+          }
+        }
+      },
+      "PurgeResponse": {
+        "type": "object",
+        "description": "Deletes for real and reports what went, so \"delete my child's data\" is\nverifiable rather than a promise.",
+        "required": [
+          "deleted_usage_hours",
+          "deleted_device_hours",
+          "deleted_usage_days"
+        ],
+        "properties": {
+          "deleted_device_hours": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "deleted_usage_days": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "deleted_usage_hours": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        }
+      },
+      "RegisteredResponse": {
+        "type": "object",
+        "required": [
+          "family_id"
+        ],
+        "properties": {
+          "family_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "Rejected": {
+        "type": "object",
+        "required": [
+          "hour_start",
+          "reason",
+          "permanent"
+        ],
+        "properties": {
+          "hour_start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "permanent": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+      "Series": {
+        "type": "object",
+        "required": [
+          "package",
+          "label",
+          "points"
+        ],
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "package": {
+            "type": "string"
+          },
+          "points": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Point"
+            }
+          }
+        }
+      },
+      "SummaryResponse": {
+        "type": "object",
+        "required": [
+          "child_id",
+          "date",
+          "tz",
+          "total_ms",
+          "unlock_count",
+          "top_apps"
+        ],
+        "properties": {
+          "child_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "first_activity": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "last_activity": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "top_apps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TopApp"
+            }
+          },
+          "total_ms": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "tz": {
+            "type": "string"
+          },
+          "unlock_count": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "TopApp": {
+        "type": "object",
+        "required": [
+          "package",
+          "label",
+          "foreground_ms"
+        ],
+        "properties": {
+          "foreground_ms": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "label": {
+            "type": "string"
+          },
+          "package": {
+            "type": "string"
+          }
+        }
+      },
+      "UsageResponse": {
+        "type": "object",
+        "required": [
+          "child_id",
+          "from",
+          "to",
+          "bucket",
+          "tz",
+          "devices",
+          "series",
+          "device_totals"
+        ],
+        "properties": {
+          "bucket": {
+            "type": "string"
+          },
+          "child_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "device_totals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeviceTotal"
+            }
+          },
+          "devices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeviceStatus"
+            }
+          },
+          "from": {
+            "type": "string",
+            "format": "date"
+          },
+          "series": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Series"
+            }
+          },
+          "to": {
+            "type": "string",
+            "format": "date"
+          },
+          "tz": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

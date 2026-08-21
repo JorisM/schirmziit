@@ -3,6 +3,7 @@ use chrono::{DateTime, Utc};
 pub const SCHEMA_VERSION: u32 = 1;
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(utoipa::ToSchema))]
 pub struct IngestApp {
     pub package: String,
     pub label: String,
@@ -11,6 +12,7 @@ pub struct IngestApp {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(utoipa::ToSchema))]
 pub struct IngestHour {
     pub hour_start: DateTime<Utc>,
     pub tz: String,
@@ -21,6 +23,7 @@ pub struct IngestHour {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(utoipa::ToSchema))]
 pub struct IngestRequest {
     pub schema: u32,
     pub device_time: DateTime<Utc>,
@@ -28,6 +31,7 @@ pub struct IngestRequest {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(utoipa::ToSchema))]
 pub struct Rejected {
     pub hour_start: DateTime<Utc>,
     pub reason: String,
@@ -35,6 +39,7 @@ pub struct Rejected {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(utoipa::ToSchema))]
 pub struct IngestResponse {
     pub accepted: Vec<DateTime<Utc>>,
     pub rejected: Vec<Rejected>,

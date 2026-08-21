@@ -16,7 +16,7 @@ name = "export-openapi"
 path = "src/bin/export_openapi.rs"
 
 [dependencies]
-nestling-core = { path = "../core" }
+nestling-core = { path = "../core", features = ["schema"] }
 axum = "0.8"
 axum-extra = { version = "0.10", features = ["cookie"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "signal", "time"] }

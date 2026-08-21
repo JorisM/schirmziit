@@ -21,6 +21,18 @@ pub fn router() -> Router<AppState> {
         .layer(DefaultBodyLimit::max(MAX_BODY_BYTES))
 }
 
+#[utoipa::path(
+    post, path = "/v1/ingest", request_body = IngestRequest,
+    responses(
+        (status = 200, description = "Per-row accept/reject result", body = IngestResponse),
+        (status = 400, description = "Unsupported schema version"),
+        (status = 401, description = "Unknown or revoked device token"),
+        (status = 413, description = "Too many hours in one batch"),
+        (status = 429, description = "Device rate limit"),
+    ),
+    security(("device_token" = [])),
+    tag = "ingest"
+)]
 pub async fn ingest(
     device: Device,
     State(state): State<AppState>,

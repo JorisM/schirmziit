@@ -12,7 +12,7 @@ pub fn router() -> Router<AppState> {
     Router::new().route("/v1/enroll", post(enroll))
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, utoipa::ToSchema)]
 pub struct EnrollRequest {
     pub code: String,
     pub platform: String,
@@ -20,6 +20,21 @@ pub struct EnrollRequest {
     pub label: String,
 }
 
+#[derive(serde::Serialize, utoipa::ToSchema)]
+pub struct EnrolledResponse {
+    pub device_id: Uuid,
+    /// Long-lived, write-only. Shown once; only its hash is stored.
+    pub token: String,
+}
+
+#[utoipa::path(
+    post, path = "/v1/enroll", request_body = EnrollRequest,
+    responses(
+        (status = 201, description = "Device enrolled", body = EnrolledResponse),
+        (status = 404, description = "Unknown, expired or already-used code"),
+    ),
+    tag = "devices"
+)]
 pub async fn enroll(
     State(state): State<AppState>,
     Json(body): Json<EnrollRequest>,
@@ -57,7 +72,7 @@ pub async fn enroll(
     tx.commit().await?;
     Ok((
         StatusCode::CREATED,
-        Json(serde_json::json!({ "device_id": device_id, "token": token })),
+        Json(EnrolledResponse { device_id, token }),
     ))
 }
 

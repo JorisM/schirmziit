@@ -29,11 +29,45 @@ pub fn router() -> Router<AppState> {
         .route("/v1/devices/{id}", delete(revoke_device))
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, utoipa::ToSchema)]
 pub struct NewChild {
     pub display_name: String,
 }
 
+#[derive(serde::Serialize, utoipa::ToSchema)]
+pub struct ChildResponse {
+    pub id: Uuid,
+    pub display_name: String,
+}
+
+#[derive(serde::Serialize, utoipa::ToSchema)]
+pub struct EnrollmentResponse {
+    pub code: String,
+    pub expires_at: chrono::DateTime<Utc>,
+    pub qr_payload: String,
+}
+
+#[derive(serde::Serialize, utoipa::ToSchema)]
+pub struct DeviceResponse {
+    pub id: Uuid,
+    pub child_id: Uuid,
+    pub platform: String,
+    pub model: String,
+    pub label: String,
+    pub last_seen_at: Option<chrono::DateTime<Utc>>,
+    pub revoked: bool,
+    pub stale: bool,
+}
+
+#[utoipa::path(
+    post, path = "/v1/children", request_body = NewChild,
+    responses(
+        (status = 201, description = "Child created", body = ChildResponse),
+        (status = 401, description = "Not authenticated"),
+        (status = 422, description = "Empty display name"),
+    ),
+    tag = "children"
+)]
 pub async fn create(
     parent: Parent,
     State(state): State<AppState>,
@@ -56,14 +90,25 @@ pub async fn create(
 
     Ok((
         StatusCode::CREATED,
-        Json(serde_json::json!({ "id": id, "display_name": body.display_name })),
+        Json(ChildResponse {
+            id,
+            display_name: body.display_name,
+        }),
     ))
 }
 
+#[utoipa::path(
+    get, path = "/v1/children",
+    responses(
+        (status = 200, description = "Children in this family", body = Vec<ChildResponse>),
+        (status = 401, description = "Not authenticated"),
+    ),
+    tag = "children"
+)]
 pub async fn list(
     parent: Parent,
     State(state): State<AppState>,
-) -> Result<Json<serde_json::Value>, ApiError> {
+) -> Result<Json<Vec<ChildResponse>>, ApiError> {
     let rows = sqlx::query!(
         "SELECT id, display_name FROM children
          WHERE family_id = $1 AND deleted_at IS NULL ORDER BY created_at",
@@ -72,13 +117,25 @@ pub async fn list(
     .fetch_all(&state.pool)
     .await?;
 
-    Ok(Json(serde_json::json!(
-        rows.iter()
-            .map(|r| serde_json::json!({ "id": r.id, "display_name": r.display_name }))
-            .collect::<Vec<_>>()
-    )))
+    Ok(Json(
+        rows.into_iter()
+            .map(|r| ChildResponse {
+                id: r.id,
+                display_name: r.display_name,
+            })
+            .collect(),
+    ))
 }
 
+#[utoipa::path(
+    delete, path = "/v1/children/{id}",
+    params(("id" = Uuid, Path, description = "Child id")),
+    responses(
+        (status = 204, description = "Soft deleted"),
+        (status = 404, description = "No such child in this family"),
+    ),
+    tag = "children"
+)]
 pub async fn soft_delete(
     parent: Parent,
     State(state): State<AppState>,
@@ -94,6 +151,15 @@ pub async fn soft_delete(
     Ok(StatusCode::NO_CONTENT)
 }
 
+#[utoipa::path(
+    post, path = "/v1/children/{id}/enrollments",
+    params(("id" = Uuid, Path, description = "Child id")),
+    responses(
+        (status = 201, description = "One-time enrollment code", body = EnrollmentResponse),
+        (status = 404, description = "No such child in this family"),
+    ),
+    tag = "devices"
+)]
 pub async fn mint_enrollment(
     parent: Parent,
     State(state): State<AppState>,
@@ -131,18 +197,26 @@ pub async fn mint_enrollment(
 
     Ok((
         StatusCode::CREATED,
-        Json(serde_json::json!({
-            "code": code,
-            "expires_at": expires_at,
-            "qr_payload": qr_payload
-        })),
+        Json(EnrollmentResponse {
+            code,
+            expires_at,
+            qr_payload,
+        }),
     ))
 }
 
+#[utoipa::path(
+    get, path = "/v1/devices",
+    responses(
+        (status = 200, description = "Devices in this family", body = Vec<DeviceResponse>),
+        (status = 401, description = "Not authenticated"),
+    ),
+    tag = "devices"
+)]
 pub async fn list_devices(
     parent: Parent,
     State(state): State<AppState>,
-) -> Result<Json<serde_json::Value>, ApiError> {
+) -> Result<Json<Vec<DeviceResponse>>, ApiError> {
     let rows = sqlx::query!(
         "SELECT id, child_id, platform, model, label, last_seen_at, revoked_at
          FROM devices WHERE family_id = $1 ORDER BY created_at",
@@ -152,26 +226,35 @@ pub async fn list_devices(
     .await?;
 
     let now = Utc::now();
-    Ok(Json(serde_json::json!(
-        rows.iter()
-            .map(|r| serde_json::json!({
-                "id": r.id,
-                "child_id": r.child_id,
-                "platform": r.platform,
-                "model": r.model,
-                "label": r.label,
-                "last_seen_at": r.last_seen_at,
-                "revoked": r.revoked_at.is_some(),
+    Ok(Json(
+        rows.into_iter()
+            .map(|r| DeviceResponse {
+                id: r.id,
+                child_id: r.child_id,
+                platform: r.platform,
+                model: r.model,
+                label: r.label,
+                last_seen_at: r.last_seen_at,
+                revoked: r.revoked_at.is_some(),
                 // A silent agent is indistinguishable from an unused phone
                 // unless the API says so, so staleness is a first-class field.
-                "stale": r
+                stale: r
                     .last_seen_at
                     .is_none_or(|seen| now - seen > Duration::minutes(STALE_AFTER_MINUTES)),
-            }))
-            .collect::<Vec<_>>()
-    )))
+            })
+            .collect(),
+    ))
 }
 
+#[utoipa::path(
+    delete, path = "/v1/devices/{id}",
+    params(("id" = Uuid, Path, description = "Device id")),
+    responses(
+        (status = 204, description = "Token revoked"),
+        (status = 404, description = "No such device in this family"),
+    ),
+    tag = "devices"
+)]
 pub async fn revoke_device(
     parent: Parent,
     State(state): State<AppState>,

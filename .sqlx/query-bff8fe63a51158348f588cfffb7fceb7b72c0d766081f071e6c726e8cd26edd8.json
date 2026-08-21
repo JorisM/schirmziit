@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO packages (family_id, package, label) VALUES ($1, $2, $3)\n                 ON CONFLICT (family_id, package) DO UPDATE\n                   SET label = EXCLUDED.label, last_seen = now()",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "bff8fe63a51158348f588cfffb7fceb7b72c0d766081f071e6c726e8cd26edd8"
+}

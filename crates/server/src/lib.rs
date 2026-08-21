@@ -67,6 +67,7 @@ fn build(state: AppState, rate_limit: bool) -> Router {
         .merge(auth_routes)
         .merge(routes::children::router())
         .merge(routes::enroll::router())
+        .merge(routes::ingest::router())
         .with_state(state)
 }
 

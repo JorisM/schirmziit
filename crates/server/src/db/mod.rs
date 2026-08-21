@@ -1,3 +1,5 @@
+pub mod scope;
+
 use sqlx::postgres::PgPoolOptions;
 
 pub async fn connect(url: &str) -> Result<sqlx::PgPool, sqlx::Error> {

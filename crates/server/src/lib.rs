@@ -2,6 +2,7 @@ pub mod auth;
 pub mod config;
 pub mod db;
 pub mod error;
+pub mod routes;
 
 use axum::{Json, Router, routing::get};
 use chrono::{DateTime, Utc};
@@ -64,6 +65,8 @@ fn build(state: AppState, rate_limit: bool) -> Router {
     Router::new()
         .route("/healthz", get(healthz))
         .merge(auth_routes)
+        .merge(routes::children::router())
+        .merge(routes::enroll::router())
         .with_state(state)
 }
 

@@ -94,6 +94,9 @@ export type Strings = {
     stop: string
     notAControlTitle: string
     notAControl: string
+    resourcesTitle: string
+    resourcesLead: string
+    resources: { name: string; note: string; href: string }[]
   }
 
   errors: { generic: string; notFound: string; offline: string }

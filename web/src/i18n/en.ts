@@ -5,7 +5,7 @@ export const en: Strings = {
 
   app: {
     name: 'Schirmziit',
-    tagline: 'See screen time without being sneaky',
+    tagline: 'Screen time in view, to protect your child',
     help: 'How does this work?',
     signOut: 'Sign out',
     language: 'Language',
@@ -108,13 +108,38 @@ export const en: Strings = {
       'Hourly figures stay 13 months, then only daily totals. You can delete all of a child’s data at any time — it is gone, not archived.',
     childSeesTitle: 'What the child sees',
     childSees:
-      'The app is visible, has an icon, and shows a permanent notice that screen time is being reported. Its own screen says, in the same words, what is sent and what is not. If you want to read along in secret, this is the wrong tool.',
+      'The app is visible, has an icon, and shows a permanent notice that screen time is being reported. Its own screen says, in the same words, what is sent and what is not. Your child can check at any time what was sent.',
     stopTitle: 'Stopping',
     stop:
       'Disconnect the device here and the server stops accepting data from it. Or uninstall the app on the phone. Either takes effect immediately.',
     notAControlTitle: 'What Schirmziit is not',
     notAControl:
       'Schirmziit blocks nothing and filters nothing. It is a basis for a conversation, not a remote control. Time limits and blocking are deliberately a later, separate step.',
+    resourcesTitle: 'Help and guidance',
+    resourcesLead:
+      'Schirmziit shows numbers, not advice. How much screen time makes sense, and what helps when it turns into an argument, is better explained by these Swiss organisations:',
+    resources: [
+      {
+        name: 'Jugend und Medien',
+        note: 'The federal platform: age guidance, rules, leaflets for parents.',
+        href: 'https://www.jugendundmedien.ch/',
+      },
+      {
+        name: 'Pro Juventute — screen time',
+        note: 'Concrete guide values per age and tips for family agreements.',
+        href: 'https://www.projuventute.ch/de/eltern/medien-internet/bildschirmzeit',
+      },
+      {
+        name: 'Counselling 147',
+        note: 'Free counselling for children and teenagers, around the clock — phone, chat or SMS.',
+        href: 'https://www.147.ch/',
+      },
+      {
+        name: 'Zischtig.ch',
+        note: 'Swiss centre for media literacy: parent evenings, courses, counselling.',
+        href: 'https://www.zischtig.ch/',
+      },
+    ],
   },
 
   errors: {

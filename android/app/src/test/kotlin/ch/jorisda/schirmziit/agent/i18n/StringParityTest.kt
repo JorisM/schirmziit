@@ -80,6 +80,28 @@ class StringParityTest {
     }
 
     @Test
+    fun `no locale frames this as covert monitoring`() {
+        // A parent watches to protect a child, and the child is told. One
+        // sentence hinting at hidden monitoring undoes that.
+        val covert = Regex("""heimlich|sneak|in secret|en cachette|di nascosto|in segreto""",
+            RegexOption.IGNORE_CASE)
+        for (locale in locales + "values") {
+            values(locale).forEach { (key, text) ->
+                assertTrue("$locale/$key reads as covert monitoring", !covert.containsMatchIn(text))
+            }
+        }
+    }
+
+    @Test
+    fun `the support link is https in every locale`() {
+        // Shipped to a child as a way out; http would be worse than no link.
+        for (locale in locales + "values") {
+            val url = values(locale).getValue("help_support_url")
+            assertTrue("$locale support url: $url", url.startsWith("https://"))
+        }
+    }
+
+    @Test
     fun `every locale is declared in locales_config`() {
         val declared = Regex("""android:name="([a-z]{2})"""")
             .findAll(File(res, "xml/locales_config.xml").readText())

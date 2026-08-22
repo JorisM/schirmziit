@@ -5,7 +5,7 @@ export const it: Strings = {
 
   app: {
     name: 'Schirmziit',
-    tagline: 'Vedere il tempo di schermo senza farlo di nascosto',
+    tagline: 'Il tempo di schermo sotto controllo, per proteggere tuo figlio',
     help: 'Come funziona?',
     signOut: 'Esci',
     language: 'Lingua',
@@ -109,13 +109,38 @@ export const it: Strings = {
       'I valori orari restano 13 mesi, poi solo i totali giornalieri. Puoi cancellare in qualsiasi momento tutti i dati di un bambino — spariscono, non vengono archiviati.',
     childSeesTitle: 'Cosa vede il bambino',
     childSees:
-      'L’app è visibile, ha un’icona e mostra in permanenza un avviso che il tempo di schermo viene trasmesso. Il suo schermo spiega, con le stesse parole, cosa viene inviato e cosa no. Per controllare di nascosto, questo è lo strumento sbagliato.',
+      'L’app è visibile, ha un’icona e mostra in permanenza un avviso che il tempo di schermo viene trasmesso. Il suo schermo spiega, con le stesse parole, cosa viene inviato e cosa no. Tuo figlio può controllare in qualsiasi momento cosa è stato inviato.',
     stopTitle: 'Smettere',
     stop:
       'Disconnetti il dispositivo qui e il server non accetta più i suoi dati. Oppure disinstalla l’app dal telefono. Entrambe le cose hanno effetto subito.',
     notAControlTitle: 'Cosa Schirmziit non è',
     notAControl:
       'Schirmziit non blocca e non filtra nulla. È una base per parlarne, non un telecomando. Limiti di tempo e blocchi sono volutamente un passo successivo e separato.',
+    resourcesTitle: 'Aiuto e raccomandazioni',
+    resourcesLead:
+      'Schirmziit mostra numeri, non consigli. Quanto tempo di schermo abbia senso, e cosa aiuta quando si litiga, lo spiegano meglio questi enti svizzeri:',
+    resources: [
+      {
+        name: 'Giovani e media',
+        note: 'La piattaforma della Confederazione: indicazioni per età, regole, schede per i genitori.',
+        href: 'https://www.giovaniemedia.ch/',
+      },
+      {
+        name: 'Pro Juventute — tempo di schermo',
+        note: 'Valori indicativi per età e idee per accordi in famiglia.',
+        href: 'https://www.projuventute.ch/it/genitori/media-internet',
+      },
+      {
+        name: 'Consulenza 147',
+        note: 'Consulenza gratuita per bambini e ragazzi, 24 ore su 24 — telefono, chat o SMS.',
+        href: 'https://www.147.ch/',
+      },
+      {
+        name: 'Zischtig.ch',
+        note: 'Centro svizzero per la competenza mediale: serate per genitori, corsi, consulenza.',
+        href: 'https://www.zischtig.ch/',
+      },
+    ],
   },
 
   errors: {

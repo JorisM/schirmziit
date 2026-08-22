@@ -2,7 +2,7 @@
 <!-- Schweizer Hochdeutsch: kein ß, du-Form. -->
 <resources>
     <string name="app_name">Schirmziit</string>
-    <string name="tagline">Bildschirmzeit, offen sichtbar</string>
+    <string name="tagline">Bildschirmzeit — für dich und deine Eltern sichtbar</string>
 
     <string name="permission_title">Nutzungszugriff erlauben</string>
     <string name="permission_body">Schirmziit braucht die Android-Berechtigung «Nutzungszugriff», um zu sehen, wie lange Apps benutzt werden. Android lässt das nur in den Einstellungen zu.</string>
@@ -51,6 +51,12 @@
     <string name="help_never_5">Es wird nichts blockiert — diese App schaltet keine andere App ab.</string>
     <string name="help_where">Alles geht an den eigenen Server deiner Familie. Keine Firma dazwischen.</string>
     <string name="help_open">Du kannst diese App jederzeit öffnen und genau sehen, was gesendet wurde.</string>
+    <string name="help_why_title">Warum diese App da ist</string>
+    <string name="help_why">Deine Eltern sehen, wie lange dieses Handy benutzt wird — damit man über Bildschirmzeit reden kann und nicht raten muss. Es wird nichts blockiert und nichts mitgelesen.</string>
+    <string name="help_support_title">Wenn dir das zu viel ist</string>
+    <string name="help_support">Mit jemandem ausserhalb der Familie zu reden hilft oft. Die Beratung 147 ist kostenlos, rund um die Uhr, per Telefon, Chat oder SMS — und sagt deinen Eltern nichts.</string>
+    <string name="help_support_link">147.ch</string>
+    <string name="help_support_url">https://www.147.ch/</string>
     <string name="help_show">Was wird gesendet?</string>
     <string name="help_hide">Schliessen</string>
 

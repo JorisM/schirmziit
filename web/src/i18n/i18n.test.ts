@@ -39,6 +39,23 @@ describe('translations', () => {
     expect(strings.help.measures.length).toBe(en.help.measures.length)
     expect(strings.help.notCollected.length).toBe(en.help.notCollected.length)
     expect(strings.help.howSteps.length).toBe(en.help.howSteps.length)
+    expect(strings.help.resources.length).toBe(en.help.resources.length)
+  })
+
+  it.each(localeOrder)('%s links help resources by https, with a name and a note', (locale) => {
+    const strings = locales[locale] as Strings
+    for (const resource of strings.help.resources) {
+      expect(resource.href, `${locale} resource link`).toMatch(/^https:\/\//)
+      expect(resource.name.trim()).not.toBe('')
+      expect(resource.note.trim()).not.toBe('')
+    }
+  })
+
+  it.each(localeOrder)('%s frames monitoring as protection, never as something covert', (locale) => {
+    // The product promise: a parent watches to protect a child, and the child is
+    // told. Copy that hints at hidden monitoring undoes that in one sentence.
+    const flat = JSON.stringify(locales[locale])
+    expect(flat).not.toMatch(/heimlich|sneak|en cachette|di nascosto|in segreto|in secret/i)
   })
 
   it('German uses Swiss spelling', () => {

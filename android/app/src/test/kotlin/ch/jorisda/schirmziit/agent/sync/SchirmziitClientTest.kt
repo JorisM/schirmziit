@@ -140,4 +140,22 @@ class SchirmziitClientTest {
         assertEquals("/v1/auth/logout", server.takeRequest().path)
         server.shutdown()
     }
+
+    @Test
+    fun `a server error while signing in is not reported as a wrong password`() {
+        // 500 used to come back as null, i.e. "credentials wrong", which sends a
+        // parent hunting for a typo that is not there.
+        val server = MockWebServer().apply {
+            enqueue(MockResponse().setResponseCode(500))
+            start()
+        }
+        val client = SchirmziitClient(server.url("/").toString(), OkHttpClient())
+
+        val failure = assertThrows(IngestFailure::class.java) {
+            client.signIn("anna@example.ch", "a long password")
+        }
+
+        assertEquals(500, failure.status)
+        server.shutdown()
+    }
 }

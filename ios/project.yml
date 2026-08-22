@@ -82,6 +82,35 @@ targets:
         INFOPLIST_KEY_CFBundleDisplayName: Schirmziit
         TARGETED_DEVICE_FAMILY: "1,2"
 
+  # Installable on a phone signed by a free Personal Team, which cannot sign
+  # Family Controls or App Groups — so this target claims neither and embeds no
+  # extensions. Parent mode works fully; child mode shows its "not available on
+  # this build" state, which is exactly what is true. The `Schirmziit` target
+  # above stays the real thing, for when Apple grants the entitlement.
+  SchirmziitLocal:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources/SchirmziitApp.swift
+      - path: Sources/Resources
+    dependencies:
+      - target: SchirmziitKit
+        embed: true
+    info:
+      path: Sources/Resources/Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.local
+        # No PRODUCT_NAME override: it would build SchirmziitLocal.app on top of
+        # the real target's Schirmziit.app in the same directory, and the
+        # leftover PlugIns then fail installation. The home-screen name comes
+        # from CFBundleDisplayName either way.
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_ENTITLEMENTS: Sources/Resources/SchirmziitLocal.entitlements
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_KEY_CFBundleDisplayName: Schirmziit
+        TARGETED_DEVICE_FAMILY: "1,2"
+
   SchirmziitMonitor:
     type: app-extension
     platform: iOS
@@ -143,6 +172,11 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
 
 schemes:
+  SchirmziitLocal:
+    build:
+      targets:
+        SchirmziitLocal: all
+
   Schirmziit:
     build:
       targets:

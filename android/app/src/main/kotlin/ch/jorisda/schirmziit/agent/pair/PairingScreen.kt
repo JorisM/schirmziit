@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -22,10 +23,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.autofill.ContentType
+import androidx.compose.ui.semantics.contentType
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import ch.jorisda.schirmziit.agent.R
@@ -63,17 +70,20 @@ fun PairingScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    var useCode by remember { mutableStateOf(false) }
-    var server by remember { mutableStateOf(DEFAULT_SERVER) }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var manualCode by remember { mutableStateOf("") }
-    var label by remember { mutableStateOf(Build.MODEL) }
+    var useCode by rememberSaveable { mutableStateOf(false) }
+    var server by rememberSaveable { mutableStateOf(DEFAULT_SERVER) }
+    var email by rememberSaveable { mutableStateOf("") }
+    // Saved across rotation like the rest: it lands in the activity's saved
+    // state, which stays in this process. Retyping a manager-filled password
+    // because the phone turned sideways is worse.
+    var password by rememberSaveable { mutableStateOf("") }
+    var manualCode by rememberSaveable { mutableStateOf("") }
+    var label by rememberSaveable { mutableStateOf(Build.MODEL) }
     var session by remember { mutableStateOf<ParentSession?>(null) }
     var children by remember { mutableStateOf<List<SetupChild>>(emptyList()) }
-    var chosen by remember { mutableStateOf<String?>(null) }
+    var chosen by rememberSaveable { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf(false) }
-    var status by remember { mutableStateOf<String?>(null) }
+    var status by rememberSaveable { mutableStateOf<String?>(null) }
 
     // stringResource is a composable and cannot be called from the coroutines.
     val pairingLabel = stringResource(R.string.pair_working)
@@ -165,6 +175,7 @@ fun PairingScreen(
     Column(
         modifier = Modifier
             .safeDrawingPadding()
+            .imePadding()
             .verticalScroll(rememberScrollState())
             .padding(24.dp)
             .fillMaxWidth(),
@@ -236,18 +247,32 @@ fun PairingScreen(
                 label = { Text(stringResource(R.string.pair_server)) },
                 modifier = Modifier.fillMaxWidth(),
             )
+            // contentType is what makes a password manager offer to fill these.
+            // Without it the email field is just a text box to Android, which is
+            // why only the password field was being offered.
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
                 label = { Text(stringResource(R.string.pair_email)) },
-                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    autoCorrectEnabled = false,
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics { contentType = ContentType.Username + ContentType.EmailAddress },
             )
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text(stringResource(R.string.pair_password)) },
+                singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics { contentType = ContentType.Password },
             )
             Button(
                 enabled = !busy && email.isNotBlank() && password.isNotBlank(),
@@ -255,12 +280,18 @@ fun PairingScreen(
             ) {
                 Text(stringResource(R.string.pair_parent_submit))
             }
+            // Right under the button: the old placement was at the very bottom of
+            // a scrolling column, so with the keyboard up the error was off screen
+            // and the screen looked like it had simply done nothing.
+            status?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             HorizontalDivider()
             TextButton(onClick = { useCode = true }) {
                 Text(stringResource(R.string.pair_code_instead))
             }
         }
 
-        status?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+        if (useCode || children.isNotEmpty()) {
+            status?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+        }
     }
 }

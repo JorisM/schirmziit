@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Deliberately empty. A free Personal Team cannot sign Family Controls or
+	     App Groups, so the local-install build claims neither; child mode then
+	     reports "not available on this build", which is the truth. -->
+</dict>
+</plist>

@@ -101,7 +101,7 @@ struct AgentStatusView: View {
                 } label: {
                     L("agent.status.permission.button").frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.borderedProminent)
+                .primaryAction()
             }
 
         case .screenTimeDenied:

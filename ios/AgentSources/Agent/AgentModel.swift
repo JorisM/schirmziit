@@ -11,6 +11,10 @@ public final class AgentModel {
     public private(set) var isBusy = false
     public private(set) var lastError: String?
     public private(set) var sharedContainerAvailable = GroupContainer.isShared()
+    /// Mirrored from the store into observable state: `roles.load()` reads
+    /// UserDefaults, which Observation cannot track, so a view switching on it
+    /// never re-rendered when the role changed.
+    public private(set) var role: AppRole?
 
     /// Children the signed-in parent can pick from, mid-setup. Cleared as soon
     /// as setup finishes.
@@ -57,12 +61,14 @@ public final class AgentModel {
         self.authorizer = authorizer
         self.monitoring = monitoring
         self.roles = roles
+        role = roles.load()
         refresh()
     }
 
     public var pendingCount: Int { (try? store.pending().count) ?? 0 }
 
     public func refresh() {
+        role = roles.load()
         try? sync.collect()
         status = AgentStatus.derive(
             credentials: credentials.load(),
@@ -131,8 +137,6 @@ public final class AgentModel {
         monitoring.stop()
         refresh()
     }
-
-    public var role: AppRole? { roles.load() }
 
     /// Chosen when a parent says "this is my own phone". Nothing is enrolled and
     /// no Screen Time access is asked for.

@@ -132,7 +132,7 @@
 "role.child.title" = "My child's phone — report from here";
 "role.child.body" = "Sign in once to connect it, then this phone reports hourly figures. Your child sees the same numbers.";
 "role.later" = "You can change this later. Leaving child mode needs your password.";
-"agent.setup.title" = "Set up this phone";
+"agent.setup.title" = "Set up phone";
 "agent.setup.intro" = "Sign in with your parent account. The app keeps a key for this phone only — your session is ended straight after.";
 "agent.setup.parentaccount" = "Your account";
 "agent.setup.continue" = "Sign in";

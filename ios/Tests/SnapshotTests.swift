@@ -11,7 +11,11 @@ import XCTest
 /// that pushes a button off screen. Re-record deliberately with
 /// `RECORD_SNAPSHOTS=1`, never to make a red test go green.
 ///
-/// One limitation to read images with: `locale` sets the SwiftUI environment, so
+/// Two limitations to read these images with. Liquid Glass does not composite in
+/// an off-screen render, so a `.glassProminent` button or any `glassEffect`
+/// surface comes out as a blank shape here while looking correct on a device —
+/// judge those on the phone, not in the golden. And: `locale` sets the SwiftUI
+/// environment, so
 /// everything drawn through `L(…)` follows it. Text-field placeholders go through
 /// `String(localized:)`, which reads the *process* locale — so they appear in
 /// English here while being correct on a German phone.

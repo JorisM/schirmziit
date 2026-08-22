@@ -132,7 +132,7 @@
 "role.child.title" = "Le téléphone de mon enfant — transmettre d'ici";
 "role.child.body" = "Connecte-toi une fois pour le relier, puis ce téléphone transmet des valeurs horaires. Ton enfant voit les mêmes chiffres.";
 "role.later" = "Tu peux changer cela plus tard. Quitter le mode enfant demande ton mot de passe.";
-"agent.setup.title" = "Configurer ce téléphone";
+"agent.setup.title" = "Configurer";
 "agent.setup.intro" = "Connecte-toi avec ton compte parent. L'app ne garde qu'une clé pour ce téléphone — ta session est fermée juste après.";
 "agent.setup.parentaccount" = "Ton compte";
 "agent.setup.continue" = "Se connecter";

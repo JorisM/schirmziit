@@ -4,6 +4,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import androidx.core.app.NotificationCompat
+import ch.jorisda.nestling.agent.R
 import ch.jorisda.nestling.agent.store.AgentSettings
 import ch.jorisda.nestling.agent.ui.StatusText
 
@@ -18,20 +19,23 @@ object OngoingNotice {
     fun createChannel(context: Context) {
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "Screen-time reporting",
+            context.getString(R.string.notification_channel),
             NotificationManager.IMPORTANCE_LOW,
-        ).apply { description = "Shows that this phone reports screen time to a parent." }
+        ).apply { description = context.getString(R.string.notification_channel_description) }
         context.getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
     }
 
     fun update(context: Context, settings: AgentSettings) {
         val detail = settings.lastError
-            ?.let { "Problem sending: $it" }
-            ?: "Last sent ${StatusText.lastSync(System.currentTimeMillis(), settings.lastSyncMillis)}"
+            ?.let { context.getString(R.string.notification_problem, it) }
+            ?: context.getString(
+                R.string.notification_last_sent,
+                StatusText.lastSync(context, System.currentTimeMillis(), settings.lastSyncMillis),
+            )
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentTitle("Screen time is being reported")
+            .setContentTitle(context.getString(R.string.notification_title))
             .setContentText(detail)
             .setOngoing(true)
             .setSilent(true)

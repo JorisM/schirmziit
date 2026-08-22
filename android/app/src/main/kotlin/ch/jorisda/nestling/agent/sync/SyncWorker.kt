@@ -10,6 +10,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import ch.jorisda.nestling.agent.R
 import ch.jorisda.nestling.agent.core.CoreBridge
 import ch.jorisda.nestling.agent.notify.OngoingNotice
 import ch.jorisda.nestling.agent.store.AgentDatabase
@@ -27,7 +28,7 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
         if (!source.hasPermission()) {
             // Nothing to retry until the user re-grants; surface it instead of
             // failing silently, which is indistinguishable from an unused phone.
-            store.lastError = "usage access permission was revoked"
+            store.lastError = applicationContext.getString(R.string.permission_revoked)
             OngoingNotice.update(applicationContext, store)
             return Result.success()
         }

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Nestling</string>
+    <string name="tagline">Il tempo di schermo, in chiaro</string>
+
+    <string name="permission_title">Consentire l’accesso ai dati di utilizzo</string>
+    <string name="permission_body">Nestling ha bisogno dell’autorizzazione Android «Accesso ai dati di utilizzo» per vedere quanto vengono usate le app. Android permette di concederla solo nelle Impostazioni.</string>
+    <string name="permission_open_settings">Apri Impostazioni</string>
+    <string name="permission_granted">L’ho consentito</string>
+
+    <string name="pair_title">Collega questo telefono</string>
+    <string name="pair_body">Scansiona il codice mostrato nella panoramica dei tuoi genitori — oppure digitalo.</string>
+    <string name="pair_scan">Scansiona il codice QR</string>
+    <string name="pair_server">Indirizzo del server</string>
+    <string name="pair_code">Codice di otto caratteri</string>
+    <string name="pair_submit">Collega</string>
+    <string name="pair_working">Collegamento…</string>
+    <string name="pair_failed">Collegamento non riuscito: %1$s</string>
+    <string name="pair_bad_qr">Questo codice QR non è un codice Nestling.</string>
+    <string name="pair_bad_input">Controlla l’indirizzo del server (https) e il codice.</string>
+
+    <string name="status_reporting">Il tempo di schermo viene trasmesso.</string>
+    <string name="status_off">L’accesso ai dati di utilizzo è disattivato — non viene registrato nulla.</string>
+    <string name="status_server">Server</string>
+    <string name="status_not_paired">non collegato</string>
+    <string name="status_last_sent">Ultimo invio</string>
+    <string name="status_waiting">In attesa di invio</string>
+    <string name="status_hours">%1$d ora/e</string>
+    <string name="status_last_error">Ultimo problema</string>
+    <string name="status_send_now">Invia ora</string>
+    <string name="status_never">mai</string>
+    <string name="status_minutes_ago">%1$d minuti fa</string>
+    <string name="status_hours_ago">%1$d ore fa</string>
+    <string name="status_over_a_day">più di un giorno fa</string>
+
+    <string name="battery_title">Android può sospendere l’invio</string>
+    <string name="battery_body">L’ottimizzazione della batteria può fermare gli aggiornamenti in background mentre il telefono è inattivo. La panoramica vede allora questo telefono come muto, anche se tutto è a posto.</string>
+    <string name="battery_action">Consenti aggiornamenti in background</string>
+
+    <string name="help_title">Cosa fa questa app</string>
+    <string name="help_sends_title">Cosa viene inviato</string>
+    <string name="help_sends_1">Quale app era in primo piano e per quanto tempo, ora per ora.</string>
+    <string name="help_sends_2">Quante volte il telefono è stato sbloccato.</string>
+    <string name="help_sends_3">In che momento della giornata è stato usato il telefono.</string>
+    <string name="help_never_title">Cosa non viene mai inviato</string>
+    <string name="help_never_1">Né messaggi, né chat, né ricerche, né foto, né digitazioni.</string>
+    <string name="help_never_2">Nessuna posizione.</string>
+    <string name="help_never_3">Nessun sito web e nessun video guardato.</string>
+    <string name="help_never_4">Nessuna registrazione del microfono o della fotocamera.</string>
+    <string name="help_never_5">Non viene bloccato nulla — questa app non spegne nessun’altra app.</string>
+    <string name="help_where">Tutto va sul server della tua famiglia. Nessuna azienda in mezzo.</string>
+    <string name="help_open">Puoi aprire questa app in qualsiasi momento e vedere esattamente cosa è stato inviato.</string>
+    <string name="help_show">Cosa viene inviato?</string>
+    <string name="help_hide">Chiudi</string>
+
+    <string name="notification_channel">Trasmissione del tempo di schermo</string>
+    <string name="notification_channel_description">Mostra che questo telefono trasmette il tempo di schermo a un genitore.</string>
+    <string name="notification_title">Il tempo di schermo viene trasmesso</string>
+    <string name="notification_problem">Problema di invio: %1$s</string>
+    <string name="notification_last_sent">Ultimo invio %1$s</string>
+    <string name="permission_revoked">L’accesso ai dati di utilizzo è stato disattivato</string>
+</resources>

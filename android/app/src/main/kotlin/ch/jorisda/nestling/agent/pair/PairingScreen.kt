@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -20,6 +21,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import ch.jorisda.nestling.agent.R
 import ch.jorisda.nestling.agent.store.AgentSettings
 import ch.jorisda.nestling.agent.sync.NestlingClient
 import ch.jorisda.nestling.agent.sync.SyncWorker
@@ -41,10 +44,16 @@ fun PairingScreen(
     var manualUrl by remember { mutableStateOf("https://") }
     var manualCode by remember { mutableStateOf("") }
     var status by remember { mutableStateOf<String?>(null) }
+    // Resolved up front: stringResource is a composable and cannot be called
+    // from the coroutine below.
+    val pairingLabel = stringResource(R.string.pair_working)
+    val failedLabel = stringResource(R.string.pair_failed)
+    val badQrLabel = stringResource(R.string.pair_bad_qr)
+    val badInputLabel = stringResource(R.string.pair_bad_input)
 
     fun pair(payload: EnrollPayload) {
         scope.launch {
-            status = "pairing…"
+            status = pairingLabel
             val result = withContext(Dispatchers.IO) {
                 runCatching {
                     NestlingClient(payload.baseUrl, OkHttpClient()).enroll(
@@ -61,7 +70,7 @@ fun PairingScreen(
                 SyncWorker.schedule(context)
                 onPaired()
             }.onFailure { failure ->
-                status = "pairing failed: ${failure.message}"
+                status = failedLabel.format(failure.message ?: "")
             }
         }
     }
@@ -74,30 +83,31 @@ fun PairingScreen(
 
     val scanner = rememberLauncherForActivityResult(ScanContract()) { result ->
         val payload = result.contents?.let(EnrollPayloadParser::parse)
-        if (payload == null) status = "that QR code is not a nestling pairing code" else pair(payload)
+        if (payload == null) status = badQrLabel else pair(payload)
     }
 
     Column(
-        modifier = Modifier.padding(24.dp).fillMaxWidth(),
+        modifier = Modifier.safeDrawingPadding().padding(24.dp).fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text("Pair this phone", style = MaterialTheme.typography.headlineSmall)
-        Text("Scan the code your parent's dashboard shows, or type it in.")
+        Text(
+        stringResource(R.string.pair_title), style = MaterialTheme.typography.headlineSmall)
+        Text(stringResource(R.string.pair_body))
 
         Button(onClick = { scanner.launch(ScanOptions().setBeepEnabled(false)) }) {
-            Text("Scan QR code")
+            Text(stringResource(R.string.pair_scan))
         }
 
         OutlinedTextField(
             value = manualUrl,
             onValueChange = { manualUrl = it },
-            label = { Text("Server address") },
+            label = { Text(stringResource(R.string.pair_server)) },
             modifier = Modifier.fillMaxWidth(),
         )
         OutlinedTextField(
             value = manualCode,
             onValueChange = { manualCode = it.uppercase() },
-            label = { Text("8-character code") },
+            label = { Text(stringResource(R.string.pair_code)) },
             modifier = Modifier.fillMaxWidth(),
         )
         Button(
@@ -107,13 +117,13 @@ fun PairingScreen(
                     "nestling://enroll?url=${manualUrl.trim()}&code=${manualCode.trim()}",
                 )
                 if (payload == null) {
-                    status = "check the server address (https) and the code"
+                    status = badInputLabel
                 } else {
                     pair(payload)
                 }
             },
         ) {
-            Text("Pair")
+            Text(stringResource(R.string.pair_submit))
         }
 
         status?.let { Text(it, color = MaterialTheme.colorScheme.error) }

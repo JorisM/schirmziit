@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Default locale is English. de/fr/it live in values-de, values-fr, values-it and
+  are kept in step by StringParityTest, which fails the build when a key is
+  missing from one of them.
+-->
+<resources>
+    <string name="app_name">Nestling</string>
+    <string name="tagline">Screen time, out in the open</string>
+
+    <string name="permission_title">Allow usage access</string>
+    <string name="permission_body">Nestling needs Android’s “Usage access” permission to see how long apps are used. Android only lets you grant this in Settings.</string>
+    <string name="permission_open_settings">Open Settings</string>
+    <string name="permission_granted">I’ve granted it</string>
+
+    <string name="pair_title">Connect this phone</string>
+    <string name="pair_body">Scan the code your parent’s dashboard shows, or type it in.</string>
+    <string name="pair_scan">Scan QR code</string>
+    <string name="pair_server">Server address</string>
+    <string name="pair_code">8-character code</string>
+    <string name="pair_submit">Connect</string>
+    <string name="pair_working">Connecting…</string>
+    <string name="pair_failed">Could not connect: %1$s</string>
+    <string name="pair_bad_qr">That QR code is not a Nestling pairing code.</string>
+    <string name="pair_bad_input">Check the server address (https) and the code.</string>
+
+    <string name="status_reporting">Screen-time reporting is on.</string>
+    <string name="status_off">Usage access is off — nothing is being recorded.</string>
+    <string name="status_server">Server</string>
+    <string name="status_not_paired">not connected</string>
+    <string name="status_last_sent">Last sent</string>
+    <string name="status_waiting">Waiting to send</string>
+    <string name="status_hours">%1$d hour(s)</string>
+    <string name="status_last_error">Last problem</string>
+    <string name="status_send_now">Send now</string>
+    <string name="status_never">never</string>
+    <string name="status_minutes_ago">%1$d minutes ago</string>
+    <string name="status_hours_ago">%1$d hours ago</string>
+    <string name="status_over_a_day">over a day ago</string>
+
+    <string name="battery_title">Android may pause the reporting</string>
+    <string name="battery_body">Battery optimisation can stop background updates while the phone is idle. Then the dashboard shows this phone as silent, even though nothing is wrong.</string>
+    <string name="battery_action">Allow background updates</string>
+
+    <string name="help_title">What this app does</string>
+    <string name="help_sends_title">What is sent</string>
+    <string name="help_sends_1">Which app was in the foreground and for how long, per hour.</string>
+    <string name="help_sends_2">How often the phone was unlocked.</string>
+    <string name="help_sends_3">What time of day the phone was used.</string>
+    <string name="help_never_title">What is never sent</string>
+    <string name="help_never_1">No messages, chats, searches, photos or keystrokes.</string>
+    <string name="help_never_2">No location.</string>
+    <string name="help_never_3">No websites and no videos that were watched.</string>
+    <string name="help_never_4">No microphone or camera recordings.</string>
+    <string name="help_never_5">Nothing is blocked — this app never switches another app off.</string>
+    <string name="help_where">Everything goes to your family’s own server. No company in between.</string>
+    <string name="help_open">You can open this app any time and see exactly what it sent.</string>
+    <string name="help_show">What is sent?</string>
+    <string name="help_hide">Close</string>
+
+    <string name="notification_channel">Screen-time reporting</string>
+    <string name="notification_channel_description">Shows that this phone reports screen time to a parent.</string>
+    <string name="notification_title">Screen time is being reported</string>
+    <string name="notification_problem">Problem sending: %1$s</string>
+    <string name="notification_last_sent">Last sent %1$s</string>
+    <string name="permission_revoked">Usage access was turned off</string>
+</resources>

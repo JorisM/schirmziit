@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Schweizer Hochdeutsch: kein ß, du-Form. -->
+<resources>
+    <string name="app_name">Nestling</string>
+    <string name="tagline">Bildschirmzeit, offen sichtbar</string>
+
+    <string name="permission_title">Nutzungszugriff erlauben</string>
+    <string name="permission_body">Nestling braucht die Android-Berechtigung «Nutzungszugriff», um zu sehen, wie lange Apps benutzt werden. Android lässt das nur in den Einstellungen zu.</string>
+    <string name="permission_open_settings">Einstellungen öffnen</string>
+    <string name="permission_granted">Habe ich erlaubt</string>
+
+    <string name="pair_title">Dieses Handy verbinden</string>
+    <string name="pair_body">Scanne den Code, den die Übersicht deiner Eltern zeigt — oder tippe ihn ein.</string>
+    <string name="pair_scan">QR-Code scannen</string>
+    <string name="pair_server">Server-Adresse</string>
+    <string name="pair_code">Code mit acht Zeichen</string>
+    <string name="pair_submit">Verbinden</string>
+    <string name="pair_working">Verbinde…</string>
+    <string name="pair_failed">Verbinden nicht möglich: %1$s</string>
+    <string name="pair_bad_qr">Dieser QR-Code gehört nicht zu Nestling.</string>
+    <string name="pair_bad_input">Prüfe die Server-Adresse (https) und den Code.</string>
+
+    <string name="status_reporting">Bildschirmzeit wird übermittelt.</string>
+    <string name="status_off">Nutzungszugriff ist aus — es wird nichts aufgezeichnet.</string>
+    <string name="status_server">Server</string>
+    <string name="status_not_paired">nicht verbunden</string>
+    <string name="status_last_sent">Zuletzt gesendet</string>
+    <string name="status_waiting">Wartet auf Versand</string>
+    <string name="status_hours">%1$d Stunde(n)</string>
+    <string name="status_last_error">Letztes Problem</string>
+    <string name="status_send_now">Jetzt senden</string>
+    <string name="status_never">noch nie</string>
+    <string name="status_minutes_ago">vor %1$d Minuten</string>
+    <string name="status_hours_ago">vor %1$d Stunden</string>
+    <string name="status_over_a_day">vor über einem Tag</string>
+
+    <string name="battery_title">Android kann das Senden pausieren</string>
+    <string name="battery_body">Die Akku-Optimierung kann Hintergrund-Updates stoppen, solange das Handy ruht. Dann sieht die Übersicht dieses Handy als stumm, obwohl alles in Ordnung ist.</string>
+    <string name="battery_action">Hintergrund-Updates erlauben</string>
+
+    <string name="help_title">Was diese App macht</string>
+    <string name="help_sends_title">Was gesendet wird</string>
+    <string name="help_sends_1">Welche App im Vordergrund war und wie lange, pro Stunde.</string>
+    <string name="help_sends_2">Wie oft das Handy entsperrt wurde.</string>
+    <string name="help_sends_3">Wann am Tag das Handy benutzt wurde.</string>
+    <string name="help_never_title">Was nie gesendet wird</string>
+    <string name="help_never_1">Keine Nachrichten, Chats, Suchbegriffe, Fotos oder Tastatureingaben.</string>
+    <string name="help_never_2">Kein Standort.</string>
+    <string name="help_never_3">Keine Webseiten und keine Videos, die angeschaut wurden.</string>
+    <string name="help_never_4">Keine Mikrofon- oder Kameraaufnahmen.</string>
+    <string name="help_never_5">Es wird nichts blockiert — diese App schaltet keine andere App ab.</string>
+    <string name="help_where">Alles geht an den eigenen Server deiner Familie. Keine Firma dazwischen.</string>
+    <string name="help_open">Du kannst diese App jederzeit öffnen und genau sehen, was gesendet wurde.</string>
+    <string name="help_show">Was wird gesendet?</string>
+    <string name="help_hide">Schliessen</string>
+
+    <string name="notification_channel">Bildschirmzeit-Übermittlung</string>
+    <string name="notification_channel_description">Zeigt, dass dieses Handy Bildschirmzeit an ein Elternteil meldet.</string>
+    <string name="notification_title">Bildschirmzeit wird übermittelt</string>
+    <string name="notification_problem">Problem beim Senden: %1$s</string>
+    <string name="notification_last_sent">Zuletzt gesendet %1$s</string>
+    <string name="permission_revoked">Nutzungszugriff wurde ausgeschaltet</string>
+</resources>

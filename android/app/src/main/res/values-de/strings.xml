@@ -21,6 +21,8 @@
     <string name="pair_bad_input">Prüfe die Server-Adresse (https) und den Code.</string>
     <string name="pair_parent_title">Anmelden, um dieses Handy zu verbinden</string>
     <string name="pair_parent_body">Melde dich einmal mit dem Eltern-Konto an. Dieses Handy behält einen eigenen Schlüssel — die Anmeldung wird direkt danach beendet.</string>
+    <string name="pair_server_current">Server: %1$s</string>
+    <string name="pair_server_change">Server ändern</string>
     <string name="pair_email">E-Mail der Eltern</string>
     <string name="pair_password">Passwort</string>
     <string name="pair_parent_submit">Anmelden</string>

@@ -25,6 +25,8 @@
     <string name="pair_bad_input">Check the server address (https) and the code.</string>
     <string name="pair_parent_title">Sign in to connect this phone</string>
     <string name="pair_parent_body">Sign in with the parent account once. This phone keeps a key of its own — the sign-in is ended straight after.</string>
+    <string name="pair_server_current">Server: %1$s</string>
+    <string name="pair_server_change">Change server</string>
     <string name="pair_email">Parent email</string>
     <string name="pair_password">Password</string>
     <string name="pair_parent_submit">Sign in</string>

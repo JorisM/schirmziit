@@ -52,6 +52,7 @@ struct ChildSetupView: View {
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
                 .keyboardType(.URL)
+                .textContentType(.URL)
         }
 
         Section(header: L("agent.setup.parentaccount")) {
@@ -59,7 +60,9 @@ struct ChildSetupView: View {
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
                 .keyboardType(.emailAddress)
+                .textContentType(.username)
             SecureField(S("signin.password"), text: $password)
+                .textContentType(.password)
         }
 
         Section {

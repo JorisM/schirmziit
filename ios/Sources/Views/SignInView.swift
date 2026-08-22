@@ -24,6 +24,7 @@ struct SignInView: View {
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .keyboardType(.URL)
+                        .textContentType(.URL)
                 }
 
                 Section(header: L("signin.account")) {

@@ -8,36 +8,36 @@ struct AgentHelpView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section { Text("help.intro").font(.callout) }
+                Section { Text("agent.help.intro").font(.callout) }
 
-                Section(header: Text("help.measures.title")) {
-                    bullet("help.measures.1")
-                    bullet("help.measures.2")
-                    bullet("help.measures.3")
+                Section(header: Text("agent.help.measures.title")) {
+                    bullet("agent.help.measures.1")
+                    bullet("agent.help.measures.2")
+                    bullet("agent.help.measures.3")
                 }
 
-                Section(header: Text("help.never.title")) {
-                    bullet("help.never.1")
-                    bullet("help.never.2")
-                    bullet("help.never.3")
-                    bullet("help.never.4")
-                    bullet("help.never.5")
+                Section(header: Text("agent.help.never.title")) {
+                    bullet("agent.help.never.1")
+                    bullet("agent.help.never.2")
+                    bullet("agent.help.never.3")
+                    bullet("agent.help.never.4")
+                    bullet("agent.help.never.5")
                 }
 
-                Section(header: Text("help.how.title")) {
-                    bullet("help.how.1")
-                    bullet("help.how.2")
-                    bullet("help.how.3")
+                Section(header: Text("agent.help.how.title")) {
+                    bullet("agent.help.how.1")
+                    bullet("agent.help.how.2")
+                    bullet("agent.help.how.3")
                 }
 
-                Section(header: Text("help.where.title")) { Text("help.where").font(.callout) }
-                Section(header: Text("help.yousee.title")) { Text("help.yousee").font(.callout) }
-                Section { Text("help.swiss").font(.footnote).foregroundStyle(Palette.inkMuted) }
+                Section(header: Text("agent.help.where.title")) { Text("agent.help.where").font(.callout) }
+                Section(header: Text("agent.help.yousee.title")) { Text("agent.help.yousee").font(.callout) }
+                Section { Text("agent.help.swiss").font(.footnote).foregroundStyle(Palette.inkMuted) }
             }
-            .navigationTitle(Text("help.title"))
+            .navigationTitle(Text("agent.help.title"))
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(String(localized: "help.done")) { dismiss() }
+                    Button(String(localized: "agent.help.done")) { dismiss() }
                 }
             }
         }

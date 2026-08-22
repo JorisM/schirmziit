@@ -62,3 +62,88 @@
 
 "unit.hour" = "h";
 "unit.minute" = "min";
+
+/* ── Child mode ───────────────────────────────────────────── */
+"agent.title" = "Schirmziit";
+"agent.help" = "Comment ça marche";
+
+"agent.pairing.title" = "Connecter ce téléphone";
+"agent.pairing.intro" = "Ce téléphone envoie son temps d'écran au serveur de ta famille. Tes parents te donnent l'adresse et un code.";
+"agent.pairing.server" = "Serveur";
+"agent.pairing.server.placeholder" = "https://schirmziit.exemple.ch";
+"agent.pairing.code" = "Code";
+"agent.pairing.code.placeholder" = "ABCD1234";
+"agent.pairing.code.hint" = "Le code s'affiche dans le tableau de bord et ne sert qu'une fois.";
+"agent.pairing.label" = "Nom de ce téléphone";
+"agent.pairing.label.placeholder" = "Mon iPhone";
+"agent.pairing.submit" = "Connecter";
+"agent.pairing.working" = "Connexion…";
+"agent.pairing.badserver" = "Cette adresse de serveur ne semble pas correcte.";
+"agent.pairing.badcode" = "Ce code est inconnu, déjà utilisé ou expiré.";
+"agent.pairing.failed" = "Le serveur est injoignable.";
+
+"agent.status.queue" = "File d'attente";
+"agent.status.pending" = "Heures en attente";
+"agent.status.lastsync" = "Dernier envoi";
+"agent.status.never" = "Jamais";
+"agent.status.reporting.title" = "Transmission active";
+"agent.status.reporting.body" = "Les valeurs horaires partent vers le serveur de ta famille environ toutes les 30 minutes. Tu vois exactement les mêmes chiffres que tes parents.";
+"agent.status.permission.title" = "Accès au Temps d'écran requis";
+"agent.status.permission.body" = "iOS ne partage les chiffres d'utilisation qu'après l'accord d'un parent avec son code Temps d'écran. Avant cela, rien n'est enregistré.";
+"agent.status.permission.button" = "Demander l'accès";
+"agent.status.denied.title" = "Accès refusé";
+"agent.status.denied.body" = "Rien n'est enregistré. Tu peux autoriser l'accès à nouveau dans Réglages, sous Temps d'écran.";
+"agent.status.unavailable.title" = "Indisponible dans cette version";
+"agent.status.unavailable.body" = "Apple ne transmet les chiffres du Temps d'écran qu'aux apps autorisées. Cette version ne l'est pas encore, donc rien n'est enregistré.";
+"agent.status.shared.warning" = "Cette version ne peut pas lire le stockage partagé, donc les valeurs horaires de l'extension n'arrivent pas. Une version signée le peut.";
+"agent.status.sync.now" = "Envoyer maintenant";
+"agent.status.syncing" = "Envoi…";
+"agent.status.sync.failed" = "Envoi échoué. Les chiffres restent sur le téléphone et partiront plus tard.";
+"agent.status.unpair" = "Déconnecter ce téléphone";
+"agent.status.unpair.confirm" = "Arrêter la transmission et oublier le serveur ?";
+
+"agent.help.title" = "Comment fonctionne Schirmziit";
+"agent.help.done" = "Terminé";
+"agent.help.intro" = "Schirmziit montre combien de temps et à quel moment ce téléphone est utilisé. Rien ne t'est caché : tu vois les mêmes chiffres que tes parents.";
+"agent.help.measures.title" = "Ce qui est mesuré";
+"agent.help.measures.1" = "Quelle app était ouverte et combien de temps, heure par heure.";
+"agent.help.measures.2" = "Combien de fois le téléphone a été pris en main.";
+"agent.help.measures.3" = "À quelle heure de la journée le téléphone a été utilisé.";
+"agent.help.never.title" = "Ce qui n'est jamais collecté";
+"agent.help.never.1" = "Aucun message, chat, recherche, photo ni frappe au clavier.";
+"agent.help.never.2" = "Aucune position.";
+"agent.help.never.3" = "Aucun site web ni vidéo regardée.";
+"agent.help.never.4" = "Aucun enregistrement du micro ou de la caméra.";
+"agent.help.never.5" = "Rien n'est bloqué — Schirmziit ne coupe aucune app.";
+"agent.help.how.title" = "Comment ça marche";
+"agent.help.how.1" = "Cette app lit les chiffres du Temps d'écran qu'Apple garde de toute façon sur ce téléphone.";
+"agent.help.how.2" = "Environ toutes les 30 minutes, elle envoie des totaux horaires au serveur de ta famille.";
+"agent.help.how.3" = "Sans internet, rien n'est perdu : les chiffres attendent sur le téléphone.";
+"agent.help.where.title" = "Où sont les données";
+"agent.help.where" = "Sur le serveur de ta famille. Aucune entreprise au milieu et rien pour des tiers.";
+"agent.help.yousee.title" = "Tu vois tout";
+"agent.help.yousee" = "Tu peux ouvrir cette app à tout moment pour voir ce qui a été envoyé. Si tu déconnectes le téléphone, la transmission s'arrête — tes parents le verront aussi.";
+"agent.help.swiss" = "Développé en Suisse. Gratuit et open source.";
+
+/* ── Which phone is this ──────────────────────────────────── */
+"role.intro" = "Schirmziit tourne sur le serveur de ta famille. D'abord : quel est ce téléphone ?";
+"role.parent.title" = "Mon téléphone — montre-moi le temps d'écran";
+"role.parent.body" = "Connecte-toi avec ton compte et vois comment le téléphone de ton enfant est utilisé. Ce téléphone ne transmet rien.";
+"role.child.title" = "Le téléphone de mon enfant — transmettre d'ici";
+"role.child.body" = "Connecte-toi une fois pour le relier, puis ce téléphone transmet des valeurs horaires. Ton enfant voit les mêmes chiffres.";
+"role.later" = "Tu peux changer cela plus tard. Quitter le mode enfant demande ton mot de passe.";
+"agent.setup.title" = "Configurer ce téléphone";
+"agent.setup.intro" = "Connecte-toi avec ton compte parent. L'app ne garde qu'une clé pour ce téléphone — ta session est fermée juste après.";
+"agent.setup.parentaccount" = "Ton compte";
+"agent.setup.continue" = "Se connecter";
+"agent.setup.cancel" = "Annuler";
+"agent.setup.badlogin" = "E-mail ou mot de passe incorrect.";
+"agent.setup.nochildren" = "Impossible de lire les enfants sur ce serveur.";
+"agent.setup.whose" = "À qui est ce téléphone ?";
+"agent.setup.whose.hint" = "Si la liste est vide, ajoute d'abord l'enfant dans le tableau de bord.";
+"agent.setup.finish" = "Transmettre depuis ce téléphone";
+"agent.unlock.title" = "Ton mot de passe";
+"agent.unlock.body" = "Arrêter la transmission demande le mot de passe parent de ce compte.";
+"agent.unlock.submit" = "Arrêter la transmission";
+"agent.unlock.cancel" = "Continuer";
+"agent.unlock.wrong" = "Ce mot de passe n'est pas correct.";

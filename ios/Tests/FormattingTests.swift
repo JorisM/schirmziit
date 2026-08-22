@@ -1,5 +1,5 @@
 import XCTest
-@testable import Schirmziit
+@testable import SchirmziitKit
 
 final class FormattingTests: XCTestCase {
     func testDurationReadsLikeAPersonWroteIt() {

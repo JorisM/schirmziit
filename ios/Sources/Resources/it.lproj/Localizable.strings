@@ -62,3 +62,88 @@
 
 "unit.hour" = "h";
 "unit.minute" = "min";
+
+/* ── Child mode ───────────────────────────────────────────── */
+"agent.title" = "Schirmziit";
+"agent.help" = "Come funziona";
+
+"agent.pairing.title" = "Collega questo telefono";
+"agent.pairing.intro" = "Questo telefono invia il suo tempo di utilizzo al server della tua famiglia. I tuoi genitori ti danno l'indirizzo e un codice.";
+"agent.pairing.server" = "Server";
+"agent.pairing.server.placeholder" = "https://schirmziit.esempio.ch";
+"agent.pairing.code" = "Codice";
+"agent.pairing.code.placeholder" = "ABCD1234";
+"agent.pairing.code.hint" = "Il codice compare nella dashboard e vale una volta sola.";
+"agent.pairing.label" = "Nome di questo telefono";
+"agent.pairing.label.placeholder" = "Il mio iPhone";
+"agent.pairing.submit" = "Collega";
+"agent.pairing.working" = "Collegamento…";
+"agent.pairing.badserver" = "Questo indirizzo del server non sembra corretto.";
+"agent.pairing.badcode" = "Questo codice è sconosciuto, già usato o scaduto.";
+"agent.pairing.failed" = "Il server non è raggiungibile.";
+
+"agent.status.queue" = "In coda";
+"agent.status.pending" = "Ore in attesa";
+"agent.status.lastsync" = "Ultimo invio";
+"agent.status.never" = "Mai";
+"agent.status.reporting.title" = "Invio attivo";
+"agent.status.reporting.body" = "I valori orari vanno al server della tua famiglia circa ogni 30 minuti. Vedi esattamente gli stessi numeri dei tuoi genitori.";
+"agent.status.permission.title" = "Serve l'accesso a Tempo di utilizzo";
+"agent.status.permission.body" = "iOS condivide i dati d'uso solo dopo che un genitore lo ha permesso con il codice Tempo di utilizzo. Prima non viene registrato nulla.";
+"agent.status.permission.button" = "Chiedi l'accesso";
+"agent.status.denied.title" = "Accesso negato";
+"agent.status.denied.body" = "Non viene registrato nulla. Puoi permettere l'accesso di nuovo in Impostazioni, sotto Tempo di utilizzo.";
+"agent.status.unavailable.title" = "Non disponibile in questa versione";
+"agent.status.unavailable.body" = "Apple passa i dati di Tempo di utilizzo solo alle app autorizzate. Questa versione non lo è ancora, quindi non viene registrato nulla.";
+"agent.status.shared.warning" = "Questa versione non può leggere la memoria condivisa, quindi i valori orari dell'estensione non arrivano. Una versione firmata sì.";
+"agent.status.sync.now" = "Invia ora";
+"agent.status.syncing" = "Invio…";
+"agent.status.sync.failed" = "Invio non riuscito. I numeri restano sul telefono e partiranno più tardi.";
+"agent.status.unpair" = "Scollega questo telefono";
+"agent.status.unpair.confirm" = "Fermare gli invii e dimenticare il server?";
+
+"agent.help.title" = "Come funziona Schirmziit";
+"agent.help.done" = "Fatto";
+"agent.help.intro" = "Schirmziit mostra quanto e quando viene usato questo telefono. Niente ti viene nascosto: vedi gli stessi numeri dei tuoi genitori.";
+"agent.help.measures.title" = "Cosa viene misurato";
+"agent.help.measures.1" = "Quale app era aperta e per quanto, ora per ora.";
+"agent.help.measures.2" = "Quante volte il telefono è stato preso in mano.";
+"agent.help.measures.3" = "In che momento della giornata è stato usato il telefono.";
+"agent.help.never.title" = "Cosa non viene mai raccolto";
+"agent.help.never.1" = "Nessun messaggio, chat, ricerca, foto o testo digitato.";
+"agent.help.never.2" = "Nessuna posizione.";
+"agent.help.never.3" = "Nessun sito web e nessun video guardato.";
+"agent.help.never.4" = "Nessuna registrazione di microfono o fotocamera.";
+"agent.help.never.5" = "Niente viene bloccato — Schirmziit non spegne nessuna app.";
+"agent.help.how.title" = "Come funziona";
+"agent.help.how.1" = "Questa app legge i dati di Tempo di utilizzo che Apple tiene comunque su questo telefono.";
+"agent.help.how.2" = "Circa ogni 30 minuti invia i totali orari al server della tua famiglia.";
+"agent.help.how.3" = "Senza internet non si perde nulla: i numeri aspettano sul telefono.";
+"agent.help.where.title" = "Dove stanno i dati";
+"agent.help.where" = "Sul server della tua famiglia. Nessuna azienda in mezzo e niente a terzi.";
+"agent.help.yousee.title" = "Vedi tutto";
+"agent.help.yousee" = "Puoi aprire questa app quando vuoi e vedere cosa è stato inviato. Se scolleghi il telefono, gli invii si fermano — lo vedranno anche i tuoi genitori.";
+"agent.help.swiss" = "Sviluppato in Svizzera. Gratuito e open source.";
+
+/* ── Which phone is this ──────────────────────────────────── */
+"role.intro" = "Schirmziit gira sul server della tua famiglia. Prima cosa: che telefono è questo?";
+"role.parent.title" = "Il mio telefono — mostrami il tempo di schermo";
+"role.parent.body" = "Accedi con il tuo account e guarda come viene usato il telefono di tuo figlio. Questo telefono non invia nulla.";
+"role.child.title" = "Il telefono di mio figlio — invia da qui";
+"role.child.body" = "Accedi una volta per collegarlo, poi questo telefono invia i valori orari. Tuo figlio vede gli stessi numeri.";
+"role.later" = "Puoi cambiarlo più tardi. Uscire dalla modalità bambino richiede la tua password.";
+"agent.setup.title" = "Configura questo telefono";
+"agent.setup.intro" = "Accedi con il tuo account genitore. L'app tiene solo una chiave per questo telefono — la tua sessione viene chiusa subito dopo.";
+"agent.setup.parentaccount" = "Il tuo account";
+"agent.setup.continue" = "Accedi";
+"agent.setup.cancel" = "Annulla";
+"agent.setup.badlogin" = "Email o password non corretti.";
+"agent.setup.nochildren" = "Non è stato possibile leggere i figli su quel server.";
+"agent.setup.whose" = "Di chi è questo telefono?";
+"agent.setup.whose.hint" = "Se la lista è vuota, aggiungi prima il figlio nella dashboard.";
+"agent.setup.finish" = "Invia da questo telefono";
+"agent.unlock.title" = "La tua password";
+"agent.unlock.body" = "Per fermare gli invii serve la password del genitore di questo account.";
+"agent.unlock.submit" = "Ferma gli invii";
+"agent.unlock.cancel" = "Continua";
+"agent.unlock.wrong" = "Questa password non è corretta.";

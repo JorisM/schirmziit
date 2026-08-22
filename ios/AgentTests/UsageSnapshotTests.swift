@@ -1,5 +1,5 @@
 import XCTest
-@testable import SchirmziitAgentKit
+@testable import SchirmziitKit
 
 final class UsageSnapshotTests: XCTestCase {
     private func snapshot(apps: [SnapshotApp], screenOnMs: Int64 = 600_000) -> UsageSnapshot {

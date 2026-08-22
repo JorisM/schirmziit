@@ -53,6 +53,16 @@ enum Formatting {
 
 extension String {
     init(localized key: String.LocalizationValue) {
-        self.init(localized: key, table: nil)
+        // Explicitly this framework's bundle. `Bundle.main` is the app when the
+        // app runs and the *test runner* when tests run, so a main-bundle lookup
+        // silently returns the raw key under test.
+        self.init(localized: key, table: nil, bundle: .schirmziitKit)
     }
+}
+
+private final class BundleToken {}
+
+extension Bundle {
+    /// The framework's own bundle, whichever host embedded it.
+    static let schirmziitKit = Bundle(for: BundleToken.self)
 }

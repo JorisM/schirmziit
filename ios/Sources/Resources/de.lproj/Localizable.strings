@@ -62,3 +62,88 @@
 
 "unit.hour" = "h";
 "unit.minute" = "min";
+
+/* ── Child mode ───────────────────────────────────────────── */
+"agent.title" = "Schirmziit";
+"agent.help" = "So funktioniert das";
+
+"agent.pairing.title" = "Dieses Handy verbinden";
+"agent.pairing.intro" = "Dieses Handy meldet seine Bildschirmzeit an den eigenen Server deiner Familie. Deine Eltern geben dir die Adresse und einen Code.";
+"agent.pairing.server" = "Server";
+"agent.pairing.server.placeholder" = "https://schirmziit.beispiel.ch";
+"agent.pairing.code" = "Code";
+"agent.pairing.code.placeholder" = "ABCD1234";
+"agent.pairing.code.hint" = "Der Code steht im Dashboard und gilt einmal.";
+"agent.pairing.label" = "Name dieses Handys";
+"agent.pairing.label.placeholder" = "Mein iPhone";
+"agent.pairing.submit" = "Verbinden";
+"agent.pairing.working" = "Verbinde…";
+"agent.pairing.badserver" = "Diese Server-Adresse sieht nicht richtig aus.";
+"agent.pairing.badcode" = "Dieser Code ist unbekannt, schon benutzt oder abgelaufen.";
+"agent.pairing.failed" = "Der Server ist nicht erreichbar.";
+
+"agent.status.queue" = "Warteschlange";
+"agent.status.pending" = "Wartende Stunden";
+"agent.status.lastsync" = "Zuletzt gesendet";
+"agent.status.never" = "Noch nie";
+"agent.status.reporting.title" = "Meldet";
+"agent.status.reporting.body" = "Etwa alle 30 Minuten gehen Stundenwerte an den Server deiner Familie. Du siehst genau die gleichen Zahlen wie deine Eltern.";
+"agent.status.permission.title" = "Zugriff auf Bildschirmzeit nötig";
+"agent.status.permission.body" = "iOS gibt die Nutzungszahlen erst frei, wenn ein Elternteil das mit dem Bildschirmzeit-Code erlaubt hat. Vorher wird nichts erfasst.";
+"agent.status.permission.button" = "Zugriff anfragen";
+"agent.status.denied.title" = "Zugriff abgelehnt";
+"agent.status.denied.body" = "Es wird nichts erfasst. Du kannst den Zugriff in den Einstellungen unter Bildschirmzeit wieder erlauben.";
+"agent.status.unavailable.title" = "In dieser Version nicht verfügbar";
+"agent.status.unavailable.body" = "Apple gibt Bildschirmzeit-Zahlen nur an Apps weiter, die dafür freigegeben sind. Diese Version hat die Freigabe noch nicht, darum wird nichts erfasst.";
+"agent.status.shared.warning" = "Diese Version kann den gemeinsamen Speicher nicht lesen, darum kommen die Stundenwerte der Auswertung nicht an. Eine signierte Version kann das.";
+"agent.status.sync.now" = "Jetzt senden";
+"agent.status.syncing" = "Sende…";
+"agent.status.sync.failed" = "Senden fehlgeschlagen. Die Zahlen bleiben auf dem Handy und gehen später raus.";
+"agent.status.unpair" = "Dieses Handy trennen";
+"agent.status.unpair.confirm" = "Meldungen stoppen und den Server vergessen?";
+
+"agent.help.title" = "So funktioniert Schirmziit";
+"agent.help.done" = "Fertig";
+"agent.help.intro" = "Schirmziit zeigt, wie lange und wann dieses Handy benutzt wird. Nichts davon ist vor dir versteckt: du siehst die gleichen Zahlen wie deine Eltern.";
+"agent.help.measures.title" = "Was gemessen wird";
+"agent.help.measures.1" = "Welche App wie lange offen war, pro Stunde.";
+"agent.help.measures.2" = "Wie oft das Handy in die Hand genommen wurde.";
+"agent.help.measures.3" = "Zu welcher Tageszeit das Handy benutzt wurde.";
+"agent.help.never.title" = "Was nie erfasst wird";
+"agent.help.never.1" = "Keine Nachrichten, Chats, Suchen, Fotos oder Tastatureingaben.";
+"agent.help.never.2" = "Kein Standort.";
+"agent.help.never.3" = "Keine Webseiten und keine Videos, die geschaut wurden.";
+"agent.help.never.4" = "Keine Aufnahmen von Mikrofon oder Kamera.";
+"agent.help.never.5" = "Es wird nichts blockiert — Schirmziit schaltet keine App ab.";
+"agent.help.how.title" = "Wie es funktioniert";
+"agent.help.how.1" = "Diese App liest die Bildschirmzeit-Zahlen, die Apple auf diesem Handy sowieso führt.";
+"agent.help.how.2" = "Etwa alle 30 Minuten schickt sie Stundenwerte an den Server deiner Familie.";
+"agent.help.how.3" = "Ohne Internet geht nichts verloren: die Zahlen warten auf dem Handy.";
+"agent.help.where.title" = "Wo die Daten liegen";
+"agent.help.where" = "Auf dem eigenen Server deiner Familie. Keine Firma dazwischen und nichts an Dritte.";
+"agent.help.yousee.title" = "Du siehst alles";
+"agent.help.yousee" = "Du kannst diese App jederzeit öffnen und sehen, was gesendet wurde. Wenn du das Handy trennst, hören die Meldungen auf — das sehen deine Eltern auch.";
+"agent.help.swiss" = "Entwickelt in der Schweiz. Gratis und Open Source.";
+
+/* ── Which phone is this ──────────────────────────────────── */
+"role.intro" = "Schirmziit läuft auf dem eigenen Server deiner Familie. Zuerst: was ist dieses Handy?";
+"role.parent.title" = "Mein Handy — zeig mir die Bildschirmzeit";
+"role.parent.body" = "Melde dich mit deinem Konto an und schau, wie das Handy deines Kindes benutzt wird. Dieses Handy meldet nichts.";
+"role.child.title" = "Das Handy meines Kindes — von hier melden";
+"role.child.body" = "Einmal anmelden, um es zu verbinden. Danach meldet dieses Handy Stundenwerte. Dein Kind sieht die gleichen Zahlen.";
+"role.later" = "Das kannst du später ändern. Den Kindermodus zu verlassen braucht dein Passwort.";
+"agent.setup.title" = "Dieses Handy einrichten";
+"agent.setup.intro" = "Melde dich mit deinem Eltern-Konto an. Die App behält nur einen Schlüssel für dieses Handy — deine Anmeldung wird direkt danach beendet.";
+"agent.setup.parentaccount" = "Dein Konto";
+"agent.setup.continue" = "Anmelden";
+"agent.setup.cancel" = "Abbrechen";
+"agent.setup.badlogin" = "E-Mail oder Passwort stimmt nicht.";
+"agent.setup.nochildren" = "Die Kinder auf diesem Server konnten nicht gelesen werden.";
+"agent.setup.whose" = "Wessen Handy ist das?";
+"agent.setup.whose.hint" = "Wenn die Liste leer ist, lege das Kind zuerst in der Übersicht an.";
+"agent.setup.finish" = "Von diesem Handy melden";
+"agent.unlock.title" = "Dein Passwort";
+"agent.unlock.body" = "Die Meldungen zu stoppen braucht das Eltern-Passwort dieses Kontos.";
+"agent.unlock.submit" = "Meldungen stoppen";
+"agent.unlock.cancel" = "Weiter melden";
+"agent.unlock.wrong" = "Dieses Passwort stimmt nicht.";

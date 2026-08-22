@@ -1,5 +1,5 @@
 import Foundation
-@testable import SchirmziitAgentKit
+@testable import SchirmziitKit
 
 /// 2026-08-22 10:00:00 UTC — a fixed hour so nothing in these tests depends on
 /// the clock.
@@ -39,8 +39,17 @@ final class StubTransport: Transport, @unchecked Sendable {
         self.replies = replies
     }
 
-    convenience init(status: Int, body: String) {
-        self.init(replies: [.success(HttpResponse(status: status, body: Data(body.utf8)))])
+    convenience init(status: Int, body: String, headers: [String: String] = [:]) {
+        self.init(replies: [
+            .success(HttpResponse(status: status, body: Data(body.utf8), headers: headers))
+        ])
+    }
+
+    /// Scripted replies in order, as (status, body, headers).
+    convenience init(_ replies: [(Int, String, [String: String])]) {
+        self.init(replies: replies.map {
+            .success(HttpResponse(status: $0.0, body: Data($0.1.utf8), headers: $0.2))
+        })
     }
 
     func send(_ request: HttpRequest) async throws -> HttpResponse {
@@ -50,4 +59,16 @@ final class StubTransport: Transport, @unchecked Sendable {
             return try replies.removeFirst().get()
         }
     }
+}
+
+
+/// Records whether monitoring was ever started — the thing that decides whether
+/// a phone is recording at all.
+final class SpyMonitoring: UsageMonitoring, @unchecked Sendable {
+    private let lock = NSLock()
+    private(set) var started = 0
+    private(set) var stopped = 0
+
+    func start() throws { lock.withLock { started += 1 } }
+    func stop() { lock.withLock { stopped += 1 } }
 }

@@ -29,9 +29,3 @@ enum AgentFormatting {
             : "\(minutes / 60) \(hourUnit) \(minutes % 60) \(minuteUnit)"
     }
 }
-
-extension String {
-    init(localized key: String.LocalizationValue) {
-        self.init(localized: key, table: nil)
-    }
-}

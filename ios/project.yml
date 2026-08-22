@@ -1,5 +1,10 @@
 # Generated project: xcodegen keeps the Xcode project declarative, the same way
 # the rest of this repo avoids clicked-together state.
+#
+# One app, two roles. A parent installs Schirmziit, signs in, and tells it what
+# the phone is: their own (dashboard) or their child's (reporting). Two apps
+# meant two store listings, two review cycles, and a parent who downloaded the
+# wrong one.
 name: Schirmziit
 options:
   bundleIdPrefix: ch.jorisda.schirmziit
@@ -16,92 +21,61 @@ settings:
     SWIFT_STRICT_CONCURRENCY: complete
 
 targets:
-  Schirmziit:
-    type: application
-    platform: iOS
-    sources:
-      - path: Sources
-    info:
-      path: Sources/Resources/Info.plist
-      properties:
-        CFBundleDisplayName: Schirmziit
-        CFBundleShortVersionString: $(MARKETING_VERSION)
-        UILaunchScreen: {}
-        UISupportedInterfaceOrientations:
-          - UIInterfaceOrientationPortrait
-        # The dashboard is on the family's own server, which may use a private
-        # CA or plain http on a LAN. Users type their own address, so the
-        # exception is scoped to what they choose, not to the whole app.
-        NSAppTransportSecurity:
-          NSAllowsLocalNetworking: true
-        CFBundleLocalizations: [en, de, fr, it]
-    settings:
-      base:
-        PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.viewer
-        CODE_SIGN_STYLE: Automatic
-        GENERATE_INFOPLIST_FILE: NO
-        INFOPLIST_KEY_CFBundleDisplayName: Schirmziit
-        TARGETED_DEVICE_FAMILY: "1,2"
-
-  SchirmziitTests:
-    type: bundle.unit-test
-    platform: iOS
-    sources:
-      - path: Tests
-    dependencies:
-      - target: Schirmziit
-    settings:
-      base:
-        PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.viewer.tests
-        # Test bundles need an Info.plist to code sign; let Xcode synthesise it
-        # rather than checking in a second near-empty plist.
-        GENERATE_INFOPLIST_FILE: YES
-
-  # ─── Child agent ────────────────────────────────────────────────────
-  # Runs on the child's phone. Needs Apple's Family Controls entitlement to see
-  # any figures at all; without it the app builds, runs and says so plainly.
-  # Everything testable lives in the framework: the Family Controls extensions
-  # cannot be installed on a simulator, so a test bundle hosted by the app can
-  # never launch. Tests link this instead.
-  SchirmziitAgentKit:
+  # Everything except @main lives here. Not a style choice: the Family Controls
+  # extensions cannot be installed on a simulator, so a test bundle hosted by
+  # the app can never launch. Tests link this framework instead.
+  SchirmziitKit:
     type: framework
     platform: iOS
     sources:
+      - path: Sources/Api
+      - path: Sources/Design
+      - path: Sources/Views
+      - path: Sources/Role
       - path: AgentShared
       - path: AgentSources/Agent
       - path: AgentSources/Views
-      - path: Sources/Design/Palette.swift
       - path: Generated/schirmziit_core.swift
+      # Opaque folders, so the four locales stay four locales instead of being
+      # flattened into one variant group.
+      - path: Sources/Resources/en.lproj
+        type: folder
+      - path: Sources/Resources/de.lproj
+        type: folder
+      - path: Sources/Resources/fr.lproj
+        type: folder
+      - path: Sources/Resources/it.lproj
+        type: folder
     dependencies:
       - framework: Frameworks/SchirmziitCoreFFI.xcframework
         embed: false
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.agent.kit
+        PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.kit
         GENERATE_INFOPLIST_FILE: YES
         DEFINES_MODULE: YES
 
-  SchirmziitAgent:
+  Schirmziit:
     type: application
     platform: iOS
     sources:
-      - path: AgentSources/SchirmziitAgentApp.swift
-      - path: AgentSources/Resources
+      - path: Sources/SchirmziitApp.swift
+      - path: Sources/Resources
     dependencies:
-      - target: SchirmziitAgentKit
+      - target: SchirmziitKit
         embed: true
       - target: SchirmziitMonitor
       - target: SchirmziitReport
     info:
-      path: AgentSources/Resources/Info.plist
+      path: Sources/Resources/Info.plist
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.agent
+        PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit
         CODE_SIGN_STYLE: Automatic
-        CODE_SIGN_ENTITLEMENTS: AgentSources/Resources/Agent.entitlements
+        CODE_SIGN_ENTITLEMENTS: Sources/Resources/Schirmziit.entitlements
         GENERATE_INFOPLIST_FILE: NO
         INFOPLIST_KEY_CFBundleDisplayName: Schirmziit
-        TARGETED_DEVICE_FAMILY: "1"
+        TARGETED_DEVICE_FAMILY: "1,2"
 
   SchirmziitMonitor:
     type: app-extension
@@ -113,7 +87,7 @@ targets:
       path: AgentMonitor/Info.plist
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.agent.monitor
+        PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.monitor
         CODE_SIGN_ENTITLEMENTS: AgentMonitor/Monitor.entitlements
         GENERATE_INFOPLIST_FILE: NO
 
@@ -127,35 +101,34 @@ targets:
       path: AgentReport/Info.plist
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.agent.report
+        PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.report
         CODE_SIGN_ENTITLEMENTS: AgentReport/Report.entitlements
         GENERATE_INFOPLIST_FILE: NO
 
-  SchirmziitAgentTests:
+  SchirmziitTests:
     type: bundle.unit-test
     platform: iOS
     sources:
+      - path: Tests
       - path: AgentTests
-      # The .strings files and the OpenAPI document are read by the tests
-      # themselves, so they have to be in the test bundle.
       # Copied as opaque folders: a variant group would flatten the four
       # locales into one Localizable.strings and the parity test would pass
       # while reading a single language.
-      - path: AgentSources/Resources/en.lproj
+      - path: Sources/Resources/en.lproj
         type: folder
-      - path: AgentSources/Resources/de.lproj
+      - path: Sources/Resources/de.lproj
         type: folder
-      - path: AgentSources/Resources/fr.lproj
+      - path: Sources/Resources/fr.lproj
         type: folder
-      - path: AgentSources/Resources/it.lproj
+      - path: Sources/Resources/it.lproj
         type: folder
       - path: ../api/openapi.json
         buildPhase: resources
     dependencies:
-      - target: SchirmziitAgentKit
+      - target: SchirmziitKit
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.agent.tests
+        PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.tests
         GENERATE_INFOPLIST_FILE: YES
 
 schemes:
@@ -167,12 +140,3 @@ schemes:
     test:
       targets:
         - SchirmziitTests
-
-  SchirmziitAgent:
-    build:
-      targets:
-        SchirmziitAgent: all
-        SchirmziitAgentTests: [test]
-    test:
-      targets:
-        - SchirmziitAgentTests

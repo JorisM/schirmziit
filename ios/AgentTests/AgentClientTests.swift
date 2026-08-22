@@ -1,5 +1,5 @@
 import XCTest
-@testable import SchirmziitAgentKit
+@testable import SchirmziitKit
 
 final class AgentClientTests: XCTestCase {
     private let base = URL(string: "https://schirmziit.example.ch")!

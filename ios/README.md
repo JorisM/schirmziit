@@ -1,29 +1,43 @@
 # Schirmziit on iOS
 
-Two apps in one Xcode project:
+**One app, two roles.** `Schirmziit` (`ch.jorisda.schirmziit`) asks what the phone
+is before it asks for a password:
 
-| Scheme | Target | Bundle id | What it is |
-|---|---|---|---|
-| `Schirmziit` | `Schirmziit` | `ch.jorisda.schirmziit.viewer` | Parent viewer — reads the family's server, measures nothing |
-| `SchirmziitAgent` | `SchirmziitAgent` + 2 extensions | `ch.jorisda.schirmziit.agent` | Child agent — measures this phone and reports it |
+| Choice | What happens |
+|---|---|
+| *My phone* | Parent signs in, sees the dashboard. Nothing is measured here, no Screen Time access asked for. |
+| *My child's phone* | Parent signs in **once**, picks the child, and the app trades that session for a device token — then ends the session. The phone reports from then on and shows the child-facing screen. |
 
-## The child agent
+Leaving child mode needs the parent password, checked against the server. Child
+mode a child can tap out of is decoration, so `AgentModel.leaveChildMode` is the
+one place where a wrong answer must change nothing.
 
-Structure, mirroring the Android agent as closely as iOS allows:
+Pairing codes still exist for the case where the parent is not there to sign in;
+the parent-session path is what removes the typing for everyone else.
 
-    AgentShared/     PendingHour, HourStore, UsageSnapshot, SnapshotInbox, HourMarker
-                     — the only code the app and its extensions both compile
-    AgentSources/    the app: pairing, sync, keychain, Screen Time authorization, UI
-    AgentMonitor/    DeviceActivityMonitor extension — wakes on the hour, drops a marker
-    AgentReport/     DeviceActivityReport extension — the only place per-app durations exist
-    AgentTests/      48 tests, no device and no entitlement needed
+## Structure
 
-Everything testable lives in the `SchirmziitAgentKit` framework, because a test
-bundle hosted by the app can never launch on a simulator: the Family Controls
-extensions cannot be installed there (`extensionDictionary must be set in
-placeholder attributes`). Tests link the framework instead of the app.
+    Sources/Api        ApiClient, response models (parent side)
+    Sources/Design     palette, list style, formatting
+    Sources/Views      role choice, child setup, sign-in, dashboard, ribbon
+    Sources/Role       AppRole + RoleStore
+    AgentShared/       PendingHour, HourStore, UsageSnapshot, SnapshotInbox, HourMarker
+    AgentSources/      child-mode logic and UI: sync, keychain, Screen Time, setup
+    AgentMonitor/      DeviceActivityMonitor extension — wakes on the hour
+    AgentReport/       DeviceActivityReport extension — the only per-app durations
+    Tests/, AgentTests/  70 tests, no device and no entitlement needed
 
-**Why the pipeline looks different from Android's.** iOS has no per-app
+Everything except `@main` lives in the **SchirmziitKit** framework. Not a style
+choice: the Family Controls extensions cannot be installed on a simulator, so a
+test bundle hosted by the app can never launch (`extensionDictionary must be set
+in placeholder attributes`). Tests link the framework instead.
+
+The framework also carries its own copy of the four `.lproj` folders and looks
+strings up in `Bundle.schirmziitKit`. `Bundle.main` is the app when the app runs
+and the *test runner* when tests run, so a main-bundle lookup returns raw keys
+under test — which is exactly how it was found.
+
+**Why the child pipeline looks different from Android's.** iOS has no per-app
 foreground event stream. The only source of per-app durations is a
 `DeviceActivityReport` extension, which is a SwiftUI scene with **no network
 access**, and it computes numbers only while a report view is on screen. So:
@@ -36,22 +50,18 @@ access**, and it computes numbers only while a report view is on screen. So:
    `ingestBody`, `applyIngestResult`) and POSTs `/v1/ingest`.
 
 Step 4 is the important one: the wire format is built by `crates/core`, exactly
-as on Android, so the two agents cannot drift. `ContractTests` additionally
+as on Android, so the two agents cannot drift. `AgentContractTests` additionally
 checks that body against `api/openapi.json`.
 
 **What does not work without Apple's approval.** Family Controls is an
 entitlement Apple grants per app; a free Personal Team cannot sign it, and App
 Groups need a paid team too. Without both, the app builds, installs and runs —
-it pairs, it queues, it syncs — but `AuthorizationCenter` refuses, so there are
-no figures to report and the status screen says exactly that
-(`status.unavailable.*`). The App Group falls back to the app's own container,
-which the status screen also states (`status.shared.warning`). Nothing here
-pretends to work.
+role choice, sign-in, enrolment, syncing — but `AuthorizationCenter` refuses, so
+there are no figures to report and the status screen says exactly that
+(`agent.status.unavailable.*`). The App Group falls back to the app's own
+container, which the status screen also states
+(`agent.status.shared.warning`). Nothing here pretends to work.
 
-## The parent viewer
-
-Reads a family's own Schirmziit server and shows a child's screen time. It
-measures nothing on the phone it runs on.
 
 ## Toolchain
 
@@ -81,8 +91,6 @@ Or by hand:
     # Unit tests on a simulator (no signing, no entitlement)
     xcodebuild -project Schirmziit.xcodeproj -scheme Schirmziit \
       -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test CODE_SIGNING_ALLOWED=NO
-    xcodebuild -project Schirmziit.xcodeproj -scheme SchirmziitAgent \
-      -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test CODE_SIGNING_ALLOWED=NO
 
     # Device build. DEVELOPMENT_TEAM is the certificate's OU, which is NOT the
     # value in parentheses in the identity's name:
@@ -96,7 +104,7 @@ Or by hand:
     xcrun devicectl list devices                       # find the device id
     xcrun devicectl device install app --device <id> \
       ~/Library/Developer/Xcode/DerivedData/Schirmziit-*/Build/Products/Debug-iphoneos/Schirmziit.app
-    xcrun devicectl device process launch --device <id> ch.jorisda.schirmziit.viewer
+    xcrun devicectl device process launch --device <id> ch.jorisda.schirmziit
 
 First launch after a fresh install fails with `FBSOpenApplicationErrorDomain
 error 3` until the profile is trusted on the phone: Settings → General → VPN &
@@ -114,7 +122,7 @@ tapping (absent from release builds):
     SIMCTL_CHILD_SCHIRMZIIT_SERVER=https://schirmziit.example.ch \
     SIMCTL_CHILD_SCHIRMZIIT_EMAIL=… SIMCTL_CHILD_SCHIRMZIIT_PASSWORD=… \
     SIMCTL_CHILD_SCHIRMZIIT_AUTOLOGIN=1 SIMCTL_CHILD_SCHIRMZIIT_OPEN_FIRST_CHILD=1 \
-    xcrun simctl launch <simulator-id> ch.jorisda.schirmziit.viewer
+    xcrun simctl launch <simulator-id> ch.jorisda.schirmziit
 
 ## Design
 

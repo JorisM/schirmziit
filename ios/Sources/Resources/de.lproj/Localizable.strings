@@ -1,0 +1,64 @@
+"app.name" = "Nestling";
+"app.help" = "Wie das funktioniert";
+"app.signout" = "Abmelden";
+
+"signin.intro" = "Nestling läuft auf dem eigenen Server deiner Familie. Es gibt kein Konto bei einer Firma.";
+"signin.server" = "Server";
+"signin.server.placeholder" = "https://nestling.beispiel.ch";
+"signin.account" = "Dein Konto";
+"signin.email" = "E-Mail";
+"signin.password" = "Passwort";
+"signin.submit" = "Anmelden";
+"signin.working" = "Melde an…";
+"signin.wrong" = "E-Mail oder Passwort stimmt nicht.";
+"signin.bad.server" = "Diese Server-Adresse sieht nicht richtig aus.";
+
+"children.title" = "Kinder";
+"children.empty" = "Noch kein Kind";
+"children.empty.hint" = "Lege in der Übersicht ein Kind an und verbinde dann dessen Handy.";
+
+"child.total" = "Bildschirmzeit heute";
+"child.unlocks %lld" = "%lld Mal entsperrt";
+"child.nodata" = "Heute noch nichts gemeldet";
+"child.nodata.hint" = "Das kann heissen: das Handy wurde nicht benutzt — oder es hat noch nicht gemeldet. Schau bei den Geräten unten.";
+"child.apps" = "Apps";
+"child.ribbon.title" = "Der Tag im Verlauf";
+"child.ribbon.help" = "Jedes Feld ist eine Stunde, von Mitternacht bis Mitternacht. Je dunkler, desto länger war der Bildschirm an. So siehst du nicht nur wie viel, sondern wann. Tippe eine Stunde an für Details.";
+"child.ribbon.quiet" = "ruhig";
+"child.ribbon.busy" = "viel";
+
+"devices.title" = "Geräte";
+"devices.fresh" = "meldet sich";
+"devices.stale" = "meldet sich nicht";
+"devices.stale.help" = "Seit über 90 Minuten keine Meldung. Solange das so ist, sind die Zahlen oben unvollständig — nicht unbedingt tief.";
+"devices.never" = "hat sich noch nie gemeldet";
+
+"help.title" = "Wie Nestling funktioniert";
+"help.intro" = "Nestling zeigt, wie lange und wann das Handy deines Kindes benutzt wird. Nichts davon ist geheim: das Kind sieht dieselben Zahlen auf seinem Handy.";
+"help.measures.title" = "Was Nestling misst";
+"help.measures.1" = "Welche App im Vordergrund war und wie lange, pro Stunde.";
+"help.measures.2" = "Wie oft das Handy entsperrt wurde.";
+"help.measures.3" = "Wann am Tag das Handy benutzt wurde.";
+"help.never.title" = "Was Nestling nie sammelt";
+"help.never.1" = "Keine Nachrichten, Chats, Suchbegriffe, Fotos oder Tastatureingaben.";
+"help.never.2" = "Keinen Standort.";
+"help.never.3" = "Keine Webseiten und keine Videos, die angeschaut wurden.";
+"help.never.4" = "Keine Mikrofon- oder Kameraaufnahmen.";
+"help.never.5" = "Es wird nichts blockiert — Nestling schaltet keine App ab.";
+"help.how.title" = "Wie es läuft";
+"help.how.1" = "Eine kleine App auf dem Handy des Kindes liest die Nutzungsstatistik, die Android ohnehin führt.";
+"help.how.2" = "Etwa alle 30 Minuten schickt sie Stundenwerte an deinen Server.";
+"help.how.3" = "Ohne Internet geht nichts verloren: die Werte warten auf dem Handy.";
+"help.how.4" = "Diese App liest nur, was auf deinem Server schon liegt.";
+"help.where.title" = "Wo die Daten liegen";
+"help.where" = "Auf dem eigenen Server deiner Familie, in deiner eigenen Datenbank. Keine Firma dazwischen, keine Weitergabe an Dritte.";
+"help.retention.title" = "Wie lange";
+"help.retention" = "Stundenwerte bleiben 13 Monate, danach nur noch Tagessummen. Du kannst die Daten eines Kindes jederzeit löschen.";
+"help.notacontrol.title" = "Was Nestling nicht ist";
+"help.notacontrol" = "Nestling sperrt nichts und filtert nichts. Es ist eine Grundlage für ein Gespräch, keine Fernsteuerung.";
+"help.swiss" = "Entwickelt in der Schweiz. Frei und Open Source.";
+
+"error.offline" = "Keine Verbindung zum Server.";
+
+"unit.hour" = "h";
+"unit.minute" = "min";

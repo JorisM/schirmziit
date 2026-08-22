@@ -151,3 +151,32 @@ async fn summary_returns_top_apps_and_first_last_activity(pool: PgPool) {
     assert!(response.json["last_activity"].is_string());
     assert_eq!(response.json["unlock_count"], 14);
 }
+
+#[sqlx::test]
+async fn a_revoked_device_disappears_from_the_usage_view(pool: PgPool) {
+    // It would otherwise sit there as "not reporting" forever, reading as a
+    // fault instead of a choice. The management list keeps it, with its flag.
+    let (app, child_id, device_id) = setup(pool.clone()).await;
+    let before = app
+        .get(&format!(
+            "/v1/children/{child_id}/usage?from=2026-08-20&to=2026-08-20&bucket=hour&tz=Europe/Zurich"
+        ))
+        .await;
+    assert_eq!(before.json["devices"].as_array().unwrap().len(), 1);
+
+    assert_eq!(
+        app.delete(&format!("/v1/devices/{device_id}")).await.status,
+        StatusCode::NO_CONTENT
+    );
+
+    let after = app
+        .get(&format!(
+            "/v1/children/{child_id}/usage?from=2026-08-20&to=2026-08-20&bucket=hour&tz=Europe/Zurich"
+        ))
+        .await;
+    assert!(after.json["devices"].as_array().unwrap().is_empty());
+
+    // Still visible where it is managed, marked revoked.
+    let managed = app.get("/v1/devices").await;
+    assert_eq!(managed.json[0]["revoked"], true);
+}

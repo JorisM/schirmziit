@@ -5,7 +5,7 @@ import SwiftUI
 struct AgentPairingView: View {
     let model: AgentModel
 
-    @State private var server = ""
+    @State private var server = AgentDefaults.server
     @State private var code = ""
     @State private var label = ""
 

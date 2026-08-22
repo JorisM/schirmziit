@@ -13,6 +13,39 @@ use uuid::Uuid;
 
 pub const SESSION_COOKIE: &str = "schirmziit_session";
 
+/// An argon2 hash of a value nobody knows, verified against when the email does
+/// not exist. Without it, a wrong email answers instantly and a wrong password
+/// takes an argon2 verify, which tells an attacker which addresses have an
+/// account here — on a product whose users are families.
+pub static DECOY_HASH: std::sync::LazyLock<String> = std::sync::LazyLock::new(|| {
+    let mut filler = [0u8; 32];
+    rand::rng().fill_bytes(&mut filler);
+    hash_password(&hex(&filler)).expect("hashing a random string cannot fail")
+});
+
+/// One spelling per account. Postgres compares TEXT case-sensitively, so without
+/// this "Anna@example.ch" registers a second family and then cannot log in with
+/// the address she typed the first time.
+pub fn normalise_email(input: &str) -> String {
+    input.trim().to_lowercase()
+}
+
+/// Deliberately not a full RFC 5322 parser: this rejects the mistakes people
+/// make in a form (empty, no @, a space, no dot in the domain) and leaves the
+/// rest to the fact that nothing is ever sent to this address.
+pub fn is_plausible_email(email: &str) -> bool {
+    let mut parts = email.split('@');
+    let (Some(local), Some(domain), None) = (parts.next(), parts.next(), parts.next()) else {
+        return false;
+    };
+    !local.is_empty()
+        && domain.contains('.')
+        && !domain.starts_with('.')
+        && !domain.ends_with('.')
+        && !email.contains(char::is_whitespace)
+        && email.len() <= 254
+}
+
 pub fn hash_password(plain: &str) -> Result<String, ApiError> {
     // Salt from `rand` 0.9 rather than `SaltString::generate`: that path wants
     // rand_core 0.6's OsRng, which would mean carrying a second RNG stack.

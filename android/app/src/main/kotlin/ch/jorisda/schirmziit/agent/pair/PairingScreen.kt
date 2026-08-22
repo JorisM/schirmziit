@@ -33,6 +33,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 
+/// The instance this build points at by default. A self-hoster types their own
+/// address over it; prefilling the common case saves a parent typing a URL on a
+/// phone keyboard, which is where pairing usually goes wrong.
+const val DEFAULT_SERVER = "https://schirmziit.jorisda.ch"
+
 @Composable
 fun PairingScreen(
     settings: AgentSettings,
@@ -41,7 +46,7 @@ fun PairingScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    var manualUrl by remember { mutableStateOf("https://") }
+    var manualUrl by remember { mutableStateOf(DEFAULT_SERVER) }
     var manualCode by remember { mutableStateOf("") }
     var status by remember { mutableStateOf<String?>(null) }
     // Resolved up front: stringResource is a composable and cannot be called

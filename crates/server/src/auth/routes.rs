@@ -1,4 +1,7 @@
-use super::{Parent, SESSION_COOKIE, hash_password, hash_token, random_token, verify_password};
+use super::{
+    DECOY_HASH, Parent, SESSION_COOKIE, hash_password, hash_token, is_plausible_email,
+    normalise_email, random_token, verify_password,
+};
 use crate::AppState;
 use crate::config::Registration;
 use crate::error::ApiError;
@@ -33,9 +36,20 @@ pub struct MeResponse {
 }
 
 pub fn router() -> Router<AppState> {
+    credential_router().merge(session_router())
+}
+
+/// The two routes that take a password. Rate-limited hard in `lib.rs`.
+pub fn credential_router() -> Router<AppState> {
     Router::new()
         .route("/v1/auth/register", post(register))
         .route("/v1/auth/login", post(login))
+}
+
+/// Routes that only prove an existing session. Throttling these would log a
+/// working parent out of the dashboard.
+pub fn session_router() -> Router<AppState> {
+    Router::new()
         .route("/v1/auth/logout", post(logout))
         .route("/v1/me", get(me))
 }
@@ -58,6 +72,11 @@ pub async fn register(
         return Err(ApiError::Validation(
             "password must be at least 12 characters".into(),
         ));
+    }
+
+    let email = normalise_email(&body.email);
+    if !is_plausible_email(&email) {
+        return Err(ApiError::Validation("that is not an email address".into()));
     }
 
     let existing: i64 = sqlx::query_scalar!("SELECT count(*) FROM parents")
@@ -89,7 +108,7 @@ pub async fn register(
         "INSERT INTO parents (id, family_id, email, password_hash) VALUES ($1, $2, $3, $4)",
         parent_id,
         family_id,
-        body.email,
+        email,
         hash_password(&body.password)?
     )
     .execute(&mut *tx)
@@ -126,11 +145,17 @@ pub async fn login(
 ) -> Result<impl IntoResponse, ApiError> {
     let parent = sqlx::query!(
         "SELECT id, password_hash FROM parents WHERE email = $1",
-        body.email
+        normalise_email(&body.email)
     )
     .fetch_optional(&state.pool)
-    .await?
-    .ok_or(ApiError::InvalidCredentials)?;
+    .await?;
+
+    let Some(parent) = parent else {
+        // Spend the same argon2 verify a real account would, so "no such email"
+        // and "wrong password" take the same time and look the same.
+        verify_password(&body.password, &DECOY_HASH);
+        return Err(ApiError::InvalidCredentials);
+    };
 
     if !verify_password(&body.password, &parent.password_hash) {
         return Err(ApiError::InvalidCredentials);
@@ -145,7 +170,10 @@ pub async fn login(
     responses((status = 204, description = "Session deleted")),
     tag = "auth"
 )]
-pub async fn logout(State(state): State<AppState>, jar: CookieJar) -> Result<StatusCode, ApiError> {
+pub async fn logout(
+    State(state): State<AppState>,
+    jar: CookieJar,
+) -> Result<impl IntoResponse, ApiError> {
     if let Some(raw) = jar.get(SESSION_COOKIE) {
         sqlx::query!(
             "DELETE FROM sessions WHERE token_hash = $1",
@@ -154,7 +182,19 @@ pub async fn logout(State(state): State<AppState>, jar: CookieJar) -> Result<Sta
         .execute(&state.pool)
         .await?;
     }
-    Ok(StatusCode::NO_CONTENT)
+
+    // The row is gone either way, so the session is dead server-side. Removing
+    // the cookie as well keeps the browser from sending a token that can only
+    // ever 401 — and from showing a signed-in shell until the next request.
+    let cleared = Cookie::build((SESSION_COOKIE, ""))
+        .http_only(true)
+        .secure(state.config.public_url.starts_with("https://"))
+        .same_site(SameSite::Lax)
+        .path("/")
+        .max_age(time::Duration::seconds(0))
+        .build();
+
+    Ok((StatusCode::NO_CONTENT, CookieJar::new().add(cleared)))
 }
 
 #[utoipa::path(

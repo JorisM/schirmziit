@@ -10,3 +10,8 @@
 *.hprof
 /android/app/src/test/resources/darwin-aarch64
 /android/app/src/test/resources/linux-x86-64
+
+# Xcode
+ios/Nestling.xcodeproj/
+ios/*.xcworkspace/
+ios/DerivedData/

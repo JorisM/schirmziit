@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id, label, last_seen_at FROM devices WHERE child_id = $1 ORDER BY created_at",
+  "query": "SELECT id, label, last_seen_at FROM devices\n         WHERE child_id = $1 AND revoked_at IS NULL ORDER BY created_at",
   "describe": {
     "columns": [
       {
@@ -48,5 +48,5 @@
       true
     ]
   },
-  "hash": "30dc352eb1ce3ad6ae776850fb7bebeeaa976fe2d9d94eb89056e86ff276e955"
+  "hash": "9590abd693c8fd66be832ab5272530dc18a9c8bf51b1d499d1023716180f28dc"
 }

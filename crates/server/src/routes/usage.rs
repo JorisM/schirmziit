@@ -154,8 +154,12 @@ pub async fn usage(
     let tz = zone(&q.tz)?;
     let (start, end) = bounds(q.from, q.to, tz)?;
 
+    // Revoked devices are deliberately excluded: one shows up as "not
+    // reporting" forever otherwise, which reads as a problem rather than as a
+    // decision someone made. GET /v1/devices still lists them with their flag.
     let devices = sqlx::query!(
-        "SELECT id, label, last_seen_at FROM devices WHERE child_id = $1 ORDER BY created_at",
+        "SELECT id, label, last_seen_at FROM devices
+         WHERE child_id = $1 AND revoked_at IS NULL ORDER BY created_at",
         child_id
     )
     .fetch_all(&state.pool)

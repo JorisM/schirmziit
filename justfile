@@ -61,3 +61,31 @@ android-bindings:
 
 android-check: android-bindings
     cd android && ./gradlew test
+
+# ─── iOS ─────────────────────────────────────────────────────────────
+# The child agent and the parent viewer share the Rust core through a Swift
+# xcframework. Both simulator and device slices, so `ios-check` needs no signing.
+ios-core:
+    cargo build -p schirmziit-core --release --target aarch64-apple-ios
+    cargo build -p schirmziit-core --release --target aarch64-apple-ios-sim
+    rm -rf ios/Generated ios/Frameworks build/ios
+    mkdir -p ios/Generated build/ios/include
+    cargo run --quiet --bin uniffi-bindgen -- generate \
+        --library target/aarch64-apple-ios/release/libschirmziit_core.dylib \
+        --language swift --out-dir ios/Generated
+    cp ios/Generated/schirmziit_coreFFI.h build/ios/include/
+    cp ios/Generated/schirmziit_coreFFI.modulemap build/ios/include/module.modulemap
+    xcodebuild -create-xcframework \
+        -library target/aarch64-apple-ios/release/libschirmziit_core.a -headers build/ios/include \
+        -library target/aarch64-apple-ios-sim/release/libschirmziit_core.a -headers build/ios/include \
+        -output ios/Frameworks/SchirmziitCoreFFI.xcframework
+
+ios-project: ios-core
+    cd ios && xcodegen generate
+
+# Both apps, on the simulator, unsigned. Not part of `check`: CI runs on Linux.
+ios-check: ios-project
+    cd ios && xcodebuild -project Schirmziit.xcodeproj -scheme Schirmziit \
+        -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test CODE_SIGNING_ALLOWED=NO
+    cd ios && xcodebuild -project Schirmziit.xcodeproj -scheme SchirmziitAgent \
+        -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test CODE_SIGNING_ALLOWED=NO

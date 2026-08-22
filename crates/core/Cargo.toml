@@ -8,7 +8,7 @@ name = "schirmziit_core"
 path = "src/lib.rs"
 # cdylib for the Android/iOS .so; rlib so crates/server can keep depending on it
 # as a normal Rust library.
-crate-type = ["cdylib", "rlib"]
+crate-type = ["cdylib", "staticlib", "rlib"]
 
 [[bin]]
 name = "uniffi-bindgen"

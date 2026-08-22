@@ -15,6 +15,10 @@
 ios/Schirmziit.xcodeproj/
 ios/*.xcworkspace/
 ios/DerivedData/
+# Generated from crates/core by `just ios-core`, same as the Kotlin bindings.
+ios/Generated/
+ios/Frameworks/
+build/
 dist
 .astro
 node_modules

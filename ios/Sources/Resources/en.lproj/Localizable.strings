@@ -98,6 +98,8 @@
 "agent.status.shared.warning" = "This build cannot read the shared container, so hourly figures from the reporting extension do not arrive. A signed release build can.";
 "agent.status.sync.now" = "Send now";
 "agent.status.syncing" = "Sending…";
+"agent.status.sync.nothing" = "Nothing to send yet — this phone has not recorded any hours.";
+"agent.status.sync.done" = "Sent.";
 "agent.status.sync.failed" = "Sending failed. The figures stay on this phone and are sent later.";
 "agent.status.unpair" = "Disconnect this phone";
 "agent.status.unpair.confirm" = "Stop reporting and forget the server?";

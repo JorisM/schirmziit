@@ -98,6 +98,8 @@
 "agent.status.shared.warning" = "Diese Version kann den gemeinsamen Speicher nicht lesen, darum kommen die Stundenwerte der Auswertung nicht an. Eine signierte Version kann das.";
 "agent.status.sync.now" = "Jetzt senden";
 "agent.status.syncing" = "Sende…";
+"agent.status.sync.nothing" = "Noch nichts zu senden — dieses Handy hat noch keine Stunden erfasst.";
+"agent.status.sync.done" = "Gesendet.";
 "agent.status.sync.failed" = "Senden fehlgeschlagen. Die Zahlen bleiben auf dem Handy und gehen später raus.";
 "agent.status.unpair" = "Dieses Handy trennen";
 "agent.status.unpair.confirm" = "Meldungen stoppen und den Server vergessen?";

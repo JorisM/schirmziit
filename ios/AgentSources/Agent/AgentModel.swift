@@ -10,6 +10,8 @@ public final class AgentModel {
     public private(set) var status: AgentStatus = .needsPairing
     public private(set) var isBusy = false
     public private(set) var lastError: String?
+    /// What the last "send now" did, so the button visibly answers.
+    public private(set) var lastSyncNote: String?
     public private(set) var sharedContainerAvailable = GroupContainer.isShared()
     /// Mirrored from the store into observable state: `roles.load()` reads
     /// UserDefaults, which Observation cannot track, so a view switching on it
@@ -28,6 +30,13 @@ public final class AgentModel {
     private let monitoring: UsageMonitoring
     private let roles: RoleStore
     private var lastSyncAt: Date?
+    /// What the last authorization request actually answered.
+    ///
+    /// `AuthorizationCenter.authorizationStatus` stays `.notDetermined` for a
+    /// build Apple has not approved for Family Controls, so re-reading it after a
+    /// failed request produced the same screen and the button looked dead. The
+    /// answer has to be remembered.
+    private var requestedAuthorization: ScreenTimeAuthorization?
     /// In memory for the length of a setup, never written anywhere.
     private var setupSession: (baseURL: URL, cookie: String, email: String)?
 
@@ -70,9 +79,15 @@ public final class AgentModel {
     public func refresh() {
         role = roles.load()
         try? sync.collect()
+        // A live `.approved` always wins: the parent may have granted it in
+        // Settings since we last asked. Otherwise the remembered answer stands,
+        // because the system status cannot express "this build may not ask".
+        let live = authorizer.current
+        let authorization = live == .approved ? live : (requestedAuthorization ?? live)
+
         status = AgentStatus.derive(
             credentials: credentials.load(),
-            authorization: authorizer.current,
+            authorization: authorization,
             pendingHours: pendingCount,
             lastSyncAt: lastSyncAt
         )
@@ -80,7 +95,12 @@ public final class AgentModel {
     }
 
     public func requestScreenTime() async {
+        isBusy = true
+        lastError = nil
+        defer { isBusy = false }
+
         let result = await authorizer.request()
+        requestedAuthorization = result
         if result == .approved {
             // Nothing is recorded until the schedule exists, so start it the
             // moment permission lands rather than at the next launch.
@@ -122,10 +142,16 @@ public final class AgentModel {
     public func syncNow() async {
         isBusy = true
         lastError = nil
+        lastSyncNote = nil
         defer { isBusy = false }
         do {
-            _ = try await sync.run()
+            let outcome = try await sync.run()
             lastSyncAt = Date()
+            // "Send now" on a phone with nothing recorded did nothing visible,
+            // which reads as a broken button rather than as an empty queue.
+            lastSyncNote = outcome.sent == 0 && outcome.remaining == 0
+                ? String(localized: "agent.status.sync.nothing")
+                : String(localized: "agent.status.sync.done")
         } catch {
             lastError = String(localized: "agent.status.sync.failed")
         }

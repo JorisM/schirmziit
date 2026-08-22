@@ -98,6 +98,8 @@
 "agent.status.shared.warning" = "Questa versione non può leggere la memoria condivisa, quindi i valori orari dell'estensione non arrivano. Una versione firmata sì.";
 "agent.status.sync.now" = "Invia ora";
 "agent.status.syncing" = "Invio…";
+"agent.status.sync.nothing" = "Niente da inviare — questo telefono non ha ancora registrato ore.";
+"agent.status.sync.done" = "Inviato.";
 "agent.status.sync.failed" = "Invio non riuscito. I numeri restano sul telefono e partiranno più tardi.";
 "agent.status.unpair" = "Scollega questo telefono";
 "agent.status.unpair.confirm" = "Fermare gli invii e dimenticare il server?";

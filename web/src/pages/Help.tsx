@@ -87,6 +87,33 @@ export function Help() {
           </p>
         </section>
       ))}
+
+      {/* Numbers do not tell a parent what to do about them. These four are the
+          same Swiss sources the public site links, so both agree. */}
+      <section>
+        <h2 className="text-xl">{t.help.resourcesTitle}</h2>
+        <p className="mt-2 max-w-prose" style={{ color: 'var(--ink-muted)' }}>
+          {t.help.resourcesLead}
+        </p>
+        <ul className="mt-4 space-y-3">
+          {t.help.resources.map((resource) => (
+            <li key={resource.href}>
+              <a
+                className="underline underline-offset-2"
+                href={resource.href}
+                target="_blank"
+                rel="noreferrer noopener"
+                style={{ color: 'var(--accent)' }}
+              >
+                {resource.name}
+              </a>
+              <p className="max-w-prose text-sm" style={{ color: 'var(--ink-muted)' }}>
+                {resource.note}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </section>
     </article>
   )
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Schirmziit</string>
-    <string name="tagline">Le temps d’écran, à la vue de tous</string>
+    <string name="tagline">Le temps d’écran, visible pour toi et tes parents</string>
 
     <string name="permission_title">Autoriser l’accès aux données d’utilisation</string>
     <string name="permission_body">Schirmziit a besoin de l’autorisation Android « Accès aux données d’utilisation » pour voir combien de temps les applications sont utilisées. Android ne permet de l’accorder que dans les Réglages.</string>
@@ -50,6 +50,12 @@
     <string name="help_never_5">Rien n’est bloqué — cette application ne coupe aucune autre application.</string>
     <string name="help_where">Tout va sur le serveur de ta propre famille. Aucune entreprise entre les deux.</string>
     <string name="help_open">Tu peux ouvrir cette application à tout moment et voir exactement ce qui a été envoyé.</string>
+    <string name="help_why_title">Pourquoi cette app existe</string>
+    <string name="help_why">Tes parents voient combien de temps ce téléphone est utilisé, pour pouvoir en parler au lieu de deviner. Rien n’est bloqué et rien n’est lu.</string>
+    <string name="help_support_title">Si c’est lourd à porter</string>
+    <string name="help_support">Parler à quelqu’un en dehors de la famille aide souvent. Le conseil 147 est gratuit, 24h/24, par téléphone, chat ou SMS — et ne dit rien à tes parents.</string>
+    <string name="help_support_link">147.ch</string>
+    <string name="help_support_url">https://www.147.ch/</string>
     <string name="help_show">Qu’est-ce qui est envoyé ?</string>
     <string name="help_hide">Fermer</string>
 

@@ -6,7 +6,7 @@ export const de: Strings = {
 
   app: {
     name: 'Schirmziit',
-    tagline: 'Bildschirmzeit sehen, ohne heimlich zu sein',
+    tagline: 'Bildschirmzeit im Blick, zum Schutz deines Kindes',
     help: 'Wie funktioniert das?',
     signOut: 'Abmelden',
     language: 'Sprache',
@@ -109,13 +109,38 @@ export const de: Strings = {
       'Stundenwerte bleiben 13 Monate, danach nur noch Tagessummen. Du kannst alle Daten eines Kindes jederzeit löschen — dann sind sie weg, nicht archiviert.',
     childSeesTitle: 'Was das Kind sieht',
     childSees:
-      'Die App ist sichtbar, hat ein Icon und zeigt dauerhaft eine Meldung, dass Bildschirmzeit übermittelt wird. Auf ihrem Bildschirm steht in derselben Sprache, was übermittelt wird und was nicht. Wer heimlich mitlesen will, ist hier falsch.',
+      'Die App ist sichtbar, hat ein Icon und zeigt dauerhaft eine Meldung, dass Bildschirmzeit übermittelt wird. Auf ihrem Bildschirm steht in derselben Sprache, was übermittelt wird und was nicht. Das Kind kann jederzeit selbst nachsehen, was gesendet wurde.',
     stopTitle: 'Aufhören',
     stop:
       'Trenne das Gerät hier in der Übersicht — dann nimmt der Server keine Daten mehr davon an. Oder deinstalliere die App auf dem Handy. Beides wirkt sofort.',
     notAControlTitle: 'Was Schirmziit nicht ist',
     notAControl:
       'Schirmziit sperrt nichts und filtert nichts. Es ist eine Grundlage für ein Gespräch, keine Fernsteuerung. Zeitlimiten und Sperren sind bewusst ein späterer, getrennter Schritt.',
+    resourcesTitle: 'Hilfe und Empfehlungen',
+    resourcesLead:
+      'Schirmziit zeigt Zahlen, keine Ratschläge. Wie viel Bildschirmzeit sinnvoll ist und was bei Streit hilft, erklären diese Schweizer Stellen besser als wir:',
+    resources: [
+      {
+        name: 'Jugend und Medien',
+        note: 'Nationale Plattform des Bundes: Altersempfehlungen, Regeln, Merkblätter für Eltern.',
+        href: 'https://www.jugendundmedien.ch/',
+      },
+      {
+        name: 'Pro Juventute — Bildschirmzeit',
+        note: 'Konkrete Richtwerte pro Alter und Tipps für Abmachungen in der Familie.',
+        href: 'https://www.projuventute.ch/de/eltern/medien-internet/bildschirmzeit',
+      },
+      {
+        name: 'Beratung 147',
+        note: 'Kostenlose Beratung für Kinder und Jugendliche, rund um die Uhr — Telefon, Chat oder SMS.',
+        href: 'https://www.147.ch/',
+      },
+      {
+        name: 'Zischtig.ch',
+        note: 'Schweizer Fachstelle für Medienkompetenz: Elternabende, Kurse, Beratung.',
+        href: 'https://www.zischtig.ch/',
+      },
+    ],
   },
 
   errors: {

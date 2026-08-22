@@ -6,7 +6,7 @@
 -->
 <resources>
     <string name="app_name">Schirmziit</string>
-    <string name="tagline">Screen time, out in the open</string>
+    <string name="tagline">Screen time, visible to you and your parents</string>
 
     <string name="permission_title">Allow usage access</string>
     <string name="permission_body">Schirmziit needs Android’s “Usage access” permission to see how long apps are used. Android only lets you grant this in Settings.</string>
@@ -55,6 +55,12 @@
     <string name="help_never_5">Nothing is blocked — this app never switches another app off.</string>
     <string name="help_where">Everything goes to your family’s own server. No company in between.</string>
     <string name="help_open">You can open this app any time and see exactly what it sent.</string>
+    <string name="help_why_title">Why this app is here</string>
+    <string name="help_why">Your parents can see how long this phone is used, so screen time can be talked about instead of guessed. Nothing is blocked and nothing is read.</string>
+    <string name="help_support_title">If this is a lot to deal with</string>
+    <string name="help_support">Talking to someone outside the family can help. Counselling 147 is free, around the clock, by phone, chat or SMS — and they do not tell your parents.</string>
+    <string name="help_support_link">147.ch</string>
+    <string name="help_support_url">https://www.147.ch/</string>
     <string name="help_show">What is sent?</string>
     <string name="help_hide">Close</string>
 

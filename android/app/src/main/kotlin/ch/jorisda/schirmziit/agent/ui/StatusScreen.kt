@@ -1,5 +1,7 @@
 package ch.jorisda.schirmziit.agent.ui
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -186,8 +188,30 @@ fun StatusScreen(
                     ),
                 )
                 HorizontalDivider()
+                Text(
+                    stringResource(R.string.help_why_title),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(stringResource(R.string.help_why), style = MaterialTheme.typography.bodyMedium)
                 Text(stringResource(R.string.help_where), style = MaterialTheme.typography.bodyMedium)
                 Text(stringResource(R.string.help_open), style = MaterialTheme.typography.bodyMedium)
+                HorizontalDivider()
+                // Whoever carries the phone should have somewhere to turn that
+                // is not the person reading their screen time.
+                Text(
+                    stringResource(R.string.help_support_title),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(stringResource(R.string.help_support), style = MaterialTheme.typography.bodyMedium)
+                val supportUrl = stringResource(R.string.help_support_url)
+                val context = LocalContext.current
+                TextButton(
+                    onClick = {
+                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(supportUrl)))
+                    },
+                ) {
+                    Text(stringResource(R.string.help_support_link))
+                }
             }
         }
     }

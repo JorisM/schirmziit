@@ -106,18 +106,23 @@ private struct LoginAck: Codable, Sendable {
 
 /// Values a debug run can inject through the environment, e.g.
 /// `SIMCTL_CHILD_SCHIRMZIIT_SERVER=… xcrun simctl launch …`.
+/// The instance this build points at by default. Self-hosters replace it in the
+/// field; it is prefilled because typing a URL on a phone is where sign-in
+/// usually goes wrong.
+private let defaultServer = "https://schirmziit.jorisda.ch"
+
 private enum Prefill {
 #if DEBUG
     private static func value(_ key: String) -> String? {
         ProcessInfo.processInfo.environment[key]
     }
 
-    static var server: String { value("SCHIRMZIIT_SERVER") ?? "https://" }
+    static var server: String { value("SCHIRMZIIT_SERVER") ?? defaultServer }
     static var email: String { value("SCHIRMZIIT_EMAIL") ?? "" }
     static var password: String { value("SCHIRMZIIT_PASSWORD") ?? "" }
     static var autoSignIn: Bool { value("SCHIRMZIIT_AUTOLOGIN") == "1" }
 #else
-    static let server = "https://"
+    static let server = defaultServer
     static let email = ""
     static let password = ""
     static let autoSignIn = false

@@ -52,7 +52,24 @@ pub fn app_with_rate_limits(state: AppState) -> Router {
 
 fn build(state: AppState, rate_limit: bool) -> Router {
     let auth_routes = if rate_limit {
-        let config = Arc::new(
+        // Two limiters, because these routes are not the same kind of thing.
+        //
+        // Password guessing gets the tight one: one attempt every 5 seconds
+        // after a burst of 5, so a single IP manages ~17k tries a day instead of
+        // ~170k. A parent typing their password wrong twice never notices.
+        //
+        // /v1/me and /v1/auth/logout get the loose one: the dashboard calls
+        // /v1/me on every page load and on every tab focus, and throttling that
+        // logs a parent out of a working session.
+        let strict = Arc::new(
+            GovernorConfigBuilder::default()
+                .period(std::time::Duration::from_secs(5))
+                .burst_size(5)
+                .key_extractor(SmartIpKeyExtractor)
+                .finish()
+                .expect("valid governor config"),
+        );
+        let loose = Arc::new(
             GovernorConfigBuilder::default()
                 .per_second(2)
                 .burst_size(10)
@@ -60,7 +77,9 @@ fn build(state: AppState, rate_limit: bool) -> Router {
                 .finish()
                 .expect("valid governor config"),
         );
-        auth::routes::router().layer(GovernorLayer { config })
+        auth::routes::credential_router()
+            .layer(GovernorLayer { config: strict })
+            .merge(auth::routes::session_router().layer(GovernorLayer { config: loose }))
     } else {
         auth::routes::router()
     };

@@ -8,6 +8,7 @@ room = "2.8.2"
 okhttp = "5.2.1"
 jna = "5.19.0"
 robolectric = "4.16"
+roborazzi = "1.53.0"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version = "1.17.0" }
@@ -32,6 +33,11 @@ jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
 zxing-embedded = { module = "com.journeyapps:zxing-android-embedded", version = "4.3.0" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version = "1.10.2" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+# Screenshots of Compose screens without a device: renders through Robolectric,
+# which this project already uses, and diffs against golden PNGs.
+roborazzi = { module = "io.github.takahirom.roborazzi:roborazzi", version.ref = "roborazzi" }
+roborazzi-compose = { module = "io.github.takahirom.roborazzi:roborazzi-compose", version.ref = "roborazzi" }
+roborazzi-rule = { module = "io.github.takahirom.roborazzi:roborazzi-junit-rule", version.ref = "roborazzi" }
 junit = { module = "junit:junit", version = "4.13.2" }
 androidx-test-core = { module = "androidx.test:core", version = "1.7.0" }
 androidx-test-runner = { module = "androidx.test:runner", version = "1.7.0" }

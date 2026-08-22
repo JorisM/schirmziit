@@ -12,18 +12,31 @@ struct AgentStatusView: View {
             Section { stateCard.listRowInsets(.init(top: 16, leading: 16, bottom: 16, trailing: 16)) }
 
             if case .reporting(let pending, let lastSync) = model.status {
-                Section(header: Text("agent.status.queue")) {
-                    LabeledContent(String(localized: "agent.status.pending"),
-                                   value: "\(pending)")
-                    LabeledContent(String(localized: "agent.status.lastsync"),
-                                   value: lastSync.map { $0.formatted(date: .omitted, time: .shortened) }
-                                       ?? String(localized: "agent.status.never"))
+                Section(header: L("agent.status.queue")) {
+                    // Through L(), not String(localized:): the string-based
+                    // initialiser resolves in the process locale, which is right
+                    // on a phone and wrong in a snapshot — so a German screen
+                    // came out with two English rows in it.
+                    LabeledContent {
+                        Text(verbatim: "\(pending)")
+                    } label: {
+                        L("agent.status.pending")
+                    }
+                    LabeledContent {
+                        if let lastSync {
+                            Text(lastSync, format: .dateTime.hour().minute())
+                        } else {
+                            L("agent.status.never")
+                        }
+                    } label: {
+                        L("agent.status.lastsync")
+                    }
                 }
             }
 
             if !model.sharedContainerAvailable {
                 Section {
-                    Label("agent.status.shared.warning", systemImage: "exclamationmark.triangle")
+                    Label(title: { L("agent.status.shared.warning") }, icon: { Image(systemName: "exclamationmark.triangle") })
                         .foregroundStyle(Palette.warn)
                         .font(.footnote)
                 }
@@ -33,12 +46,12 @@ struct AgentStatusView: View {
                 Button {
                     Task { await model.syncNow() }
                 } label: {
-                    Text(model.isBusy ? "agent.status.syncing" : "agent.status.sync.now")
+                    L(model.isBusy ? "agent.status.syncing" : "agent.status.sync.now")
                 }
                 .disabled(model.isBusy)
 
                 Button(role: .destructive) { unlocking = true } label: {
-                    Text("agent.status.unpair")
+                    L("agent.status.unpair")
                 }
             }
 
@@ -60,16 +73,16 @@ struct AgentStatusView: View {
         // A password, not a confirmation dialog: child mode a child can tap out of
         // is decoration. Checked against the server, so it is the parent's real
         // password and not something stored on this phone.
-        .alert(Text("agent.unlock.title"), isPresented: $unlocking) {
-            SecureField(String(localized: "signin.password"), text: $password)
-            Button(String(localized: "agent.unlock.cancel"), role: .cancel) { password = "" }
-            Button(String(localized: "agent.unlock.submit")) {
+        .alert(L("agent.unlock.title"), isPresented: $unlocking) {
+            SecureField(S("signin.password"), text: $password)
+            Button(S("agent.unlock.cancel"), role: .cancel) { password = "" }
+            Button(S("agent.unlock.submit")) {
                 let entered = password
                 password = ""
                 Task { _ = await model.leaveChildMode(password: entered) }
             }
         } message: {
-            Text("agent.unlock.body")
+            L("agent.unlock.body")
         }
     }
 
@@ -86,7 +99,7 @@ struct AgentStatusView: View {
                 Button {
                     Task { await model.requestScreenTime() }
                 } label: {
-                    Text("agent.status.permission.button").frame(maxWidth: .infinity)
+                    L("agent.status.permission.button").frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
             }
@@ -111,8 +124,8 @@ struct AgentStatusView: View {
                 .font(.title2)
                 .foregroundStyle(tint)
             VStack(alignment: .leading, spacing: 6) {
-                Text(title).font(.headline).foregroundStyle(Palette.ink)
-                Text(body).font(.callout).foregroundStyle(Palette.inkMuted)
+                L(title).font(.headline).foregroundStyle(Palette.ink)
+                L(body).font(.callout).foregroundStyle(Palette.inkMuted)
             }
         }
     }

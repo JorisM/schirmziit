@@ -87,3 +87,13 @@ ios-project: ios-core
 ios-check: ios-project
     cd ios && xcodebuild -project Schirmziit.xcodeproj -scheme Schirmziit \
         -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test CODE_SIGNING_ALLOWED=NO
+
+# Re-record the screen images, deliberately: delete them, then let the run write
+# what is missing. Reports failures for every image it writes — that is the
+# library saying "there was no reference". Check `git diff` before committing.
+ios-record: ios-project
+    rm -rf ios/Tests/__Snapshots__
+    -cd ios && xcodebuild -project Schirmziit.xcodeproj -scheme Schirmziit \
+        -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test CODE_SIGNING_ALLOWED=NO
+    cd ios && xcodebuild -project Schirmziit.xcodeproj -scheme Schirmziit \
+        -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test CODE_SIGNING_ALLOWED=NO

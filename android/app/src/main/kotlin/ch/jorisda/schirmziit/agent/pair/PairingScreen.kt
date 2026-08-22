@@ -228,10 +228,6 @@ fun PairingScreen(
                 Text(stringResource(R.string.pair_parent_instead))
             }
         } else {
-            Text(
-                stringResource(R.string.pair_parent_title),
-                style = MaterialTheme.typography.titleMedium,
-            )
             Text(stringResource(R.string.pair_parent_body))
 
             OutlinedTextField(

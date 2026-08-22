@@ -19,13 +19,13 @@ struct ChildDetailView: View {
             if let usage {
                 Section {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("child.total")
+                        L("child.total")
                             .font(.subheadline)
                             .foregroundStyle(Palette.inkMuted)
                         Text(verbatim: Formatting.duration(usage.screenTimeMs))
                             .font(.system(size: 40, weight: .bold, design: .rounded))
                             .monospacedDigit()
-                        Text("child.unlocks \(usage.unlocks)")
+                        L("child.unlocks \(usage.unlocks)")
                             .font(.subheadline)
                             .foregroundStyle(Palette.inkMuted)
                     }
@@ -35,8 +35,8 @@ struct ChildDetailView: View {
                 if usage.screenTimeMs == 0 {
                     Section {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("child.nodata").font(.headline)
-                            Text("child.nodata.hint")
+                            L("child.nodata").font(.headline)
+                            L("child.nodata.hint")
                                 .font(.footnote)
                                 .foregroundStyle(Palette.inkMuted)
                         }
@@ -48,14 +48,14 @@ struct ChildDetailView: View {
                 }
 
                 if !usage.series.isEmpty {
-                  Section("child.apps") {
+                  Section(header: L("child.apps")) {
                     let ranked = usage.series.sorted { $0.totalMs > $1.totalMs }
                     ForEach(Array(ranked.prefix(8).enumerated()), id: \.element.id) { index, entry in
                         HStack {
                             Circle()
                                 .fill(Palette.series[index % Palette.series.count])
                                 .frame(width: 10, height: 10)
-                            Text(entry.label)
+                            Text(verbatim: entry.label)
                             Spacer()
                             Text(verbatim: Formatting.duration(entry.totalMs))
                                 .monospacedDigit()
@@ -65,15 +65,15 @@ struct ChildDetailView: View {
                   }
                 }
 
-                Section("devices.title") {
+                Section(header: L("devices.title")) {
                     ForEach(usage.devices) { device in
                         VStack(alignment: .leading, spacing: 2) {
                             HStack {
                                 Image(systemName: device.stale ? "exclamationmark.circle.fill" : "checkmark.circle.fill")
                                     .foregroundStyle(device.stale ? Palette.warn : Palette.ok)
-                                Text(device.label)
+                                Text(verbatim: device.label)
                                 Spacer()
-                                Text(device.stale ? "devices.stale" : "devices.fresh")
+                                L(device.stale ? "devices.stale" : "devices.fresh")
                                     .font(.subheadline)
                                     .foregroundStyle(device.stale ? Palette.warn : Palette.ok)
                             }
@@ -82,14 +82,14 @@ struct ChildDetailView: View {
                                     .font(.footnote)
                                     .foregroundStyle(Palette.inkFaint)
                             } else {
-                                Text("devices.never")
+                                L("devices.never")
                                     .font(.footnote)
                                     .foregroundStyle(Palette.inkFaint)
                             }
                         }
                     }
                     if usage.devices.contains(where: \.stale) {
-                        Text("devices.stale.help")
+                        L("devices.stale.help")
                             .font(.footnote)
                             .foregroundStyle(Palette.inkMuted)
                     }
@@ -115,7 +115,7 @@ struct ChildDetailView: View {
         } catch let ApiError.problem(problem) {
             errorText = problem.detail
         } catch {
-            errorText = String(localized: "error.offline")
+            errorText = S("error.offline")
         }
     }
 }

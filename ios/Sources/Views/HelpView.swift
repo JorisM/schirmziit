@@ -10,47 +10,47 @@ struct HelpView: View {
         NavigationStack {
             List {
                 Section {
-                    Text("help.intro").font(.subheadline)
+                    L("help.intro").font(.subheadline)
                 }
 
-                Section("help.measures.title") {
+                Section(header: L("help.measures.title")) {
                     ForEach(1...3, id: \.self) { index in
                         Label {
-                            Text(LocalizedStringKey("help.measures.\(index)"))
+                            L(LocalizedStringKey("help.measures.\(index)"))
                         } icon: {
                             Image(systemName: "checkmark.circle.fill").foregroundStyle(Palette.ok)
                         }
                     }
                 }
 
-                Section("help.never.title") {
+                Section(header: L("help.never.title")) {
                     ForEach(1...5, id: \.self) { index in
                         Label {
-                            Text(LocalizedStringKey("help.never.\(index)"))
+                            L(LocalizedStringKey("help.never.\(index)"))
                         } icon: {
                             Image(systemName: "xmark.circle.fill").foregroundStyle(Palette.urgent)
                         }
                     }
                 }
 
-                Section("help.how.title") {
+                Section(header: L("help.how.title")) {
                     ForEach(1...4, id: \.self) { index in
-                        Text(LocalizedStringKey("help.how.\(index)"))
+                        L(LocalizedStringKey("help.how.\(index)"))
                     }
                 }
 
-                Section("help.where.title") { Text("help.where") }
-                Section("help.retention.title") { Text("help.retention") }
-                Section("help.notacontrol.title") { Text("help.notacontrol") }
+                Section(header: L("help.where.title")) { L("help.where") }
+                Section(header: L("help.retention.title")) { L("help.retention") }
+                Section(header: L("help.notacontrol.title")) { L("help.notacontrol") }
 
                 Section {
-                    Text("help.swiss")
+                    L("help.swiss")
                         .font(.footnote)
                         .foregroundStyle(Palette.inkMuted)
                 }
             }
             .schirmziitList()
-            .navigationTitle("help.title")
+            .navigationTitle(L("help.title"))
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("help.close") { dismiss() }

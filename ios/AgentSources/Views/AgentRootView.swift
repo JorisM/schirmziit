@@ -15,11 +15,11 @@ public struct AgentRootView: View {
                 Palette.paper.ignoresSafeArea()
                 content
             }
-            .navigationTitle(Text("agent.title"))
+            .navigationTitle(L("agent.title"))
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showingHelp = true } label: {
-                        Label("agent.help", systemImage: "questionmark.circle")
+                        Label(title: { L("agent.help") }, icon: { Image(systemName: "questionmark.circle") })
                     }
                 }
             }

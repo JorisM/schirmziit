@@ -41,6 +41,20 @@ android {
 
 kotlin { jvmToolchain(21) }
 
+// Roborazzi is used as a plain library: its Gradle plugin (1.53) still asks AGP
+// for `TestedExtension`, which AGP 9 removed. The plugin only adds convenience
+// tasks, and the library reads these system properties directly.
+//
+//   ./gradlew test                          verify against the committed images
+//   ./gradlew test -Precord.snapshots       re-record them, deliberately
+tasks.withType<Test>().configureEach {
+    val recording = project.hasProperty("record.snapshots")
+    // Real Compose rendering; the default stub graphics produce blank images.
+    systemProperty("robolectric.graphicsMode", "NATIVE")
+    systemProperty("roborazzi.test.record", recording.toString())
+    systemProperty("roborazzi.test.verify", (!recording).toString())
+}
+
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
@@ -64,6 +78,11 @@ dependencies {
     testImplementation(libs.okhttp.mockwebserver)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.androidx.work.testing)
+    testImplementation(libs.roborazzi)
+    testImplementation(libs.roborazzi.compose)
+    testImplementation(libs.roborazzi.rule)
+    testImplementation(platform(libs.compose.bom))
+    testImplementation(libs.compose.ui.test.junit4)
     // JVM tests load the desktop build of the core through JNA.
     testImplementation(libs.jna)
 

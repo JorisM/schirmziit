@@ -1,0 +1,50 @@
+# The parent journey: choose the role, sign in, see the children.
+#
+# Assumes a seeded instance with at least one child, and the app installed and
+# freshly reset — a phone that already has a role skips the first screen, which
+# is exactly what makes the assertion below meaningful.
+appId: ${MAESTRO_APP_ID}
+name: Parent signs in and sees their children
+env:
+  MAESTRO_APP_ID: ch.jorisda.schirmziit
+---
+- clearState
+- launchApp
+
+- assertVisible: "Schirmziit"
+- takeScreenshot: 01-role-choice
+
+# "My phone — show me the screen time"
+- tapOn:
+    text: ".*Handy.*Bildschirmzeit.*|.*phone.*screen time.*"
+    optional: false
+
+- assertVisible:
+    text: ".*(Server|server).*"
+- tapOn:
+    id: "server"
+    optional: true
+- inputText: ${SCHIRMZIIT_SERVER}
+
+- tapOn:
+    text: ".*(E-Mail|Email|email).*"
+- inputText: ${SCHIRMZIIT_EMAIL}
+- tapOn:
+    text: ".*(Passwort|Password).*"
+- inputText: ${SCHIRMZIIT_PASSWORD}
+- takeScreenshot: 02-signed-in-form
+
+- tapOn:
+    text: "(Anmelden|Sign in)"
+- extendedWaitUntil:
+    visible: "Fairphone kid"
+    timeout: 15000
+- takeScreenshot: 03-children
+
+# The dashboard is the point: a child opens to their day.
+- tapOn: "Fairphone kid"
+- extendedWaitUntil:
+    visible:
+      text: ".*(Bildschirmzeit|Screen time).*"
+    timeout: 15000
+- takeScreenshot: 04-child-detail

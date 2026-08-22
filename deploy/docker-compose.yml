@@ -1,0 +1,53 @@
+# Nestling, self-hosted. Two containers: the app (which serves the dashboard
+# from inside its own binary) and Postgres.
+#
+#   cp .env.example .env   # then edit it
+#   docker compose up -d
+#
+# Put a reverse proxy with TLS in front and point PUBLIC_URL at it. The URL in
+# PUBLIC_URL is baked into every pairing QR code, so a wrong value gives you
+# phones that pair once and never sync again.
+
+services:
+  db:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nestling
+      POSTGRES_USER: nestling
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      # /var/lib/postgresql, NOT /var/lib/postgresql/data: the postgres:18+
+      # images store data in a major-version subdirectory and refuse to start
+      # against a volume mounted at the old path.
+      - nestling-db:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nestling -d nestling"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    image: ghcr.io/jorism/nestling:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://nestling:${POSTGRES_PASSWORD}@db:5432/nestling
+      # Must match the address phones and browsers actually use.
+      PUBLIC_URL: ${PUBLIC_URL:?set PUBLIC_URL in .env}
+      # first-user-only: the first account created wins, then registration
+      # closes. Use `off` once your account exists, or `open` on a LAN-only box.
+      ALLOW_REGISTRATION: ${ALLOW_REGISTRATION:-first-user-only}
+      RETENTION_HOURLY_MONTHS: ${RETENTION_HOURLY_MONTHS:-13}
+      RETENTION_JOB_AT: ${RETENTION_JOB_AT:-04:00}
+      TZ: ${TZ:-Europe/Zurich}
+      RUST_LOG: ${RUST_LOG:-info}
+    ports:
+      # Bound to localhost: put your reverse proxy in front rather than exposing
+      # this straight to the internet.
+      - "127.0.0.1:8080:8080"
+
+volumes:
+  nestling-db:

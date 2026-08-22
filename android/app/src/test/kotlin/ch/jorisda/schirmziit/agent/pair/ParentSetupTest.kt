@@ -102,4 +102,21 @@ class ParentSetupTest {
         assertEquals("/v1/auth/logout", server.takeRequest().path)
         server.shutdown()
     }
+
+    @Test
+    fun `an unreachable server is its own answer, not wrong credentials`() {
+        val server = MockWebServer().apply {
+            enqueue(MockResponse().setResponseCode(502))
+            start()
+        }
+
+        val result = setup(server, FakeAgentSettings()).signIn("anna@example.ch", "a long password")
+
+        assertTrue("expected Failed, got $result", result is ParentSetup.SignIn.Failed)
+        assertTrue(
+            "the message must carry the status so the screen can say something useful",
+            (result as ParentSetup.SignIn.Failed).message.contains("502"),
+        )
+        server.shutdown()
+    }
 }

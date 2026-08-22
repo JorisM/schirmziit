@@ -46,6 +46,12 @@ class SchirmziitClient(baseUrl: String, private val client: OkHttpClient) {
      * than kept: a child's phone must not hold a parent session, so the caller
      * uses it for the next two calls and then ends it.
      */
+    /**
+     * Returns null only for "those credentials are wrong" (401/403). Anything
+     * else throws with its status, because a screen that says "wrong password"
+     * when the server actually answered 500 sends a parent hunting for a typo
+     * that is not there.
+     */
     fun signIn(email: String, password: String): ParentSession? {
         val body = JSONObject().put("email", email).put("password", password).toString()
         val request = Request.Builder()
@@ -54,7 +60,8 @@ class SchirmziitClient(baseUrl: String, private val client: OkHttpClient) {
             .build()
 
         client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) return null
+            if (response.code == 401 || response.code == 403) return null
+            if (!response.isSuccessful) throw IngestFailure(response.code)
             // "schirmziit_session=…" — the attributes are the browser's business.
             val cookie = response.header("set-cookie")?.substringBefore(';') ?: return null
             return ParentSession(cookie)

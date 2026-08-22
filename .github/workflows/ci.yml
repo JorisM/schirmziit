@@ -1,0 +1,77 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  rust:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_PASSWORD: nestling
+          POSTGRES_DB: nestling
+        ports: ['5433:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 10s
+          --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://postgres:nestling@localhost:5433/nestling
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo install sqlx-cli --no-default-features --features rustls,postgres
+      - run: sqlx migrate run --source crates/server/migrations
+      - run: cargo fmt --check
+      - run: cargo clippy --all-targets -- -D warnings
+      # Proves the committed offline data matches the schema, so the image build
+      # (which has no database) cannot drift from the migrations.
+      - run: cargo sqlx prepare --workspace --check
+      - run: cargo test
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with: { version: 11 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: pnpm, cache-dependency-path: web/pnpm-lock.yaml }
+      - run: pnpm install --frozen-lockfile
+        working-directory: web
+      # Regenerates the API types from the committed spec and fails if they
+      # differ — the dashboard cannot silently drift from the server.
+      - run: pnpm openapi-typescript ../api/openapi.json -o src/api/schema.d.ts
+        working-directory: web
+      - run: git diff --exit-code web/src/api/schema.d.ts
+      - run: pnpm tsc -b --noEmit
+        working-directory: web
+      - run: pnpm vitest run
+        working-directory: web
+
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21 }
+      - uses: android-actions/setup-android@v3
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,x86_64-linux-android
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo install cargo-ndk
+      - run: cargo ndk -t arm64-v8a -t x86_64 -o android/app/src/main/jniLibs build -p nestling-core --release
+      - run: cargo run --quiet --bin uniffi-bindgen -- generate --library target/aarch64-linux-android/release/libnestling_core.so --language kotlin --out-dir android/app/src/main/kotlin
+      # JVM tests load the core through JNA and need a host build.
+      - run: cargo build -p nestling-core --release
+      - run: mkdir -p android/app/src/test/resources/linux-x86-64 && cp target/release/libnestling_core.so android/app/src/test/resources/linux-x86-64/
+      - run: ./gradlew testDebugUnitTest
+        working-directory: android

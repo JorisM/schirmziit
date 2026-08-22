@@ -1,0 +1,16 @@
+---
+// A static illustration of the product's signature view: the day as 24 hours,
+// quiet at night, busy after school. Decorative, hence aria-hidden.
+const shape = [0, 0, 0, 0, 0, 0, 1, 2, 1, 0, 0, 1, 3, 2, 1, 2, 4, 4, 3, 5, 5, 4, 2, 1]
+// Step 0 gets its own tone rather than the page background, so an empty 03:00
+// reads as an hour that happened rather than a hole in the band.
+const colour = (step: number) => `var(--ribbon-${step})`
+---
+<div class="ribbon" aria-hidden="true">
+  {shape.map((step) => <span style={`background:${colour(step)}`}></span>)}
+</div>
+<div class="ribbon-ticks" aria-hidden="true">
+  {Array.from({ length: 24 }, (_, hour) => (
+    <span>{hour % 6 === 0 ? String(hour).padStart(2, '0') : ''}</span>
+  ))}
+</div>

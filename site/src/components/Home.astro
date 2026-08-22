@@ -1,0 +1,72 @@
+---
+import Base from '../layouts/Base.astro'
+import Ribbon from './Ribbon.astro'
+import { prefix, sites, type Locale } from '../content'
+
+interface Props { locale: Locale }
+const { locale } = Astro.props
+const t = sites[locale]
+const base = prefix(locale)
+---
+<Base locale={locale} page="home" title={`Nestling — ${t.home.title}`} description={t.home.lead}>
+  <p class="kicker">{t.home.kicker}</p>
+  <h1>{t.home.title}</h1>
+  <p class="lead">{t.home.lead}</p>
+  <div class="buttons">
+    <a class="button" href={`${base}/self-hosting`}>{t.home.ctaSelfHost}</a>
+    <a class="button ghost" href={`${base}/hosted`}>{t.home.ctaHosted}</a>
+  </div>
+
+  <h2>{t.home.ribbonTitle}</h2>
+  <p>{t.home.ribbonBody}</p>
+  <Ribbon />
+
+  <h2>{t.home.howTitle}</h2>
+  <ol class="steps">{t.home.how.map((step) => <li><span>{step}</span></li>)}</ol>
+
+  <div class="cards" style="margin-top:2.5rem">
+    <section class="card">
+      <h3 style="color:var(--ok)">{t.home.measuresTitle}</h3>
+      <ul class="yes">{t.home.measures.map((line) => <li>{line}</li>)}</ul>
+    </section>
+    <section class="card">
+      <h3 style="color:var(--urgent)">{t.home.neverTitle}</h3>
+      <ul class="no">{t.home.never.map((line) => <li>{line}</li>)}</ul>
+    </section>
+  </div>
+
+  <h2>{t.home.honestTitle}</h2>
+  <p>{t.home.honestBody}</p>
+
+  <h2>{t.home.platformsTitle}</h2>
+  <p>{t.home.platformsBody}</p>
+  <div class="cards">
+    <section class="card">
+      <h3>{t.home.androidLabel}</h3>
+      <p>{t.home.androidBody}</p>
+    </section>
+    <section class="card">
+      <h3>{t.home.iosLabel}</h3>
+      <p>{t.home.iosBody}</p>
+    </section>
+  </div>
+
+  <h2>{t.choose.title}</h2>
+  <div class="cards">
+    <section class="card">
+      <h3>{t.choose.selfHostTitle}</h3>
+      <p>{t.choose.selfHostFor}</p>
+      <ul>{t.choose.selfHostPoints.map((line) => <li>{line}</li>)}</ul>
+      <div class="buttons"><a class="button ghost" href={`${base}/self-hosting`}>{t.nav.selfHost}</a></div>
+    </section>
+    <section class="card">
+      <h3>{t.choose.hostedTitle}</h3>
+      <p>{t.choose.hostedFor}</p>
+      <ul>{t.choose.hostedPoints.map((line) => <li>{line}</li>)}</ul>
+      <div class="buttons"><a class="button ghost" href={`${base}/hosted`}>{t.nav.hosted}</a></div>
+    </section>
+  </div>
+
+  <h2>{t.home.openTitle}</h2>
+  <p>{t.home.openBody}</p>
+</Base>

@@ -1,0 +1,203 @@
+/*
+ * Same tokens as the dashboard, so the marketing site, the browser app and the
+ * phones read as one product. Palette validated for contrast and CVD; see the
+ * design doc before changing a value.
+ */
+:root {
+  --paper: #f2f0ea;
+  --card: #fbfaf7;
+  --sunken: #ebe8e0;
+  --ink: #232622;
+  --ink-muted: #5b5f59;
+  --ink-faint: #8a8d85;
+  --hairline: #dfdcd2;
+  --accent: #00707e;
+  --ok: #2f6b4c;
+  --urgent: #b4472c;
+  --ribbon-0: #e7e4dc;
+  --ribbon-1: #cfdcd2;
+  --ribbon-2: #a3c2ad;
+  --ribbon-3: #6f9f83;
+  --ribbon-4: #3f7d5c;
+  --ribbon-5: #2f6b4c;
+  --radius: 18px;
+  --measure: 34rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #1c1a17;
+    --card: #252320;
+    --sunken: #1f1d1a;
+    --ink: #f0ede6;
+    --ink-muted: #a7a29a;
+    --ink-faint: #7c776f;
+    --hairline: #3a3733;
+    --accent: #46b3bf;
+    --ok: #4f9d72;
+    --urgent: #dd7154;
+    --ribbon-0: #262b27;
+    --ribbon-1: #2f4a3a;
+    --ribbon-2: #3e6b50;
+    --ribbon-3: #559072;
+    --ribbon-4: #6fae8c;
+    --ribbon-5: #8cc7a5;
+  }
+}
+
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  src: url('/fonts/bricolage-grotesque.woff2') format('woff2-variations');
+  font-weight: 400 800;
+  font-display: swap;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+  font-family: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 0 0 0.4em;
+}
+
+h1 { font-size: clamp(2rem, 5vw, 3.2rem); }
+h2 { font-size: clamp(1.4rem, 3vw, 2rem); margin-top: 2.5rem; }
+h3 { font-size: 1.15rem; margin-top: 1.5rem; }
+
+p, li { max-width: var(--measure); }
+p { margin: 0 0 1rem; }
+
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+
+.wrap { max-width: 62rem; margin: 0 auto; padding: 0 1.25rem; }
+
+header.site {
+  border-bottom: 1px solid var(--hairline);
+  background: var(--card);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+header.site .wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  align-items: center;
+  padding-block: 0.75rem;
+}
+.brand {
+  font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--ink);
+  text-decoration: none;
+}
+.swiss {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+}
+nav.site { margin-left: auto; display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+nav.site a { font-size: 0.95rem; }
+nav.site a[aria-current='page'] { color: var(--ink); text-decoration: none; font-weight: 600; }
+
+.langs { display: flex; gap: 0.5rem; font-size: 0.85rem; }
+.langs a[aria-current='true'] { color: var(--ink); font-weight: 600; text-decoration: none; }
+
+main { padding: 3rem 0 4rem; }
+
+.lead { font-size: 1.2rem; color: var(--ink-muted); max-width: 40rem; }
+.kicker {
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 0.75rem;
+}
+
+.cards { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); }
+.card {
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.4rem;
+}
+.card h2, .card h3 { margin-top: 0; }
+.card ul { padding-left: 1.1rem; margin: 0.5rem 0 0; }
+.card li { margin-bottom: 0.4rem; }
+
+.buttons { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 1.5rem 0 0; }
+.button {
+  display: inline-block;
+  background: var(--accent);
+  color: var(--card);
+  border-radius: 12px;
+  padding: 0.6rem 1.1rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.button.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+
+/* The day ribbon, as a static illustration of what the product shows. */
+.ribbon { display: grid; grid-template-columns: repeat(24, 1fr); gap: 2px; margin: 1rem 0 0.25rem; }
+.ribbon span { height: 52px; border-radius: 4px; box-shadow: inset 0 0 0 1px var(--hairline); }
+.ribbon-ticks {
+  display: grid;
+  grid-template-columns: repeat(24, 1fr);
+  font: 0.7rem ui-monospace, monospace;
+  color: var(--ink-faint);
+}
+.ribbon-ticks span { text-align: center; }
+
+.yes li::marker { color: var(--ok); }
+.no li::marker { color: var(--urgent); }
+
+ol.steps { padding-left: 0; list-style: none; counter-reset: step; }
+ol.steps li { counter-increment: step; display: flex; gap: 0.9rem; margin-bottom: 0.9rem; }
+ol.steps li::before {
+  content: counter(step, decimal-leading-zero);
+  font: 0.85rem ui-monospace, monospace;
+  color: var(--ink-faint);
+  padding-top: 0.15rem;
+}
+
+pre {
+  background: var(--sunken);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  padding: 1rem;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+code { font-family: ui-monospace, 'SF Mono', Menlo, monospace; }
+p code, li code { background: var(--sunken); padding: 0.1em 0.35em; border-radius: 5px; font-size: 0.9em; }
+
+dl.trouble dt { font-weight: 600; margin-top: 1rem; }
+dl.trouble dd { margin: 0.2rem 0 0; color: var(--ink-muted); max-width: var(--measure); }
+
+footer.site {
+  border-top: 1px solid var(--hairline);
+  padding: 2rem 0 3rem;
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+}
+footer.site .wrap { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

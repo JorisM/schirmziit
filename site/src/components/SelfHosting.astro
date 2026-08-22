@@ -1,0 +1,49 @@
+---
+import Base from '../layouts/Base.astro'
+import { sites, type Locale } from '../content'
+
+interface Props { locale: Locale }
+const { locale } = Astro.props
+const t = sites[locale]
+
+const compose = `curl -O https://raw.githubusercontent.com/JorisM/nestling/main/deploy/docker-compose.yml
+curl -o .env https://raw.githubusercontent.com/JorisM/nestling/main/deploy/.env.example
+
+# edit .env: POSTGRES_PASSWORD and PUBLIC_URL
+docker compose up -d`
+---
+<Base locale={locale} page="selfHost" title={`${t.selfHost.title} — Nestling`} description={t.selfHost.lead}>
+  <h1>{t.selfHost.title}</h1>
+  <p class="lead">{t.selfHost.lead}</p>
+
+  <h2>{t.selfHost.needTitle}</h2>
+  <ul>{t.selfHost.need.map((line) => <li>{line}</li>)}</ul>
+
+  <h2>{t.selfHost.stepsTitle}</h2>
+  <pre><code>{compose}</code></pre>
+
+  <h3>{t.selfHost.proxyTitle}</h3>
+  <p>{t.selfHost.proxyBody}</p>
+
+  <h3>{t.selfHost.firstUserTitle}</h3>
+  <p>{t.selfHost.firstUserBody}</p>
+
+  <h3>{t.selfHost.pairTitle}</h3>
+  <p>{t.selfHost.pairBody}</p>
+
+  <h3>{t.selfHost.backupTitle}</h3>
+  <p>{t.selfHost.backupBody}</p>
+
+  <h3>{t.selfHost.upgradeTitle}</h3>
+  <p>{t.selfHost.upgradeBody}</p>
+
+  <h2>{t.selfHost.troubleTitle}</h2>
+  <dl class="trouble">
+    {t.selfHost.trouble.map((item) => (
+      <>
+        <dt>{item.problem}</dt>
+        <dd>{item.fix}</dd>
+      </>
+    ))}
+  </dl>
+</Base>

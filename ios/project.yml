@@ -57,6 +57,107 @@ targets:
         # rather than checking in a second near-empty plist.
         GENERATE_INFOPLIST_FILE: YES
 
+  # ─── Child agent ────────────────────────────────────────────────────
+  # Runs on the child's phone. Needs Apple's Family Controls entitlement to see
+  # any figures at all; without it the app builds, runs and says so plainly.
+  # Everything testable lives in the framework: the Family Controls extensions
+  # cannot be installed on a simulator, so a test bundle hosted by the app can
+  # never launch. Tests link this instead.
+  SchirmziitAgentKit:
+    type: framework
+    platform: iOS
+    sources:
+      - path: AgentShared
+      - path: AgentSources/Agent
+      - path: AgentSources/Views
+      - path: Sources/Design/Palette.swift
+      - path: Generated/schirmziit_core.swift
+    dependencies:
+      - framework: Frameworks/SchirmziitCoreFFI.xcframework
+        embed: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.agent.kit
+        GENERATE_INFOPLIST_FILE: YES
+        DEFINES_MODULE: YES
+
+  SchirmziitAgent:
+    type: application
+    platform: iOS
+    sources:
+      - path: AgentSources/SchirmziitAgentApp.swift
+      - path: AgentSources/Resources
+    dependencies:
+      - target: SchirmziitAgentKit
+        embed: true
+      - target: SchirmziitMonitor
+      - target: SchirmziitReport
+    info:
+      path: AgentSources/Resources/Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.agent
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_ENTITLEMENTS: AgentSources/Resources/Agent.entitlements
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_KEY_CFBundleDisplayName: Schirmziit
+        TARGETED_DEVICE_FAMILY: "1"
+
+  SchirmziitMonitor:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: AgentMonitor
+      - path: AgentShared
+    info:
+      path: AgentMonitor/Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.agent.monitor
+        CODE_SIGN_ENTITLEMENTS: AgentMonitor/Monitor.entitlements
+        GENERATE_INFOPLIST_FILE: NO
+
+  SchirmziitReport:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: AgentReport
+      - path: AgentShared
+    info:
+      path: AgentReport/Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.agent.report
+        CODE_SIGN_ENTITLEMENTS: AgentReport/Report.entitlements
+        GENERATE_INFOPLIST_FILE: NO
+
+  SchirmziitAgentTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: AgentTests
+      # The .strings files and the OpenAPI document are read by the tests
+      # themselves, so they have to be in the test bundle.
+      # Copied as opaque folders: a variant group would flatten the four
+      # locales into one Localizable.strings and the parity test would pass
+      # while reading a single language.
+      - path: AgentSources/Resources/en.lproj
+        type: folder
+      - path: AgentSources/Resources/de.lproj
+        type: folder
+      - path: AgentSources/Resources/fr.lproj
+        type: folder
+      - path: AgentSources/Resources/it.lproj
+        type: folder
+      - path: ../api/openapi.json
+        buildPhase: resources
+    dependencies:
+      - target: SchirmziitAgentKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.agent.tests
+        GENERATE_INFOPLIST_FILE: YES
+
 schemes:
   Schirmziit:
     build:
@@ -66,3 +167,12 @@ schemes:
     test:
       targets:
         - SchirmziitTests
+
+  SchirmziitAgent:
+    build:
+      targets:
+        SchirmziitAgent: all
+        SchirmziitAgentTests: [test]
+    test:
+      targets:
+        - SchirmziitAgentTests

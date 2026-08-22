@@ -36,7 +36,7 @@ impl Config {
     /// Test default: open registration, everything else as production.
     pub fn for_tests() -> Self {
         Self {
-            public_url: "https://nestling.test".into(),
+            public_url: "https://schirmziit.test".into(),
             allow_registration: Registration::Open,
             session_ttl_days: 30,
             retention_hourly_months: 13,

@@ -2,7 +2,7 @@
 /web/node_modules
 /web/dist/assets
 /android/app/src/main/jniLibs
-/android/app/src/main/kotlin/ch/jorisda/nestling/core
+/android/app/src/main/kotlin/ch/jorisda/schirmziit/core
 /android/.gradle
 /android/build
 /android/app/build
@@ -12,7 +12,7 @@
 /android/app/src/test/resources/linux-x86-64
 
 # Xcode
-ios/Nestling.xcodeproj/
+ios/Schirmziit.xcodeproj/
 ios/*.xcworkspace/
 ios/DerivedData/
 dist

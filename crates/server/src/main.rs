@@ -1,4 +1,4 @@
-use nestling_server::{AppState, app_with_rate_limits, config::Config, db, retention};
+use schirmziit_server::{AppState, app_with_rate_limits, config::Config, db, retention};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -17,7 +17,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let bind = std::env::var("BIND_ADDR").unwrap_or_else(|_| "0.0.0.0:8080".into());
     let listener = tokio::net::TcpListener::bind(&bind).await?;
-    tracing::info!(%bind, "nestling-server listening");
+    tracing::info!(%bind, "schirmziit-server listening");
 
     // into_make_service_with_connect_info is load-bearing, not boilerplate: the
     // rate limiter's key extractor needs a client IP. Behind Traefik it uses

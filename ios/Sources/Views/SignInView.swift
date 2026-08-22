@@ -59,7 +59,7 @@ struct SignInView: View {
                 }
                 .listRowBackground(Color.clear)
             }
-            .nestlingList()
+            .schirmziitList()
             .navigationTitle("app.name")
             .task {
                 // Debug builds only: lets a screenshot run or a UI test sign in
@@ -105,17 +105,17 @@ private struct LoginAck: Codable, Sendable {
 
 
 /// Values a debug run can inject through the environment, e.g.
-/// `SIMCTL_CHILD_NESTLING_SERVER=… xcrun simctl launch …`.
+/// `SIMCTL_CHILD_SCHIRMZIIT_SERVER=… xcrun simctl launch …`.
 private enum Prefill {
 #if DEBUG
     private static func value(_ key: String) -> String? {
         ProcessInfo.processInfo.environment[key]
     }
 
-    static var server: String { value("NESTLING_SERVER") ?? "https://" }
-    static var email: String { value("NESTLING_EMAIL") ?? "" }
-    static var password: String { value("NESTLING_PASSWORD") ?? "" }
-    static var autoSignIn: Bool { value("NESTLING_AUTOLOGIN") == "1" }
+    static var server: String { value("SCHIRMZIIT_SERVER") ?? "https://" }
+    static var email: String { value("SCHIRMZIIT_EMAIL") ?? "" }
+    static var password: String { value("SCHIRMZIIT_PASSWORD") ?? "" }
+    static var autoSignIn: Bool { value("SCHIRMZIIT_AUTOLOGIN") == "1" }
 #else
     static let server = "https://"
     static let email = ""

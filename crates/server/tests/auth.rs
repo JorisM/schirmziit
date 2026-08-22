@@ -1,8 +1,8 @@
 use axum::body::Body;
 use axum::http::{Request, StatusCode, header};
 use http_body_util::BodyExt;
-use nestling_server::config::{Config, Registration};
-use nestling_server::{AppState, app};
+use schirmziit_server::config::{Config, Registration};
+use schirmziit_server::{AppState, app};
 use sqlx::PgPool;
 use tower::ServiceExt;
 
@@ -40,7 +40,7 @@ async fn register_creates_a_family_and_sets_a_session_cookie(pool: PgPool) {
         .unwrap()
         .to_str()
         .unwrap();
-    assert!(cookie.contains("nestling_session="));
+    assert!(cookie.contains("schirmziit_session="));
     assert!(
         cookie.contains("HttpOnly"),
         "session cookie must not be readable by JS"
@@ -169,7 +169,7 @@ async fn session_token_is_stored_hashed_not_raw(pool: PgPool) {
         .to_str()
         .unwrap();
     let raw = cookie
-        .split("nestling_session=")
+        .split("schirmziit_session=")
         .nth(1)
         .unwrap()
         .split(';')
@@ -188,7 +188,7 @@ async fn session_token_is_stored_hashed_not_raw(pool: PgPool) {
 async fn the_deployed_router_rate_limits_auth_attempts_per_ip(pool: PgPool) {
     // app_with_rate_limits is what main.rs serves; app() (used by every other
     // test) has no limiter so tests are not accidentally throttled.
-    let router = nestling_server::app_with_rate_limits(state(pool, Registration::Open));
+    let router = schirmziit_server::app_with_rate_limits(state(pool, Registration::Open));
 
     let mut statuses = Vec::new();
     for _ in 0..25 {

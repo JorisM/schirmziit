@@ -8,7 +8,7 @@ const { locale } = Astro.props
 const t = sites[locale]
 const base = prefix(locale)
 ---
-<Base locale={locale} page="home" title={`Nestling — ${t.home.title}`} description={t.home.lead}>
+<Base locale={locale} page="home" title={`Schirmziit — ${t.home.title}`} description={t.home.lead}>
   <p class="kicker">{t.home.kicker}</p>
   <h1>{t.home.title}</h1>
   <p class="lead">{t.home.lead}</p>
@@ -35,8 +35,8 @@ const base = prefix(locale)
     </section>
   </div>
 
-  <h2>{t.home.honestTitle}</h2>
-  <p>{t.home.honestBody}</p>
+  <h2>{t.home.childSeesTitle}</h2>
+  <p>{t.home.childSeesBody}</p>
 
   <h2>{t.home.platformsTitle}</h2>
   <p>{t.home.platformsBody}</p>
@@ -65,6 +65,17 @@ const base = prefix(locale)
       <ul>{t.choose.hostedPoints.map((line) => <li>{line}</li>)}</ul>
       <div class="buttons"><a class="button ghost" href={`${base}/hosted`}>{t.nav.hosted}</a></div>
     </section>
+  </div>
+
+  <h2>{t.resources.title}</h2>
+  <p>{t.resources.lead}</p>
+  <div class="cards">
+    {t.resources.items.map((item) => (
+      <section class="card">
+        <h3><a href={item.href} rel="noopener external">{item.name}</a></h3>
+        <p>{item.note}</p>
+      </section>
+    ))}
   </div>
 
   <h2>{t.home.openTitle}</h2>

@@ -2,7 +2,7 @@ name: release
 
 # Publishes the container image self-hosters pull. While this repository is
 # private the package is private too — make the package public before pointing
-# outside users at ghcr.io/jorism/nestling.
+# outside users at ghcr.io/jorism/schirmziit.
 on:
   push:
     branches: [main]

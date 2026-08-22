@@ -1,5 +1,5 @@
 import XCTest
-@testable import Nestling
+@testable import Schirmziit
 
 final class FormattingTests: XCTestCase {
     func testDurationReadsLikeAPersonWroteIt() {

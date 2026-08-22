@@ -1,7 +1,7 @@
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use http_body_util::BodyExt;
-use nestling_server::{AppState, app, config::Config};
+use schirmziit_server::{AppState, app, config::Config};
 use sqlx::PgPool;
 use tower::ServiceExt;
 

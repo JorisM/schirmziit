@@ -4,7 +4,7 @@ export const it: Strings = {
   meta: { localeName: 'Italiano', htmlLang: 'it-CH' },
 
   app: {
-    name: 'Nestling',
+    name: 'Schirmziit',
     tagline: 'Vedere il tempo di schermo senza farlo di nascosto',
     help: 'Come funziona?',
     signOut: 'Esci',
@@ -13,7 +13,7 @@ export const it: Strings = {
 
   login: {
     heading: 'Accedi',
-    intro: 'Nestling gira sul tuo server. Non c’è nessun account presso un’azienda.',
+    intro: 'Schirmziit gira sul tuo server. Non c’è nessun account presso un’azienda.',
     email: 'E-mail',
     password: 'Password',
     submit: 'Accedi',
@@ -69,7 +69,7 @@ export const it: Strings = {
     revoked: 'disconnesso',
     addDevice: 'Collega un telefono',
     pairTitle: 'Collega un telefono',
-    pairStep1: 'Apri Nestling sul telefono del bambino.',
+    pairStep1: 'Apri Schirmziit sul telefono del bambino.',
     pairStep2: 'Scansiona questo codice — oppure digita gli otto caratteri.',
     pairStep3: 'Fatto. Il telefono invia poi i dati circa ogni 30 minuti.',
     codeExpires: 'Valido fino a',
@@ -77,22 +77,22 @@ export const it: Strings = {
   },
 
   help: {
-    title: 'Come funziona Nestling',
+    title: 'Come funziona Schirmziit',
     intro:
-      'Nestling ti mostra quanto e quando viene usato il telefono di tuo figlio. Niente di tutto questo è segreto: il bambino vede gli stessi numeri sul proprio telefono.',
-    measuresTitle: 'Cosa misura Nestling',
+      'Schirmziit ti mostra quanto e quando viene usato il telefono di tuo figlio. Niente di tutto questo è segreto: il bambino vede gli stessi numeri sul proprio telefono.',
+    measuresTitle: 'Cosa misura Schirmziit',
     measures: [
       'Quale app era in primo piano e per quanto tempo — ora per ora.',
       'Quante volte il telefono è stato sbloccato.',
       'In che momento della giornata è stato usato il telefono.',
     ],
-    notCollectedTitle: 'Cosa Nestling non raccoglie',
+    notCollectedTitle: 'Cosa Schirmziit non raccoglie',
     notCollected: [
       'Nessun contenuto: né messaggi, né chat, né ricerche, né foto, né digitazioni.',
       'Nessuna posizione.',
       'Nessun sito web e nessun video guardato.',
       'Nessuna registrazione del microfono o della fotocamera.',
-      'Nulla che blocchi il telefono — Nestling non spegne nessuna app.',
+      'Nulla che blocchi il telefono — Schirmziit non spegne nessuna app.',
     ],
     howTitle: 'Come funziona tecnicamente',
     howSteps: [
@@ -113,9 +113,9 @@ export const it: Strings = {
     stopTitle: 'Smettere',
     stop:
       'Disconnetti il dispositivo qui e il server non accetta più i suoi dati. Oppure disinstalla l’app dal telefono. Entrambe le cose hanno effetto subito.',
-    notAControlTitle: 'Cosa Nestling non è',
+    notAControlTitle: 'Cosa Schirmziit non è',
     notAControl:
-      'Nestling non blocca e non filtra nulla. È una base per parlarne, non un telecomando. Limiti di tempo e blocchi sono volutamente un passo successivo e separato.',
+      'Schirmziit non blocca e non filtra nulla. È una base per parlarne, non un telecomando. Limiti di tempo e blocchi sono volutamente un passo successivo e separato.',
   },
 
   errors: {

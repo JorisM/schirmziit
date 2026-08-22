@@ -4,7 +4,7 @@ export const en: Strings = {
   meta: { localeName: 'English', htmlLang: 'en' },
 
   app: {
-    name: 'Nestling',
+    name: 'Schirmziit',
     tagline: 'See screen time without being sneaky',
     help: 'How does this work?',
     signOut: 'Sign out',
@@ -13,7 +13,7 @@ export const en: Strings = {
 
   login: {
     heading: 'Sign in',
-    intro: 'Nestling runs on your own server. There is no account with a company.',
+    intro: 'Schirmziit runs on your own server. There is no account with a company.',
     email: 'Email',
     password: 'Password',
     submit: 'Sign in',
@@ -68,7 +68,7 @@ export const en: Strings = {
     revoked: 'disconnected',
     addDevice: 'Connect a phone',
     pairTitle: 'Connect a phone',
-    pairStep1: 'Open Nestling on your child’s phone.',
+    pairStep1: 'Open Schirmziit on your child’s phone.',
     pairStep2: 'Scan this code — or type the eight characters.',
     pairStep3: 'Done. The phone then reports about every 30 minutes.',
     codeExpires: 'Valid until',
@@ -76,22 +76,22 @@ export const en: Strings = {
   },
 
   help: {
-    title: 'How Nestling works',
+    title: 'How Schirmziit works',
     intro:
-      'Nestling shows you how long and when your child’s phone is used. None of it is secret: the child sees the same numbers on their own phone.',
-    measuresTitle: 'What Nestling measures',
+      'Schirmziit shows you how long and when your child’s phone is used. None of it is secret: the child sees the same numbers on their own phone.',
+    measuresTitle: 'What Schirmziit measures',
     measures: [
       'Which app was in the foreground and for how long — per hour.',
       'How often the phone was unlocked.',
       'What time of day the phone was used.',
     ],
-    notCollectedTitle: 'What Nestling does not collect',
+    notCollectedTitle: 'What Schirmziit does not collect',
     notCollected: [
       'No content: no messages, chats, searches, photos or keystrokes.',
       'No location.',
       'No websites and no videos that were watched.',
       'No microphone or camera recordings.',
-      'Nothing that blocks the phone — Nestling never switches an app off.',
+      'Nothing that blocks the phone — Schirmziit never switches an app off.',
     ],
     howTitle: 'How it works technically',
     howSteps: [
@@ -112,9 +112,9 @@ export const en: Strings = {
     stopTitle: 'Stopping',
     stop:
       'Disconnect the device here and the server stops accepting data from it. Or uninstall the app on the phone. Either takes effect immediately.',
-    notAControlTitle: 'What Nestling is not',
+    notAControlTitle: 'What Schirmziit is not',
     notAControl:
-      'Nestling blocks nothing and filters nothing. It is a basis for a conversation, not a remote control. Time limits and blocking are deliberately a later, separate step.',
+      'Schirmziit blocks nothing and filters nothing. It is a basis for a conversation, not a remote control. Time limits and blocking are deliberately a later, separate step.',
   },
 
   errors: {

@@ -4,7 +4,7 @@ use utoipa::OpenApi;
 /// `api/openapi.json`, which the dashboard's TypeScript is generated from.
 #[derive(OpenApi)]
 #[openapi(
-    info(title = "Nestling API", version = env!("CARGO_PKG_VERSION")),
+    info(title = "Schirmziit API", version = env!("CARGO_PKG_VERSION")),
     paths(
         crate::auth::routes::register,
         crate::auth::routes::login,
@@ -40,11 +40,11 @@ use utoipa::OpenApi;
         crate::routes::usage::Point,
         crate::routes::usage::DeviceTotal,
         crate::routes::usage::TopApp,
-        nestling_core::wire::IngestRequest,
-        nestling_core::wire::IngestResponse,
-        nestling_core::wire::IngestHour,
-        nestling_core::wire::IngestApp,
-        nestling_core::wire::Rejected,
+        schirmziit_core::wire::IngestRequest,
+        schirmziit_core::wire::IngestResponse,
+        schirmziit_core::wire::IngestHour,
+        schirmziit_core::wire::IngestApp,
+        schirmziit_core::wire::Rejected,
     ))
 )]
 pub struct ApiDoc;

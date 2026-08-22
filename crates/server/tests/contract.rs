@@ -9,7 +9,7 @@ use utoipa::OpenApi;
 /// handler returns. This is the test that makes the committed openapi.json - and
 /// therefore the dashboard's generated TypeScript - trustworthy.
 fn assert_matches_schema(component: &str, instance: &serde_json::Value) {
-    let doc = serde_json::to_value(nestling_server::openapi::ApiDoc::openapi()).unwrap();
+    let doc = serde_json::to_value(schirmziit_server::openapi::ApiDoc::openapi()).unwrap();
     let schemas = &doc["components"]["schemas"];
     let mut schema = schemas[component].clone();
     assert!(

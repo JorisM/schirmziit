@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Scripted device + acceptance harness for nestling.
+"""Scripted device + acceptance harness for schirmziit.
 
 Exercises the same HTTP surface the Android agent will: enroll with a one-time
 code, then POST hourly buckets. Deliberately stdlib-only so it runs on shire and
@@ -8,7 +8,7 @@ on the Mac without a toolchain.
 Two modes:
 
   # Against a deployed instance: mint a code in the dashboard first.
-  python3 scripts/fake_agent.py --base https://nestling.jorisda.ch --code ABCD-1234
+  python3 scripts/fake_agent.py --base https://schirmziit.jorisda.ch --code ABCD-1234
 
   # Against a local dev server with ALLOW_REGISTRATION=open: does everything,
   # including creating the parent and child, then checks the acceptance criteria.
@@ -137,7 +137,7 @@ def main():
         code = enrollment["code"]
         failures += not check(
             "QR payload carries the server URL",
-            enrollment["qr_payload"].startswith("nestling://enroll?url="),
+            enrollment["qr_payload"].startswith("schirmziit://enroll?url="),
             enrollment["qr_payload"],
         )
 

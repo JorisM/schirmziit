@@ -1,10 +1,10 @@
 [package]
-name = "nestling-core"
+name = "schirmziit-core"
 edition.workspace = true
 version.workspace = true
 
 [lib]
-name = "nestling_core"
+name = "schirmziit_core"
 path = "src/lib.rs"
 # cdylib for the Android/iOS .so; rlib so crates/server can keep depending on it
 # as a normal Rust library.

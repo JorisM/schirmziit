@@ -42,14 +42,14 @@ async fn enrollment_code_is_human_typable_and_carries_the_public_url(pool: PgPoo
     assert_eq!(code.len(), 8);
     assert!(
         code.chars()
-            .all(|c| nestling_server::routes::children::ENROLL_ALPHABET.contains(c)),
+            .all(|c| schirmziit_server::routes::children::ENROLL_ALPHABET.contains(c)),
         "code {code} contains ambiguous characters"
     );
 
     let qr = enrollment.json["qr_payload"].as_str().unwrap();
     assert_eq!(
         qr,
-        format!("nestling://enroll?url=https://nestling.test&code={code}")
+        format!("schirmziit://enroll?url=https://schirmziit.test&code={code}")
     );
     assert!(enrollment.json["expires_at"].is_string());
 }

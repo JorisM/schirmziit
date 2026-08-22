@@ -1,10 +1,10 @@
-"app.name" = "Nestling";
+"app.name" = "Schirmziit";
 "app.help" = "How this works";
 "app.signout" = "Sign out";
 
-"signin.intro" = "Nestling runs on your family's own server. There is no account with a company.";
+"signin.intro" = "Schirmziit runs on your family's own server. There is no account with a company.";
 "signin.server" = "Server";
-"signin.server.placeholder" = "https://nestling.example.ch";
+"signin.server.placeholder" = "https://schirmziit.example.ch";
 "signin.account" = "Your account";
 "signin.email" = "Email";
 "signin.password" = "Password";
@@ -33,18 +33,18 @@
 "devices.stale.help" = "Nothing for over 90 minutes. Until it reports again the numbers above are incomplete — not necessarily low.";
 "devices.never" = "has never reported";
 
-"help.title" = "How Nestling works";
-"help.intro" = "Nestling shows how long and when your child's phone is used. None of it is secret: the child sees the same numbers on their own phone.";
-"help.measures.title" = "What Nestling measures";
+"help.title" = "How Schirmziit works";
+"help.intro" = "Schirmziit shows how long and when your child's phone is used. None of it is secret: the child sees the same numbers on their own phone.";
+"help.measures.title" = "What Schirmziit measures";
 "help.measures.1" = "Which app was in the foreground and for how long, per hour.";
 "help.measures.2" = "How often the phone was unlocked.";
 "help.measures.3" = "What time of day the phone was used.";
-"help.never.title" = "What Nestling never collects";
+"help.never.title" = "What Schirmziit never collects";
 "help.never.1" = "No messages, chats, searches, photos or keystrokes.";
 "help.never.2" = "No location.";
 "help.never.3" = "No websites and no videos that were watched.";
 "help.never.4" = "No microphone or camera recordings.";
-"help.never.5" = "Nothing is blocked — Nestling never switches an app off.";
+"help.never.5" = "Nothing is blocked — Schirmziit never switches an app off.";
 "help.how.title" = "How it works";
 "help.how.1" = "A small app on the child's phone reads the usage statistics Android keeps anyway.";
 "help.how.2" = "About every 30 minutes it sends hourly figures to your server.";
@@ -54,8 +54,8 @@
 "help.where" = "On your family's own server, in your own database. No company in between and nothing passed to third parties.";
 "help.retention.title" = "For how long";
 "help.retention" = "Hourly figures stay 13 months, then only daily totals. You can delete a child's data at any time.";
-"help.notacontrol.title" = "What Nestling is not";
-"help.notacontrol" = "Nestling blocks nothing and filters nothing. It is a basis for a conversation, not a remote control.";
+"help.notacontrol.title" = "What Schirmziit is not";
+"help.notacontrol" = "Schirmziit blocks nothing and filters nothing. It is a basis for a conversation, not a remote control.";
 "help.swiss" = "Made in Switzerland. Free and open source.";
 
 "error.offline" = "No connection to the server.";

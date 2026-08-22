@@ -4,7 +4,7 @@ export const fr: Strings = {
   meta: { localeName: 'Français', htmlLang: 'fr-CH' },
 
   app: {
-    name: 'Nestling',
+    name: 'Schirmziit',
     tagline: 'Voir le temps d’écran sans agir en cachette',
     help: 'Comment ça marche ?',
     signOut: 'Se déconnecter',
@@ -13,7 +13,7 @@ export const fr: Strings = {
 
   login: {
     heading: 'Se connecter',
-    intro: 'Nestling tourne sur ton propre serveur. Il n’y a pas de compte chez une entreprise.',
+    intro: 'Schirmziit tourne sur ton propre serveur. Il n’y a pas de compte chez une entreprise.',
     email: 'E-mail',
     password: 'Mot de passe',
     submit: 'Se connecter',
@@ -69,7 +69,7 @@ export const fr: Strings = {
     revoked: 'déconnecté',
     addDevice: 'Connecter un téléphone',
     pairTitle: 'Connecter un téléphone',
-    pairStep1: 'Ouvre Nestling sur le téléphone de l’enfant.',
+    pairStep1: 'Ouvre Schirmziit sur le téléphone de l’enfant.',
     pairStep2: 'Scanne ce code — ou saisis les huit caractères.',
     pairStep3: 'C’est fait. Le téléphone envoie ensuite ses données environ toutes les 30 minutes.',
     codeExpires: 'Valable jusqu’à',
@@ -77,22 +77,22 @@ export const fr: Strings = {
   },
 
   help: {
-    title: 'Comment fonctionne Nestling',
+    title: 'Comment fonctionne Schirmziit',
     intro:
-      'Nestling te montre combien de temps et à quel moment le téléphone de ton enfant est utilisé. Rien n’est caché : l’enfant voit les mêmes chiffres sur son téléphone.',
-    measuresTitle: 'Ce que Nestling mesure',
+      'Schirmziit te montre combien de temps et à quel moment le téléphone de ton enfant est utilisé. Rien n’est caché : l’enfant voit les mêmes chiffres sur son téléphone.',
+    measuresTitle: 'Ce que Schirmziit mesure',
     measures: [
       'Quelle application était au premier plan et pendant combien de temps — par heure.',
       'Combien de fois le téléphone a été déverrouillé.',
       'À quel moment de la journée le téléphone a été utilisé.',
     ],
-    notCollectedTitle: 'Ce que Nestling ne collecte pas',
+    notCollectedTitle: 'Ce que Schirmziit ne collecte pas',
     notCollected: [
       'Aucun contenu : ni messages, ni discussions, ni recherches, ni photos, ni frappes au clavier.',
       'Aucune position.',
       'Aucun site web ni aucune vidéo regardée.',
       'Aucun enregistrement du micro ou de la caméra.',
-      'Rien qui bloque le téléphone — Nestling ne coupe aucune application.',
+      'Rien qui bloque le téléphone — Schirmziit ne coupe aucune application.',
     ],
     howTitle: 'Comment ça marche techniquement',
     howSteps: [
@@ -113,9 +113,9 @@ export const fr: Strings = {
     stopTitle: 'Arrêter',
     stop:
       'Déconnecte l’appareil ici et le serveur n’accepte plus ses données. Ou désinstalle l’application sur le téléphone. Les deux prennent effet immédiatement.',
-    notAControlTitle: 'Ce que Nestling n’est pas',
+    notAControlTitle: 'Ce que Schirmziit n’est pas',
     notAControl:
-      'Nestling ne bloque rien et ne filtre rien. C’est une base de discussion, pas une télécommande. Les limites de temps et les blocages sont volontairement une étape ultérieure et séparée.',
+      'Schirmziit ne bloque rien et ne filtre rien. C’est une base de discussion, pas une télécommande. Les limites de temps et les blocages sont volontairement une étape ultérieure et séparée.',
   },
 
   errors: {

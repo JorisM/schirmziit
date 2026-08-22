@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "ch.jorisda.nestling.agent"
+    namespace = "ch.jorisda.schirmziit.agent"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "ch.jorisda.nestling.agent"
+        applicationId = "ch.jorisda.schirmziit.agent"
         minSdk = 26
         targetSdk = 37
         versionCode = 1

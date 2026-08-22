@@ -19,6 +19,18 @@
     <string name="pair_failed">Verbinden nicht möglich: %1$s</string>
     <string name="pair_bad_qr">Dieser QR-Code gehört nicht zu Schirmziit.</string>
     <string name="pair_bad_input">Prüfe die Server-Adresse (https) und den Code.</string>
+    <string name="pair_parent_title">Anmelden, um dieses Handy zu verbinden</string>
+    <string name="pair_parent_body">Melde dich einmal mit dem Eltern-Konto an. Dieses Handy behält einen eigenen Schlüssel — die Anmeldung wird direkt danach beendet.</string>
+    <string name="pair_email">E-Mail der Eltern</string>
+    <string name="pair_password">Passwort</string>
+    <string name="pair_parent_submit">Anmelden</string>
+    <string name="pair_parent_wrong">E-Mail oder Passwort stimmt nicht.</string>
+    <string name="pair_whose">Wessen Handy ist das?</string>
+    <string name="pair_whose_empty">Auf diesem Konto gibt es noch kein Kind. Lege zuerst eines in der Übersicht an.</string>
+    <string name="pair_label">Name dieses Handys</string>
+    <string name="pair_claim">Von diesem Handy melden</string>
+    <string name="pair_code_instead">Stattdessen einen Code verwenden</string>
+    <string name="pair_parent_instead">Stattdessen mit dem Eltern-Konto anmelden</string>
 
     <string name="status_reporting">Bildschirmzeit wird übermittelt.</string>
     <string name="status_off">Nutzungszugriff ist aus — es wird nichts aufgezeichnet.</string>

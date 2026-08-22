@@ -52,4 +52,92 @@ class SchirmziitClientTest {
         assertEquals(413, thrown.status)
         server.shutdown()
     }
+
+    @Test
+    fun `signIn returns the session cookie without its attributes`() {
+        val server = MockWebServer().apply {
+            enqueue(
+                MockResponse()
+                    .setResponseCode(200)
+                    .setHeader("set-cookie", "schirmziit_session=abc123; Path=/; HttpOnly; SameSite=Lax")
+                    .setBody("""{"ok":true}""")
+            )
+            start()
+        }
+
+        val session = SchirmziitClient(server.url("/").toString(), OkHttpClient())
+            .signIn("anna@example.ch", "a long password")
+
+        assertEquals("schirmziit_session=abc123", session?.cookie)
+        assertEquals("/v1/auth/login", server.takeRequest().path)
+        server.shutdown()
+    }
+
+    @Test
+    fun `a wrong parent password is null, not an exception`() {
+        val server = MockWebServer().apply {
+            enqueue(MockResponse().setResponseCode(401))
+            start()
+        }
+
+        val session = SchirmziitClient(server.url("/").toString(), OkHttpClient())
+            .signIn("anna@example.ch", "wrong password")
+
+        assertEquals(null, session)
+        server.shutdown()
+    }
+
+    @Test
+    fun `children are read as the signed-in parent`() {
+        val server = MockWebServer().apply {
+            enqueue(
+                MockResponse().setResponseCode(200).setBody(
+                    """[{"id":"c1","display_name":"Emma"},{"id":"c2","display_name":"Noah"}]"""
+                )
+            )
+            start()
+        }
+
+        val children = SchirmziitClient(server.url("/").toString(), OkHttpClient())
+            .children(ParentSession("schirmziit_session=abc123"))
+
+        assertEquals(listOf("Emma", "Noah"), children.map { it.displayName })
+        val request = server.takeRequest()
+        assertEquals("/v1/children", request.path)
+        assertEquals("schirmziit_session=abc123", request.getHeader("cookie"))
+        server.shutdown()
+    }
+
+    @Test
+    fun `claimDevice enrols this phone without a code`() {
+        val server = MockWebServer().apply {
+            enqueue(MockResponse().setResponseCode(201).setBody("""{"device_id":"d9","token":"t9"}"""))
+            start()
+        }
+
+        val result = SchirmziitClient(server.url("/").toString(), OkHttpClient())
+            .claimDevice(ParentSession("schirmziit_session=abc123"), "c1", "android", "FP4", "Emmas Fairphone")
+
+        assertEquals("t9", result.token)
+        val request = server.takeRequest()
+        assertEquals("/v1/children/c1/devices", request.path)
+        assertEquals("schirmziit_session=abc123", request.getHeader("cookie"))
+        assertEquals("POST", request.method)
+        server.shutdown()
+    }
+
+    @Test
+    fun `signOut ends the parent session and never throws`() {
+        val server = MockWebServer().apply {
+            enqueue(MockResponse().setResponseCode(500))
+            start()
+        }
+
+        // A failure here must not fail a setup that already stored its token.
+        SchirmziitClient(server.url("/").toString(), OkHttpClient())
+            .signOut(ParentSession("schirmziit_session=abc123"))
+
+        assertEquals("/v1/auth/logout", server.takeRequest().path)
+        server.shutdown()
+    }
 }

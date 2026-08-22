@@ -23,6 +23,18 @@
     <string name="pair_failed">Could not connect: %1$s</string>
     <string name="pair_bad_qr">That QR code is not a Schirmziit pairing code.</string>
     <string name="pair_bad_input">Check the server address (https) and the code.</string>
+    <string name="pair_parent_title">Sign in to connect this phone</string>
+    <string name="pair_parent_body">Sign in with the parent account once. This phone keeps a key of its own — the sign-in is ended straight after.</string>
+    <string name="pair_email">Parent email</string>
+    <string name="pair_password">Password</string>
+    <string name="pair_parent_submit">Sign in</string>
+    <string name="pair_parent_wrong">Email or password is wrong.</string>
+    <string name="pair_whose">Whose phone is this?</string>
+    <string name="pair_whose_empty">No children on that account yet. Add one in the dashboard first.</string>
+    <string name="pair_label">Name of this phone</string>
+    <string name="pair_claim">Report from this phone</string>
+    <string name="pair_code_instead">Use a pairing code instead</string>
+    <string name="pair_parent_instead">Sign in with the parent account instead</string>
 
     <string name="status_reporting">Screen-time reporting is on.</string>
     <string name="status_off">Usage access is off — nothing is being recorded.</string>

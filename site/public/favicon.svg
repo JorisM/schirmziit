@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="8" fill="#00707e"/>
+  <!-- Three bars, quiet to busy: the day ribbon in miniature. -->
+  <rect x="7" y="18" width="4" height="7" rx="1.5" fill="#cfdcd2"/>
+  <rect x="14" y="12" width="4" height="13" rx="1.5" fill="#a3c2ad"/>
+  <rect x="21" y="7" width="4" height="18" rx="1.5" fill="#f2f0ea"/>
+</svg>

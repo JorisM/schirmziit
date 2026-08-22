@@ -15,3 +15,6 @@
 ios/Nestling.xcodeproj/
 ios/*.xcworkspace/
 ios/DerivedData/
+dist
+.astro
+node_modules

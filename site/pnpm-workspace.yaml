@@ -1,0 +1,4 @@
+# esbuild and sharp need their postinstall to fetch the right native binary.
+allowBuilds:
+  esbuild: true
+  sharp: true

@@ -1,0 +1,22 @@
+---
+import Base from '../layouts/Base.astro'
+import { sites, type Locale } from '../content'
+
+interface Props { locale: Locale }
+const { locale } = Astro.props
+const t = sites[locale]
+---
+<Base locale={locale} page="privacy" title={`${t.privacy.title} — Nestling`} description={t.privacy.lead}>
+  <h1>{t.privacy.title}</h1>
+  <p class="lead">{t.privacy.lead}</p>
+
+  {t.privacy.sections.map((section) => (
+    <>
+      <h2>{section.title}</h2>
+      <p>{section.body}</p>
+    </>
+  ))}
+
+  <h2>{t.privacy.analyticsTitle}</h2>
+  <p>{t.privacy.analyticsBody}</p>
+</Base>

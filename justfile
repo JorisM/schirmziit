@@ -97,3 +97,4 @@ ios-record: ios-project
         -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test CODE_SIGNING_ALLOWED=NO
     cd ios && xcodebuild -project Schirmziit.xcodeproj -scheme Schirmziit \
         -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test CODE_SIGNING_ALLOWED=NO
+

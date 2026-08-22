@@ -20,6 +20,8 @@
     <string name="pair_bad_input">Vérifie l’adresse du serveur (https) et le code.</string>
     <string name="pair_parent_title">Se connecter pour relier ce téléphone</string>
     <string name="pair_parent_body">Connecte-toi une fois avec le compte parent. Ce téléphone garde sa propre clé — la session est fermée juste après.</string>
+    <string name="pair_server_current">Serveur : %1$s</string>
+    <string name="pair_server_change">Changer de serveur</string>
     <string name="pair_email">E-mail du parent</string>
     <string name="pair_password">Mot de passe</string>
     <string name="pair_parent_submit">Se connecter</string>

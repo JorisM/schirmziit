@@ -20,6 +20,8 @@
     <string name="pair_bad_input">Controlla l’indirizzo del server (https) e il codice.</string>
     <string name="pair_parent_title">Accedi per collegare questo telefono</string>
     <string name="pair_parent_body">Accedi una volta con l’account del genitore. Questo telefono tiene una chiave propria — la sessione viene chiusa subito dopo.</string>
+    <string name="pair_server_current">Server: %1$s</string>
+    <string name="pair_server_change">Cambia server</string>
     <string name="pair_email">Email del genitore</string>
     <string name="pair_password">Password</string>
     <string name="pair_parent_submit">Accedi</string>

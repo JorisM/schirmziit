@@ -84,6 +84,10 @@ fun PairingScreen(
     var chosen by rememberSaveable { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf(false) }
     var status by rememberSaveable { mutableStateOf<String?>(null) }
+    // Collapsed by default. Compose has no content type for "not fillable", so a
+    // visible server field sitting above the email field gets filled with the
+    // email by a password manager's heuristics. Almost nobody edits it anyway.
+    var showServer by rememberSaveable { mutableStateOf(false) }
 
     // stringResource is a composable and cannot be called from the coroutines.
     val pairingLabel = stringResource(R.string.pair_working)
@@ -241,12 +245,6 @@ fun PairingScreen(
         } else {
             Text(stringResource(R.string.pair_parent_body))
 
-            OutlinedTextField(
-                value = server,
-                onValueChange = { server = it },
-                label = { Text(stringResource(R.string.pair_server)) },
-                modifier = Modifier.fillMaxWidth(),
-            )
             // contentType is what makes a password manager offer to fill these.
             // Without it the email field is just a text box to Android, which is
             // why only the password field was being offered.
@@ -284,7 +282,29 @@ fun PairingScreen(
             // a scrolling column, so with the keyboard up the error was off screen
             // and the screen looked like it had simply done nothing.
             status?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+
             HorizontalDivider()
+            if (showServer) {
+                OutlinedTextField(
+                    value = server,
+                    onValueChange = { server = it },
+                    label = { Text(stringResource(R.string.pair_server)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Uri,
+                        autoCorrectEnabled = false,
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            } else {
+                Text(
+                    stringResource(R.string.pair_server_current, server),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                TextButton(onClick = { showServer = true }) {
+                    Text(stringResource(R.string.pair_server_change))
+                }
+            }
             TextButton(onClick = { useCode = true }) {
                 Text(stringResource(R.string.pair_code_instead))
             }

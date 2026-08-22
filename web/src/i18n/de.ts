@@ -5,7 +5,7 @@ export const de: Strings = {
   meta: { localeName: 'Deutsch', htmlLang: 'de-CH' },
 
   app: {
-    name: 'Nestling',
+    name: 'Schirmziit',
     tagline: 'Bildschirmzeit sehen, ohne heimlich zu sein',
     help: 'Wie funktioniert das?',
     signOut: 'Abmelden',
@@ -14,7 +14,7 @@ export const de: Strings = {
 
   login: {
     heading: 'Anmelden',
-    intro: 'Nestling läuft auf deinem eigenen Server. Es gibt kein Konto bei einer Firma.',
+    intro: 'Schirmziit läuft auf deinem eigenen Server. Es gibt kein Konto bei einer Firma.',
     email: 'E-Mail',
     password: 'Passwort',
     submit: 'Anmelden',
@@ -69,7 +69,7 @@ export const de: Strings = {
     revoked: 'getrennt',
     addDevice: 'Handy verbinden',
     pairTitle: 'Handy verbinden',
-    pairStep1: 'Öffne Nestling auf dem Handy des Kindes.',
+    pairStep1: 'Öffne Schirmziit auf dem Handy des Kindes.',
     pairStep2: 'Scanne diesen Code — oder tippe die acht Zeichen ein.',
     pairStep3: 'Fertig. Das Handy meldet sich danach etwa alle 30 Minuten.',
     codeExpires: 'Gültig bis',
@@ -77,22 +77,22 @@ export const de: Strings = {
   },
 
   help: {
-    title: 'Wie Nestling funktioniert',
+    title: 'Wie Schirmziit funktioniert',
     intro:
-      'Nestling zeigt dir, wie lange und wann das Handy deines Kindes benutzt wird. Nichts davon ist geheim: das Kind sieht dieselben Zahlen auf seinem Handy.',
-    measuresTitle: 'Was Nestling misst',
+      'Schirmziit zeigt dir, wie lange und wann das Handy deines Kindes benutzt wird. Nichts davon ist geheim: das Kind sieht dieselben Zahlen auf seinem Handy.',
+    measuresTitle: 'Was Schirmziit misst',
     measures: [
       'Welche App im Vordergrund war und wie lange — pro Stunde.',
       'Wie oft das Handy entsperrt wurde.',
       'Wann am Tag das Handy benutzt wurde.',
     ],
-    notCollectedTitle: 'Was Nestling nicht sammelt',
+    notCollectedTitle: 'Was Schirmziit nicht sammelt',
     notCollected: [
       'Keine Inhalte: keine Nachrichten, Chats, Suchbegriffe, Fotos oder Tastatureingaben.',
       'Keinen Standort.',
       'Keine Webseiten und keine Videos, die angeschaut wurden.',
       'Keine Mikrofon- oder Kameraaufnahmen.',
-      'Nichts, was das Handy blockiert — Nestling schaltet keine App ab.',
+      'Nichts, was das Handy blockiert — Schirmziit schaltet keine App ab.',
     ],
     howTitle: 'Wie es technisch läuft',
     howSteps: [
@@ -113,9 +113,9 @@ export const de: Strings = {
     stopTitle: 'Aufhören',
     stop:
       'Trenne das Gerät hier in der Übersicht — dann nimmt der Server keine Daten mehr davon an. Oder deinstalliere die App auf dem Handy. Beides wirkt sofort.',
-    notAControlTitle: 'Was Nestling nicht ist',
+    notAControlTitle: 'Was Schirmziit nicht ist',
     notAControl:
-      'Nestling sperrt nichts und filtert nichts. Es ist eine Grundlage für ein Gespräch, keine Fernsteuerung. Zeitlimiten und Sperren sind bewusst ein späterer, getrennter Schritt.',
+      'Schirmziit sperrt nichts und filtert nichts. Es ist eine Grundlage für ein Gespräch, keine Fernsteuerung. Zeitlimiten und Sperren sind bewusst ein späterer, getrennter Schritt.',
   },
 
   errors: {

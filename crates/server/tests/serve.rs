@@ -4,8 +4,8 @@
 //! `ConnectInfo` it answers 500 to every auth request. Every other test calls
 //! `app()` (no limiter) or supplies the header, so none of them can see it.
 
-use nestling_server::config::{Config, Registration};
-use nestling_server::{AppState, app_with_rate_limits};
+use schirmziit_server::config::{Config, Registration};
+use schirmziit_server::{AppState, app_with_rate_limits};
 use sqlx::PgPool;
 use std::io::{BufRead, BufReader, Write};
 use std::net::{SocketAddr, TcpStream};

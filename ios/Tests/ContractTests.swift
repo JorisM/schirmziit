@@ -1,5 +1,5 @@
 import XCTest
-@testable import Nestling
+@testable import Schirmziit
 
 /// The read endpoints are not part of `core::wire`, so these models are
 /// hand-written — which means they can drift from the server. These fixtures are
@@ -60,7 +60,7 @@ final class ContractTests: XCTestCase {
 
     func testDecodesProblemJson() throws {
         let problem = try decode(
-            #"{"type":"https://nestling.dev/problems/not-found","title":"not-found","status":404,"detail":"not found"}"#,
+            #"{"type":"https://schirmziit.ch/problems/not-found","title":"not-found","status":404,"detail":"not found"}"#,
             as: ApiProblem.self
         )
         XCTAssertEqual(problem.status, 404)

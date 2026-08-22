@@ -49,7 +49,7 @@ struct HelpView: View {
                         .foregroundStyle(Palette.inkMuted)
                 }
             }
-            .nestlingList()
+            .schirmziitList()
             .navigationTitle("help.title")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {

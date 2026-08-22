@@ -191,7 +191,7 @@ pub async fn mint_enrollment(
     // The URL travels in the QR: the app never ships a hardcoded backend, so a
     // self-hoster gets the same one-scan pairing as a hosted instance.
     let qr_payload = format!(
-        "nestling://enroll?url={}&code={}",
+        "schirmziit://enroll?url={}&code={}",
         state.config.public_url, code
     );
 

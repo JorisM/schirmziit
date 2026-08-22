@@ -32,7 +32,7 @@ struct ChildrenView: View {
                     }
                 }
             }
-            .nestlingList()
+            .schirmziitList()
             .navigationTitle("children.title")
             .navigationDestination(for: ChildResponse.self) { child in
                 ChildDetailView(child: child, client: client)
@@ -52,7 +52,7 @@ struct ChildrenView: View {
 #if DEBUG
                 // Debug builds only: lets a screenshot run open the first child
                 // without a tap. Absent from release builds.
-                if ProcessInfo.processInfo.environment["NESTLING_OPEN_FIRST_CHILD"] == "1",
+                if ProcessInfo.processInfo.environment["SCHIRMZIIT_OPEN_FIRST_CHILD"] == "1",
                    let first = children.first {
                     path = [first]
                 }

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Nestling</string>
+    <string name="app_name">Schirmziit</string>
     <string name="tagline">Il tempo di schermo, in chiaro</string>
 
     <string name="permission_title">Consentire l’accesso ai dati di utilizzo</string>
-    <string name="permission_body">Nestling ha bisogno dell’autorizzazione Android «Accesso ai dati di utilizzo» per vedere quanto vengono usate le app. Android permette di concederla solo nelle Impostazioni.</string>
+    <string name="permission_body">Schirmziit ha bisogno dell’autorizzazione Android «Accesso ai dati di utilizzo» per vedere quanto vengono usate le app. Android permette di concederla solo nelle Impostazioni.</string>
     <string name="permission_open_settings">Apri Impostazioni</string>
     <string name="permission_granted">L’ho consentito</string>
 
@@ -16,7 +16,7 @@
     <string name="pair_submit">Collega</string>
     <string name="pair_working">Collegamento…</string>
     <string name="pair_failed">Collegamento non riuscito: %1$s</string>
-    <string name="pair_bad_qr">Questo codice QR non è un codice Nestling.</string>
+    <string name="pair_bad_qr">Questo codice QR non è un codice Schirmziit.</string>
     <string name="pair_bad_input">Controlla l’indirizzo del server (https) e il codice.</string>
 
     <string name="status_reporting">Il tempo di schermo viene trasmesso.</string>

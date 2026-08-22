@@ -10,7 +10,7 @@ export const locales = { de, fr, it, en } as const
 export type Locale = keyof typeof locales
 export const localeOrder: Locale[] = ['de', 'fr', 'it', 'en']
 
-const STORAGE_KEY = 'nestling.locale'
+const STORAGE_KEY = 'schirmziit.locale'
 
 /**
  * Browser language decides, English is the fallback. A Swiss household can have

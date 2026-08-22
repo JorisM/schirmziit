@@ -1,10 +1,10 @@
-"app.name" = "Nestling";
+"app.name" = "Schirmziit";
 "app.help" = "Wie das funktioniert";
 "app.signout" = "Abmelden";
 
-"signin.intro" = "Nestling läuft auf dem eigenen Server deiner Familie. Es gibt kein Konto bei einer Firma.";
+"signin.intro" = "Schirmziit läuft auf dem eigenen Server deiner Familie. Es gibt kein Konto bei einer Firma.";
 "signin.server" = "Server";
-"signin.server.placeholder" = "https://nestling.beispiel.ch";
+"signin.server.placeholder" = "https://schirmziit.beispiel.ch";
 "signin.account" = "Dein Konto";
 "signin.email" = "E-Mail";
 "signin.password" = "Passwort";
@@ -33,18 +33,18 @@
 "devices.stale.help" = "Seit über 90 Minuten keine Meldung. Solange das so ist, sind die Zahlen oben unvollständig — nicht unbedingt tief.";
 "devices.never" = "hat sich noch nie gemeldet";
 
-"help.title" = "Wie Nestling funktioniert";
-"help.intro" = "Nestling zeigt, wie lange und wann das Handy deines Kindes benutzt wird. Nichts davon ist geheim: das Kind sieht dieselben Zahlen auf seinem Handy.";
-"help.measures.title" = "Was Nestling misst";
+"help.title" = "Wie Schirmziit funktioniert";
+"help.intro" = "Schirmziit zeigt, wie lange und wann das Handy deines Kindes benutzt wird. Nichts davon ist geheim: das Kind sieht dieselben Zahlen auf seinem Handy.";
+"help.measures.title" = "Was Schirmziit misst";
 "help.measures.1" = "Welche App im Vordergrund war und wie lange, pro Stunde.";
 "help.measures.2" = "Wie oft das Handy entsperrt wurde.";
 "help.measures.3" = "Wann am Tag das Handy benutzt wurde.";
-"help.never.title" = "Was Nestling nie sammelt";
+"help.never.title" = "Was Schirmziit nie sammelt";
 "help.never.1" = "Keine Nachrichten, Chats, Suchbegriffe, Fotos oder Tastatureingaben.";
 "help.never.2" = "Keinen Standort.";
 "help.never.3" = "Keine Webseiten und keine Videos, die angeschaut wurden.";
 "help.never.4" = "Keine Mikrofon- oder Kameraaufnahmen.";
-"help.never.5" = "Es wird nichts blockiert — Nestling schaltet keine App ab.";
+"help.never.5" = "Es wird nichts blockiert — Schirmziit schaltet keine App ab.";
 "help.how.title" = "Wie es läuft";
 "help.how.1" = "Eine kleine App auf dem Handy des Kindes liest die Nutzungsstatistik, die Android ohnehin führt.";
 "help.how.2" = "Etwa alle 30 Minuten schickt sie Stundenwerte an deinen Server.";
@@ -54,8 +54,8 @@
 "help.where" = "Auf dem eigenen Server deiner Familie, in deiner eigenen Datenbank. Keine Firma dazwischen, keine Weitergabe an Dritte.";
 "help.retention.title" = "Wie lange";
 "help.retention" = "Stundenwerte bleiben 13 Monate, danach nur noch Tagessummen. Du kannst die Daten eines Kindes jederzeit löschen.";
-"help.notacontrol.title" = "Was Nestling nicht ist";
-"help.notacontrol" = "Nestling sperrt nichts und filtert nichts. Es ist eine Grundlage für ein Gespräch, keine Fernsteuerung.";
+"help.notacontrol.title" = "Was Schirmziit nicht ist";
+"help.notacontrol" = "Schirmziit sperrt nichts und filtert nichts. Es ist eine Grundlage für ein Gespräch, keine Fernsteuerung.";
 "help.swiss" = "Entwickelt in der Schweiz. Frei und Open Source.";
 
 "error.offline" = "Keine Verbindung zum Server.";

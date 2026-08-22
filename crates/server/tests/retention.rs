@@ -2,7 +2,7 @@ mod helpers;
 use axum::http::StatusCode;
 use chrono::{DateTime, Duration, TimeZone, Utc};
 use helpers::TestApp;
-use nestling_server::retention;
+use schirmziit_server::retention;
 use sqlx::PgPool;
 
 async fn insert_hour(pool: &PgPool, device_id: &str, at: DateTime<Utc>, ms: i64) {

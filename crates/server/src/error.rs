@@ -56,7 +56,7 @@ impl IntoResponse for ApiError {
             other => other.to_string(),
         };
         let body = serde_json::json!({
-            "type": format!("https://nestling.dev/problems/{kind}"),
+            "type": format!("https://schirmziit.ch/problems/{kind}"),
             "title": kind,
             "status": status.as_u16(),
             "detail": detail,

@@ -32,8 +32,8 @@ export type Site = {
     how: string[]
     ribbonTitle: string
     ribbonBody: string
-    honestTitle: string
-    honestBody: string
+    childSeesTitle: string
+    childSeesBody: string
     platformsTitle: string
     platformsBody: string
     androidLabel: string
@@ -91,5 +91,11 @@ export type Site = {
     analyticsTitle: string
     analyticsBody: string
   }
+  resources: {
+    title: string
+    lead: string
+    items: { name: string; note: string; href: string }[]
+  }
+
   footer: { madeIn: string; source: string; contact: string }
 }

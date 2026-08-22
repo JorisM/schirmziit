@@ -1,4 +1,4 @@
-# Nestling, self-hosted. Two containers: the app (which serves the dashboard
+# Schirmziit, self-hosted. Two containers: the app (which serves the dashboard
 # from inside its own binary) and Postgres.
 #
 #   cp .env.example .env   # then edit it
@@ -13,28 +13,28 @@ services:
     image: postgres:18
     restart: unless-stopped
     environment:
-      POSTGRES_DB: nestling
-      POSTGRES_USER: nestling
+      POSTGRES_DB: schirmziit
+      POSTGRES_USER: schirmziit
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
     volumes:
       # /var/lib/postgresql, NOT /var/lib/postgresql/data: the postgres:18+
       # images store data in a major-version subdirectory and refuse to start
       # against a volume mounted at the old path.
-      - nestling-db:/var/lib/postgresql
+      - schirmziit-db:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U nestling -d nestling"]
+      test: ["CMD-SHELL", "pg_isready -U schirmziit -d schirmziit"]
       interval: 10s
       timeout: 5s
       retries: 10
 
   app:
-    image: ghcr.io/jorism/nestling:latest
+    image: ghcr.io/jorism/schirmziit:latest
     restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgres://nestling:${POSTGRES_PASSWORD}@db:5432/nestling
+      DATABASE_URL: postgres://schirmziit:${POSTGRES_PASSWORD}@db:5432/schirmziit
       # Must match the address phones and browsers actually use.
       PUBLIC_URL: ${PUBLIC_URL:?set PUBLIC_URL in .env}
       # first-user-only: the first account created wins, then registration
@@ -50,4 +50,4 @@ services:
       - "127.0.0.1:8080:8080"
 
 volumes:
-  nestling-db:
+  schirmziit-db:

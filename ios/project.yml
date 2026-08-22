@@ -1,8 +1,8 @@
 # Generated project: xcodegen keeps the Xcode project declarative, the same way
 # the rest of this repo avoids clicked-together state.
-name: Nestling
+name: Schirmziit
 options:
-  bundleIdPrefix: ch.jorisda.nestling
+  bundleIdPrefix: ch.jorisda.schirmziit
   deploymentTarget:
     iOS: "17.0"
   createIntermediateGroups: true
@@ -16,7 +16,7 @@ settings:
     SWIFT_STRICT_CONCURRENCY: complete
 
 targets:
-  Nestling:
+  Schirmziit:
     type: application
     platform: iOS
     sources:
@@ -24,7 +24,7 @@ targets:
     info:
       path: Sources/Resources/Info.plist
       properties:
-        CFBundleDisplayName: Nestling
+        CFBundleDisplayName: Schirmziit
         CFBundleShortVersionString: $(MARKETING_VERSION)
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
@@ -37,32 +37,32 @@ targets:
         CFBundleLocalizations: [en, de, fr, it]
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.nestling.viewer
+        PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.viewer
         CODE_SIGN_STYLE: Automatic
         GENERATE_INFOPLIST_FILE: NO
-        INFOPLIST_KEY_CFBundleDisplayName: Nestling
+        INFOPLIST_KEY_CFBundleDisplayName: Schirmziit
         TARGETED_DEVICE_FAMILY: "1,2"
 
-  NestlingTests:
+  SchirmziitTests:
     type: bundle.unit-test
     platform: iOS
     sources:
       - path: Tests
     dependencies:
-      - target: Nestling
+      - target: Schirmziit
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.nestling.viewer.tests
+        PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.viewer.tests
         # Test bundles need an Info.plist to code sign; let Xcode synthesise it
         # rather than checking in a second near-empty plist.
         GENERATE_INFOPLIST_FILE: YES
 
 schemes:
-  Nestling:
+  Schirmziit:
     build:
       targets:
-        Nestling: all
-        NestlingTests: [test]
+        Schirmziit: all
+        SchirmziitTests: [test]
     test:
       targets:
-        - NestlingTests
+        - SchirmziitTests

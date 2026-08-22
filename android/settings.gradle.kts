@@ -11,5 +11,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "nestling-agent"
+rootProject.name = "schirmziit-agent"
 include(":app")

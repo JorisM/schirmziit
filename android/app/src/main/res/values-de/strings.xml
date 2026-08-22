@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Schweizer Hochdeutsch: kein ß, du-Form. -->
 <resources>
-    <string name="app_name">Nestling</string>
+    <string name="app_name">Schirmziit</string>
     <string name="tagline">Bildschirmzeit, offen sichtbar</string>
 
     <string name="permission_title">Nutzungszugriff erlauben</string>
-    <string name="permission_body">Nestling braucht die Android-Berechtigung «Nutzungszugriff», um zu sehen, wie lange Apps benutzt werden. Android lässt das nur in den Einstellungen zu.</string>
+    <string name="permission_body">Schirmziit braucht die Android-Berechtigung «Nutzungszugriff», um zu sehen, wie lange Apps benutzt werden. Android lässt das nur in den Einstellungen zu.</string>
     <string name="permission_open_settings">Einstellungen öffnen</string>
     <string name="permission_granted">Habe ich erlaubt</string>
 
@@ -17,7 +17,7 @@
     <string name="pair_submit">Verbinden</string>
     <string name="pair_working">Verbinde…</string>
     <string name="pair_failed">Verbinden nicht möglich: %1$s</string>
-    <string name="pair_bad_qr">Dieser QR-Code gehört nicht zu Nestling.</string>
+    <string name="pair_bad_qr">Dieser QR-Code gehört nicht zu Schirmziit.</string>
     <string name="pair_bad_input">Prüfe die Server-Adresse (https) und den Code.</string>
 
     <string name="status_reporting">Bildschirmzeit wird übermittelt.</string>

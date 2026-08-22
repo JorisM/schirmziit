@@ -1374,51 +1374,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "nestling-core"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "chrono-tz",
- "serde",
- "serde_json",
- "thiserror 2.0.20",
- "uniffi",
- "utoipa",
-]
-
-[[package]]
-name = "nestling-server"
-version = "0.1.0"
-dependencies = [
- "argon2",
- "axum",
- "axum-extra",
- "chrono",
- "chrono-tz",
- "http-body-util",
- "jsonschema",
- "mime_guess",
- "nestling-core",
- "password-hash",
- "rand 0.9.5",
- "rust-embed",
- "serde",
- "serde_json",
- "sha2 0.11.0",
- "sqlx",
- "thiserror 2.0.20",
- "time",
- "tokio",
- "tower",
- "tower-http 0.7.0",
- "tower_governor",
- "tracing",
- "tracing-subscriber",
- "utoipa",
- "uuid",
-]
-
-[[package]]
 name = "no-std-compat"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2016,6 +1971,51 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502"
 dependencies = [
  "winapi-util",
+]
+
+[[package]]
+name = "schirmziit-core"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "chrono-tz",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.20",
+ "uniffi",
+ "utoipa",
+]
+
+[[package]]
+name = "schirmziit-server"
+version = "0.1.0"
+dependencies = [
+ "argon2",
+ "axum",
+ "axum-extra",
+ "chrono",
+ "chrono-tz",
+ "http-body-util",
+ "jsonschema",
+ "mime_guess",
+ "password-hash",
+ "rand 0.9.5",
+ "rust-embed",
+ "schirmziit-core",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "sqlx",
+ "thiserror 2.0.20",
+ "time",
+ "tokio",
+ "tower",
+ "tower-http 0.7.0",
+ "tower_governor",
+ "tracing",
+ "tracing-subscriber",
+ "utoipa",
+ "uuid",
 ]
 
 [[package]]

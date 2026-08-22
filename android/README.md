@@ -1,4 +1,4 @@
-# nestling android agent
+# schirmziit android agent
 
 ## Toolchain (pinned, as installed 2026-08-21)
 
@@ -23,7 +23,7 @@
   is a hard error; the plugin list must not include it.
 - **compileSdk must be 37**, not 36: Compose BOM 2026.08.00 ships artifacts that
   require API 37 and `checkDebugAarMetadata` fails otherwise.
-- JVM unit tests need a **host** build of the core (`libnestling_core.dylib` in
+- JVM unit tests need a **host** build of the core (`libschirmziit_core.dylib` in
   `app/src/test/resources/darwin-aarch64/`), which `just android-bindings`
   produces. Without it every test fails with `UnsatisfiedLinkError`.
 
@@ -48,7 +48,7 @@ passwords whose values contain spaces and are unquoted, which dotenvy rejects â€
 so no crate under `pve/` can compile with the macros. Moving up one level also
 matches where this project is headed: its own repository.
 
-`nestling/.env` (gitignored) carries the local `DATABASE_URL` and
+`schirmziit/.env` (gitignored) carries the local `DATABASE_URL` and
 `SQLX_OFFLINE=true`.
 
 ## Build

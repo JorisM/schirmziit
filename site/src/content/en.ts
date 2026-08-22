@@ -7,25 +7,25 @@ export const en: Site = {
 
   home: {
     kicker: 'Screen time for families',
-    title: 'See how long and when — without being sneaky',
+    title: 'Screen time in view, to protect your child',
     lead:
-      'Nestling shows how long and at what time of day your child’s phone is used. The child sees the same numbers on their own phone. No content, no location, no remote control.',
+      'Schirmziit shows how long and at what time of day your child’s phone is used, so you notice when it becomes too much and can talk about it. No content, no location, no remote control.',
     ctaSelfHost: 'Self-host it',
     ctaHosted: 'Hosted version',
 
-    measuresTitle: 'What Nestling measures',
+    measuresTitle: 'What Schirmziit measures',
     measures: [
       'Which app was in the foreground and for how long — per hour.',
       'How often the phone was unlocked.',
       'What time of day the phone was used.',
     ],
-    neverTitle: 'What Nestling never collects',
+    neverTitle: 'What Schirmziit never collects',
     never: [
       'No messages, chats, searches, photos or keystrokes.',
       'No location.',
       'No websites and no videos that were watched.',
       'No microphone or camera recordings.',
-      'Nothing is blocked — Nestling never switches an app off.',
+      'Nothing is blocked — Schirmziit never switches an app off.',
     ],
 
     howTitle: 'How it works',
@@ -37,11 +37,11 @@ export const en: Site = {
 
     ribbonTitle: 'Not just how much, but when',
     ribbonBody:
-      'An hour at 11pm means something different from an hour after lunch. So Nestling draws the day as a ribbon from midnight to midnight — you read the shape of the day at a glance.',
+      'An hour at 11pm means something different from an hour after lunch. So Schirmziit draws the day as a ribbon from midnight to midnight — you read the shape of the day at a glance.',
 
-    honestTitle: 'Open, not covert',
-    honestBody:
-      'The app on the child’s phone is visible, has an icon, and shows a permanent notice that screen time is being reported. Its own screen says, in the same words, what is sent and what is not. If you want to read along in secret, this is the wrong tool.',
+    childSeesTitle: 'The child sees the same numbers',
+    childSeesBody:
+      'The app on the child’s phone is visible and shows exactly what your dashboard shows: how long, which app, how often unlocked. It stays a shared basis for a conversation rather than a check running in the background.',
 
     platformsTitle: 'Devices',
     platformsBody: 'What works today — and what does not.',
@@ -54,7 +54,7 @@ export const en: Site = {
 
     openTitle: 'Free and checkable',
     openBody:
-      'Nestling is open source. You can read what gets sent, and host it yourself — including if we ever stop.',
+      'Schirmziit is open source. You can read what gets sent, and host it yourself — including if we ever stop.',
   },
 
   choose: {
@@ -62,7 +62,7 @@ export const en: Site = {
     selfHostTitle: 'Self-hosting',
     selfHostFor: 'For you if you already run a server or a Raspberry Pi.',
     selfHostPoints: [
-      'Two containers: Nestling and Postgres.',
+      'Two containers: Schirmziit and Postgres.',
       'The data stays on your hardware, in your database.',
       'Updates, backups and TLS are yours to handle.',
       'Free, with no account with us.',
@@ -80,7 +80,7 @@ export const en: Site = {
   selfHost: {
     title: 'Self-hosting',
     lead:
-      'Nestling is one program that serves its own dashboard, plus a Postgres database. No Redis, no message broker, no cloud service.',
+      'Schirmziit is one program that serves its own dashboard, plus a Postgres database. No Redis, no message broker, no cloud service.',
     needTitle: 'What you need',
     need: [
       'A machine with Docker — a Raspberry Pi 4 is enough.',
@@ -90,7 +90,7 @@ export const en: Site = {
     stepsTitle: 'Installation',
     proxyTitle: 'Reverse proxy and TLS',
     proxyBody:
-      'Nestling listens on 127.0.0.1:8080 only. Put a reverse proxy in front to terminate TLS, and set PUBLIC_URL to exactly the address you type in the browser. That address is baked into the pairing QR code: get it wrong and the phone pairs once and then never reports again.',
+      'Schirmziit listens on 127.0.0.1:8080 only. Put a reverse proxy in front to terminate TLS, and set PUBLIC_URL to exactly the address you type in the browser. That address is baked into the pairing QR code: get it wrong and the phone pairs once and then never reports again.',
     firstUserTitle: 'The first account',
     firstUserBody:
       'By default exactly one account may register, and then registration closes. Open the dashboard, create your account, then set ALLOW_REGISTRATION to “off”.',
@@ -152,7 +152,7 @@ export const en: Site = {
       },
       {
         title: 'What is not stored',
-        body: 'No messages, chats, searches, photos, keystrokes, websites, videos, microphone or camera data, and no location. Nestling does not even ask for those permissions.',
+        body: 'No messages, chats, searches, photos, keystrokes, websites, videos, microphone or camera data, and no location. Schirmziit does not even ask for those permissions.',
       },
       {
         title: 'For how long',
@@ -170,6 +170,34 @@ export const en: Site = {
     analyticsTitle: 'This website',
     analyticsBody:
       'This site counts visits with a self-hosted Umami instance: no cookies, no IP storage, nothing shared with third parties. We only want to know whether anyone is reading.',
+  },
+
+  resources: {
+    title: 'Help and guidance',
+    lead:
+      'Schirmziit shows numbers, not advice. How much screen time makes sense, and what helps when it turns into an argument, is better explained by these Swiss organisations:',
+    items: [
+      {
+        name: 'Jugend und Medien',
+        note: 'The federal platform for media skills: age guidance, house rules, parent leaflets (DE/FR/IT).',
+        href: 'https://www.jugendundmedien.ch/',
+      },
+      {
+        name: 'Pro Juventute — screen time',
+        note: 'Concrete guide values per age and tips for agreements within the family.',
+        href: 'https://www.projuventute.ch/de/eltern/medien-internet/bildschirmzeit',
+      },
+      {
+        name: 'Counselling 147',
+        note: 'Free, round-the-clock counselling for children and teenagers by phone, chat or SMS.',
+        href: 'https://www.147.ch/',
+      },
+      {
+        name: 'Zischtig.ch',
+        note: 'Swiss specialists in media skills: parents’ evenings, courses, one-to-one advice.',
+        href: 'https://www.zischtig.ch/',
+      },
+    ],
   },
 
   footer: { madeIn: 'Made in Switzerland', source: 'Source code', contact: 'Contact' },

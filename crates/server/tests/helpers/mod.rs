@@ -5,8 +5,8 @@ use axum::Router;
 use axum::body::Body;
 use axum::http::{HeaderValue, Request, StatusCode, header};
 use http_body_util::BodyExt;
-use nestling_server::config::Config;
-use nestling_server::{AppState, app};
+use schirmziit_server::config::Config;
+use schirmziit_server::{AppState, app};
 use sqlx::PgPool;
 use tower::ServiceExt;
 

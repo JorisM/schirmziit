@@ -8,25 +8,25 @@ export const de: Site = {
 
   home: {
     kicker: 'Bildschirmzeit für Familien',
-    title: 'Sehen, wie lange und wann — ohne heimlich zu sein',
+    title: 'Bildschirmzeit im Blick, zum Schutz deines Kindes',
     lead:
-      'Nestling zeigt dir, wie lange und zu welcher Tageszeit das Handy deines Kindes benutzt wird. Das Kind sieht dieselben Zahlen auf seinem Handy. Keine Inhalte, kein Standort, keine Fernsteuerung.',
+      'Schirmziit zeigt dir, wie lange und zu welcher Tageszeit das Handy deines Kindes benutzt wird. Damit du merkst, wenn es zu viel wird, und darüber reden kannst. Keine Inhalte, kein Standort, keine Fernsteuerung.',
     ctaSelfHost: 'Selbst hosten',
     ctaHosted: 'Gehostete Version',
 
-    measuresTitle: 'Was Nestling misst',
+    measuresTitle: 'Was Schirmziit misst',
     measures: [
       'Welche App im Vordergrund war und wie lange — pro Stunde.',
       'Wie oft das Handy entsperrt wurde.',
       'Wann am Tag das Handy benutzt wurde.',
     ],
-    neverTitle: 'Was Nestling nie sammelt',
+    neverTitle: 'Was Schirmziit nie sammelt',
     never: [
       'Keine Nachrichten, Chats, Suchbegriffe, Fotos oder Tastatureingaben.',
       'Keinen Standort.',
       'Keine Webseiten und keine Videos, die angeschaut wurden.',
       'Keine Mikrofon- oder Kameraaufnahmen.',
-      'Nichts wird blockiert — Nestling schaltet keine App ab.',
+      'Nichts wird blockiert — Schirmziit schaltet keine App ab.',
     ],
 
     howTitle: 'Wie es funktioniert',
@@ -38,11 +38,11 @@ export const de: Site = {
 
     ribbonTitle: 'Nicht nur wie viel, sondern wann',
     ribbonBody:
-      'Eine Stunde um 23 Uhr bedeutet etwas anderes als eine Stunde nach dem Mittagessen. Darum zeigt Nestling den Tag als Band von Mitternacht bis Mitternacht — die Form des Tages siehst du auf einen Blick.',
+      'Eine Stunde um 23 Uhr bedeutet etwas anderes als eine Stunde nach dem Mittagessen. Darum zeigt Schirmziit den Tag als Band von Mitternacht bis Mitternacht — die Form des Tages siehst du auf einen Blick.',
 
-    honestTitle: 'Offen statt heimlich',
-    honestBody:
-      'Die App auf dem Kinderhandy ist sichtbar, hat ein Icon und zeigt dauerhaft eine Meldung, dass Bildschirmzeit übermittelt wird. Auf ihrem Bildschirm steht in derselben Sprache, was gesendet wird und was nicht. Wer heimlich mitlesen will, ist hier falsch.',
+    childSeesTitle: 'Das Kind sieht dieselben Zahlen',
+    childSeesBody:
+      'Die App auf dem Kinderhandy ist sichtbar und zeigt dieselben Werte wie deine Übersicht: wie lange, welche App, wie oft entsperrt. So bleibt es eine gemeinsame Grundlage statt einer Kontrolle im Hintergrund.',
 
     platformsTitle: 'Geräte',
     platformsBody: 'Was heute geht — und was nicht.',
@@ -55,7 +55,7 @@ export const de: Site = {
 
     openTitle: 'Frei und überprüfbar',
     openBody:
-      'Nestling ist Open Source. Du kannst nachlesen, was gesendet wird, und es selbst hosten — auch wenn wir irgendwann aufhören.',
+      'Schirmziit ist Open Source. Du kannst nachlesen, was gesendet wird, und es selbst hosten — auch wenn wir irgendwann aufhören.',
   },
 
   choose: {
@@ -63,7 +63,7 @@ export const de: Site = {
     selfHostTitle: 'Selbst hosten',
     selfHostFor: 'Für dich, wenn du schon einen Server oder einen Raspberry Pi betreibst.',
     selfHostPoints: [
-      'Zwei Container: Nestling und Postgres.',
+      'Zwei Container: Schirmziit und Postgres.',
       'Die Daten bleiben auf deiner Hardware, in deiner Datenbank.',
       'Du bist für Updates, Backups und TLS zuständig.',
       'Kostenlos, ohne Konto bei uns.',
@@ -81,7 +81,7 @@ export const de: Site = {
   selfHost: {
     title: 'Selbst hosten',
     lead:
-      'Nestling ist ein einziges Programm, das die Übersicht gleich mitliefert, plus eine Postgres-Datenbank. Kein Redis, kein Message-Broker, kein Cloud-Dienst.',
+      'Schirmziit ist ein einziges Programm, das die Übersicht gleich mitliefert, plus eine Postgres-Datenbank. Kein Redis, kein Message-Broker, kein Cloud-Dienst.',
     needTitle: 'Was du brauchst',
     need: [
       'Einen Rechner mit Docker — ein Raspberry Pi 4 genügt.',
@@ -91,7 +91,7 @@ export const de: Site = {
     stepsTitle: 'Installation',
     proxyTitle: 'Reverse Proxy und TLS',
     proxyBody:
-      'Nestling lauscht nur auf 127.0.0.1:8080. Stelle einen Reverse Proxy davor, der TLS beendet, und setze PUBLIC_URL genau auf die Adresse, die du im Browser eingibst. Diese Adresse landet im QR-Code fürs Verbinden: ist sie falsch, verbindet sich das Handy einmal und meldet dann nie wieder.',
+      'Schirmziit lauscht nur auf 127.0.0.1:8080. Stelle einen Reverse Proxy davor, der TLS beendet, und setze PUBLIC_URL genau auf die Adresse, die du im Browser eingibst. Diese Adresse landet im QR-Code fürs Verbinden: ist sie falsch, verbindet sich das Handy einmal und meldet dann nie wieder.',
     firstUserTitle: 'Erstes Konto',
     firstUserBody:
       'Standardmässig darf sich genau ein Konto registrieren, danach ist die Registrierung zu. Öffne die Übersicht, lege dein Konto an, und setze ALLOW_REGISTRATION anschliessend auf «off».',
@@ -155,7 +155,7 @@ export const de: Site = {
       },
       {
         title: 'Was nicht gespeichert wird',
-        body: 'Keine Nachrichten, Chats, Suchbegriffe, Fotos, Tastatureingaben, Webseiten, Videos, Mikrofon- oder Kameradaten und kein Standort. Nestling fragt diese Berechtigungen gar nicht an.',
+        body: 'Keine Nachrichten, Chats, Suchbegriffe, Fotos, Tastatureingaben, Webseiten, Videos, Mikrofon- oder Kameradaten und kein Standort. Schirmziit fragt diese Berechtigungen gar nicht an.',
       },
       {
         title: 'Wie lange',
@@ -173,6 +173,34 @@ export const de: Site = {
     analyticsTitle: 'Diese Webseite',
     analyticsBody:
       'Diese Seite zählt Aufrufe mit einer selbst gehosteten Instanz von Umami: keine Cookies, keine IP-Speicherung, keine Weitergabe an Dritte. Wir wollen nur wissen, ob jemand liest.',
+  },
+
+  resources: {
+    title: 'Hilfe und Empfehlungen',
+    lead:
+      'Schirmziit zeigt Zahlen, keine Ratschläge. Wie viel Bildschirmzeit sinnvoll ist und was bei Streit hilft, erklären diese Schweizer Stellen besser als wir:',
+    items: [
+      {
+        name: 'Jugend und Medien',
+        note: 'Nationale Plattform des Bundes: Altersempfehlungen, Regeln, Merkblätter für Eltern.',
+        href: 'https://www.jugendundmedien.ch/',
+      },
+      {
+        name: 'Pro Juventute — Bildschirmzeit',
+        note: 'Konkrete Richtwerte pro Alter und Tipps für Abmachungen in der Familie.',
+        href: 'https://www.projuventute.ch/de/eltern/medien-internet/bildschirmzeit',
+      },
+      {
+        name: 'Beratung 147',
+        note: 'Kostenlose Beratung für Kinder und Jugendliche, rund um die Uhr — per Telefon, Chat oder SMS.',
+        href: 'https://www.147.ch/',
+      },
+      {
+        name: 'Zischtig.ch',
+        note: 'Schweizer Fachstelle für Medienkompetenz: Elternabende, Kurse, Beratung.',
+        href: 'https://www.zischtig.ch/',
+      },
+    ],
   },
 
   footer: {

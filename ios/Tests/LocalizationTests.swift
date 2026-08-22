@@ -1,5 +1,5 @@
 import XCTest
-@testable import Nestling
+@testable import Schirmziit
 
 /// A missing translation shows an English sentence inside a German screen. These
 /// read the shipped .strings files, so the check needs no device.

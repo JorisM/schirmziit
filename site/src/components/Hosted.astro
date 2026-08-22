@@ -6,7 +6,7 @@ interface Props { locale: Locale }
 const { locale } = Astro.props
 const t = sites[locale]
 ---
-<Base locale={locale} page="hosted" title={`${t.hosted.title} — Nestling`} description={t.hosted.lead}>
+<Base locale={locale} page="hosted" title={`${t.hosted.title} — Schirmziit`} description={t.hosted.lead}>
   <h1>{t.hosted.title}</h1>
   <p class="lead">{t.hosted.lead}</p>
 
@@ -22,6 +22,6 @@ const t = sites[locale]
   <h2>{t.hosted.joinTitle}</h2>
   <p>{t.hosted.joinBody}</p>
   <div class="buttons">
-    <a class="button" href="mailto:nestling@jorisda.ch?subject=Nestling%20Beta">{t.hosted.joinCta}</a>
+    <a class="button" href="mailto:schirmziit@jorisda.ch?subject=Schirmziit%20Beta">{t.hosted.joinCta}</a>
   </div>
 </Base>

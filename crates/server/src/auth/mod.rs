@@ -11,7 +11,7 @@ use rand::RngCore;
 use sha2::{Digest, Sha256};
 use uuid::Uuid;
 
-pub const SESSION_COOKIE: &str = "nestling_session";
+pub const SESSION_COOKIE: &str = "schirmziit_session";
 
 pub fn hash_password(plain: &str) -> Result<String, ApiError> {
     // Salt from `rand` 0.9 rather than `SaltString::generate`: that path wants

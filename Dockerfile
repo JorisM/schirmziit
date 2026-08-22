@@ -16,12 +16,12 @@ COPY --from=web /build/web/dist web/dist
 # The committed offline data is what lets the image build without a database,
 # while keeping every query compile-time checked.
 ENV SQLX_OFFLINE=true
-RUN cargo build --release --bin nestling-server
+RUN cargo build --release --bin schirmziit-server
 
 FROM debian:bookworm-slim
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates \
     && rm -rf /var/lib/apt/lists/*
-COPY --from=build /src/target/release/nestling-server /usr/local/bin/nestling-server
+COPY --from=build /src/target/release/schirmziit-server /usr/local/bin/schirmziit-server
 EXPOSE 8080
-ENTRYPOINT ["/usr/local/bin/nestling-server"]
+ENTRYPOINT ["/usr/local/bin/schirmziit-server"]

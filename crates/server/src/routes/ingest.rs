@@ -4,7 +4,7 @@ use crate::routes::enroll::Device;
 use axum::extract::{DefaultBodyLimit, State};
 use axum::{Json, Router, routing::post};
 use chrono::{Duration, Utc};
-use nestling_core::wire::{IngestRequest, IngestResponse, Rejected, SCHEMA_VERSION};
+use schirmziit_core::wire::{IngestRequest, IngestResponse, Rejected, SCHEMA_VERSION};
 
 pub const MAX_HOURS: usize = 500;
 pub const MAX_BODY_BYTES: usize = 1_000_000;

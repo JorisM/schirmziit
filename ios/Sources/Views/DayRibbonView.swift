@@ -15,7 +15,7 @@ struct DayRibbonView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .firstTextBaseline) {
-                Text("child.ribbon.title").font(.headline)
+                L("child.ribbon.title").font(.headline)
                 Spacer()
                 if let selected {
                     Text(verbatim: "\(String(format: "%02d", selected)):00 · \(Formatting.duration(perHour[selected]))")
@@ -52,16 +52,16 @@ struct DayRibbonView: View {
             }
 
             HStack(spacing: 6) {
-                Text("child.ribbon.quiet").font(.caption).foregroundStyle(Palette.inkMuted)
+                L("child.ribbon.quiet").font(.caption).foregroundStyle(Palette.inkMuted)
                 ForEach(0..<6, id: \.self) { step in
                     RoundedRectangle(cornerRadius: 3, style: .continuous)
                         .fill(Palette.ribbon[step])
                         .frame(width: 18, height: 10)
                 }
-                Text("child.ribbon.busy").font(.caption).foregroundStyle(Palette.inkMuted)
+                L("child.ribbon.busy").font(.caption).foregroundStyle(Palette.inkMuted)
             }
 
-            Text("child.ribbon.help")
+            L("child.ribbon.help")
                 .font(.footnote)
                 .foregroundStyle(Palette.inkMuted)
         }

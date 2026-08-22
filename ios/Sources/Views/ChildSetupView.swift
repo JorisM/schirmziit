@@ -30,10 +30,10 @@ struct ChildSetupView: View {
                 }
             }
             .schirmziitList()
-            .navigationTitle("agent.setup.title")
+            .navigationTitle(L("agent.setup.title"))
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button(String(localized: "agent.setup.cancel")) {
+                    Button(S("agent.setup.cancel")) {
                         Task {
                             await model.cancelChildSetup()
                             onCancel()
@@ -45,21 +45,21 @@ struct ChildSetupView: View {
     }
 
     @ViewBuilder private var signInSection: some View {
-        Section { Text("agent.setup.intro").font(.callout).foregroundStyle(Palette.inkMuted) }
+        Section { L("agent.setup.intro").font(.callout).foregroundStyle(Palette.inkMuted) }
 
-        Section("signin.server") {
-            TextField("signin.server.placeholder", text: $server)
+        Section(header: L("signin.server")) {
+            TextField(S("signin.server.placeholder"), text: $server)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
                 .keyboardType(.URL)
         }
 
-        Section("agent.setup.parentaccount") {
-            TextField("signin.email", text: $email)
+        Section(header: L("agent.setup.parentaccount")) {
+            TextField(S("signin.email"), text: $email)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
                 .keyboardType(.emailAddress)
-            SecureField("signin.password", text: $password)
+            SecureField(S("signin.password"), text: $password)
         }
 
         Section {
@@ -68,7 +68,7 @@ struct ChildSetupView: View {
             } label: {
                 HStack {
                     Spacer()
-                    Text(model.isBusy ? "signin.working" : "agent.setup.continue").fontWeight(.semibold)
+                    L(model.isBusy ? "signin.working" : "agent.setup.continue").fontWeight(.semibold)
                     if model.isBusy { ProgressView().padding(.leading, 6) }
                     Spacer()
                 }
@@ -80,13 +80,13 @@ struct ChildSetupView: View {
     }
 
     @ViewBuilder private var childSection: some View {
-        Section(header: Text("agent.setup.whose"), footer: Text("agent.setup.whose.hint")) {
+        Section(header: L("agent.setup.whose"), footer: L("agent.setup.whose.hint")) {
             ForEach(model.setupChildren) { child in
                 Button {
                     chosen = child.id
                 } label: {
                     HStack {
-                        Text(child.displayName).foregroundStyle(Palette.ink)
+                        Text(verbatim: child.displayName).foregroundStyle(Palette.ink)
                         Spacer()
                         if chosen == child.id {
                             Image(systemName: "checkmark").foregroundStyle(Palette.accent)
@@ -97,8 +97,8 @@ struct ChildSetupView: View {
             }
         }
 
-        Section("agent.pairing.label") {
-            TextField("agent.pairing.label.placeholder", text: $label)
+        Section(header: L("agent.pairing.label")) {
+            TextField(S("agent.pairing.label.placeholder"), text: $label)
         }
 
         Section {
@@ -108,7 +108,7 @@ struct ChildSetupView: View {
             } label: {
                 HStack {
                     Spacer()
-                    Text(model.isBusy ? "signin.working" : "agent.setup.finish").fontWeight(.semibold)
+                    L(model.isBusy ? "signin.working" : "agent.setup.finish").fontWeight(.semibold)
                     if model.isBusy { ProgressView().padding(.leading, 6) }
                     Spacer()
                 }

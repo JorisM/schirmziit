@@ -70,3 +70,22 @@ matches where this project is headed: its own repository.
     just android-check     # rust core for android + gradle unit tests
     cd android && ./gradlew assembleDebug
     adb install -r app/build/outputs/apk/debug/app-debug.apk
+
+## Screenshots
+
+`app/src/test/snapshots/` holds one PNG per screen and state, rendered by
+Roborazzi through Robolectric — no emulator. `./gradlew test` compares against
+them; `./gradlew test -Precord.snapshots` re-records.
+
+Roborazzi is used as a plain library: its Gradle plugin (1.53) still asks AGP for
+`TestedExtension`, which AGP 9 removed. The system properties it reads are set in
+`app/build.gradle.kts` instead.
+
+Two Android-specific gotchas, both found the hard way:
+
+* Robolectric qualifiers must be in Android's canonical order, and a class-level
+  `@Config` is *concatenated* in front of the method's — which breaks that order.
+  Hence full qualifier strings per test, with `night` before the density.
+* `createComposeRule()` wants a host activity a library-less unit test does not
+  have. Roborazzi's `captureRoboImage("…") { composable }` captures a composable
+  directly and needs none.

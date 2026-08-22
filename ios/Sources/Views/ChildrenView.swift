@@ -19,8 +19,8 @@ struct ChildrenView: View {
 
                 if children.isEmpty && errorText == nil {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("children.empty").font(.headline)
-                        Text("children.empty.hint")
+                        L("children.empty").font(.headline)
+                        L("children.empty.hint")
                             .font(.footnote)
                             .foregroundStyle(Palette.inkMuted)
                     }
@@ -28,12 +28,12 @@ struct ChildrenView: View {
 
                 ForEach(children) { child in
                     NavigationLink(value: child) {
-                        Text(child.displayName)
+                        Text(verbatim: child.displayName)
                     }
                 }
             }
             .schirmziitList()
-            .navigationTitle("children.title")
+            .navigationTitle(L("children.title"))
             .navigationDestination(for: ChildResponse.self) { child in
                 ChildDetailView(child: child, client: client)
             }
@@ -68,7 +68,7 @@ struct ChildrenView: View {
         } catch let ApiError.problem(problem) {
             errorText = problem.detail
         } catch {
-            errorText = String(localized: "error.offline")
+            errorText = S("error.offline")
         }
     }
 }

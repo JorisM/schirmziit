@@ -1,0 +1,55 @@
+# The child journey, which is the one that used to need a code read aloud.
+#
+# A parent signs in on the child's phone, picks the child, and the app keeps a
+# device token instead of the session. The last assertion is the whole point of
+# the flow: after setup the phone shows the child-facing screen, not a dashboard.
+appId: ${MAESTRO_APP_ID}
+name: Parent sets up a child's phone
+env:
+  MAESTRO_APP_ID: ch.jorisda.schirmziit
+---
+- clearState
+- launchApp
+
+- assertVisible: "Schirmziit"
+# "My child's phone — report from here"
+- tapOn:
+    text: ".*(Kindes|child).*"
+- takeScreenshot: 01-setup-form
+
+- tapOn:
+    text: ".*(Server|server).*"
+- inputText: ${SCHIRMZIIT_SERVER}
+- tapOn:
+    text: ".*(E-Mail|Email|email).*"
+- inputText: ${SCHIRMZIIT_EMAIL}
+- tapOn:
+    text: ".*(Passwort|Password).*"
+- inputText: ${SCHIRMZIIT_PASSWORD}
+- tapOn:
+    text: "(Anmelden|Sign in|Accedi|Se connecter)"
+
+- extendedWaitUntil:
+    visible: "Fairphone kid"
+    timeout: 15000
+- tapOn: "Fairphone kid"
+- takeScreenshot: 02-child-chosen
+
+- tapOn:
+    text: ".*(Von diesem Handy melden|Report from this phone|Invia da questo telefono|Transmettre depuis ce).*"
+
+# Now in child mode. On iOS in a simulator this lands on the "Screen Time is not
+# available on this build" state, which is still the child screen — the flow
+# asserts the phone stopped offering the dashboard, not that data flows.
+- extendedWaitUntil:
+    visible:
+      text: ".*(Meldet|Reporting|Bildschirmzeit|Screen Time).*"
+    timeout: 20000
+- takeScreenshot: 03-child-mode
+
+# And the way out is gated: tapping "stop reporting" must ask for the password.
+- tapOn:
+    text: ".*(trennen|Disconnect|Scollega|Déconnecter).*"
+- assertVisible:
+    text: ".*(Passwort|password|Password).*"
+- takeScreenshot: 04-unlock-gate

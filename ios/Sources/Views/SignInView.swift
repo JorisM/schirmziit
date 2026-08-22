@@ -14,25 +14,25 @@ struct SignInView: View {
         NavigationStack {
             Form {
                 Section {
-                    Text("signin.intro")
+                    L("signin.intro")
                         .font(.footnote)
                         .foregroundStyle(Palette.inkMuted)
                 }
 
-                Section("signin.server") {
-                    TextField("signin.server.placeholder", text: $server)
+                Section(header: L("signin.server")) {
+                    TextField(S("signin.server.placeholder"), text: $server)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .keyboardType(.URL)
                 }
 
-                Section("signin.account") {
-                    TextField("signin.email", text: $email)
+                Section(header: L("signin.account")) {
+                    TextField(S("signin.email"), text: $email)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .keyboardType(.emailAddress)
                         .textContentType(.username)
-                    SecureField("signin.password", text: $password)
+                    SecureField(S("signin.password"), text: $password)
                         .textContentType(.password)
                 }
 
@@ -49,7 +49,7 @@ struct SignInView: View {
                     } label: {
                         HStack {
                             Spacer()
-                            Text(busy ? "signin.working" : "signin.submit").fontWeight(.semibold)
+                            L(busy ? "signin.working" : "signin.submit").fontWeight(.semibold)
                             if busy { ProgressView().padding(.leading, 6) }
                             Spacer()
                         }
@@ -60,7 +60,7 @@ struct SignInView: View {
                 .listRowBackground(Color.clear)
             }
             .schirmziitList()
-            .navigationTitle("app.name")
+            .navigationTitle(L("app.name"))
             .task {
                 // Debug builds only: lets a screenshot run or a UI test sign in
                 // without tapping. Absent in a release build and in production.
@@ -71,7 +71,7 @@ struct SignInView: View {
 
     private func signIn() async {
         guard let url = URL(string: server.trimmingCharacters(in: .whitespaces)), url.scheme != nil else {
-            errorText = String(localized: "signin.bad.server")
+            errorText = S("signin.bad.server")
             return
         }
         busy = true
@@ -90,10 +90,10 @@ struct SignInView: View {
             onSignedIn(url)
         } catch let ApiError.problem(problem) {
             errorText = problem.status == 401
-                ? String(localized: "signin.wrong")
+                ? S("signin.wrong")
                 : problem.detail
         } catch {
-            errorText = String(localized: "error.offline")
+            errorText = S("error.offline")
         }
     }
 }

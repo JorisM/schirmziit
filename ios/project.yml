@@ -12,6 +12,11 @@ options:
     iOS: "17.0"
   createIntermediateGroups: true
 
+packages:
+  SnapshotTesting:
+    url: https://github.com/pointfreeco/swift-snapshot-testing
+    from: 1.17.0
+
 settings:
   base:
     SWIFT_VERSION: "5.10"
@@ -109,7 +114,11 @@ targets:
     type: bundle.unit-test
     platform: iOS
     sources:
+      # Golden images are compared at runtime from #filePath, not built — listing
+      # them as inputs makes deleting one break the build instead of the test.
       - path: Tests
+        excludes:
+          - "__Snapshots__/**"
       - path: AgentTests
       # Copied as opaque folders: a variant group would flatten the four
       # locales into one Localizable.strings and the parity test would pass
@@ -126,6 +135,8 @@ targets:
         buildPhase: resources
     dependencies:
       - target: SchirmziitKit
+      - package: SnapshotTesting
+        product: SnapshotTesting
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.tests

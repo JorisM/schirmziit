@@ -10,7 +10,7 @@ struct RoleChoiceView: View {
         NavigationStack {
             List {
                 Section {
-                    Text("role.intro")
+                    L("role.intro")
                         .font(.callout)
                         .foregroundStyle(Palette.inkMuted)
                 }
@@ -31,13 +31,13 @@ struct RoleChoiceView: View {
                 }
 
                 Section {
-                    Text("role.later")
+                    L("role.later")
                         .font(.footnote)
                         .foregroundStyle(Palette.inkFaint)
                 }
             }
             .schirmziitList()
-            .navigationTitle("app.name")
+            .navigationTitle(L("app.name"))
         }
     }
 
@@ -54,8 +54,8 @@ struct RoleChoiceView: View {
                     .foregroundStyle(Palette.accent)
                     .frame(width: 30)
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(title).font(.headline).foregroundStyle(Palette.ink)
-                    Text(body).font(.callout).foregroundStyle(Palette.inkMuted)
+                    L(title).font(.headline).foregroundStyle(Palette.ink)
+                    L(body).font(.callout).foregroundStyle(Palette.inkMuted)
                 }
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")

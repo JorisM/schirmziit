@@ -97,3 +97,14 @@ ios-record: ios-project
         -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test CODE_SIGNING_ALLOWED=NO
     cd ios && xcodebuild -project Schirmziit.xcodeproj -scheme Schirmziit \
         -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test CODE_SIGNING_ALLOWED=NO
+
+# ─── Skill ───────────────────────────────────────────────────────────
+# The project skill lives in .claude/skills/schirmziit and is picked up
+# automatically when Claude Code runs in this repo. Symlink it into
+# ~/.claude/skills so it is also available from the home-network checkout,
+# where deploys happen — one source, no drift.
+skill-install:
+    mkdir -p ~/.claude/skills
+    rm -rf ~/.claude/skills/schirmziit
+    ln -s "$(pwd)/.claude/skills/schirmziit" ~/.claude/skills/schirmziit
+    @echo "linked ~/.claude/skills/schirmziit -> $(pwd)/.claude/skills/schirmziit"

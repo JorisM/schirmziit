@@ -251,3 +251,101 @@ final class DefaultsRoleStoreTests: XCTestCase {
         store.removeObject(forKey: "ch.jorisda.schirmziit.tests.probe")
     }
 }
+
+/// The two controls on the child screen that looked dead on a real phone.
+@MainActor
+final class ChildModeFeedbackTests: XCTestCase {
+    private func model(
+        authorizer: ScreenTimeAuthorizing,
+        transport: Transport = StubTransport(status: 200, body: "{}"),
+        credentials: CredentialStore = InMemoryCredentialStore(
+            AgentCredentials(
+                baseURL: URL(string: "https://schirmziit.example.ch")!,
+                deviceId: "dev-1", token: "tok-1", parentEmail: "anna@example.ch"
+            )
+        )
+    ) -> AgentModel {
+        let directory = temporaryDirectory()
+        return AgentModel(
+            store: FileHourStore(directory: directory),
+            inbox: SnapshotInbox(directory: directory),
+            credentials: credentials,
+            transport: transport,
+            authorizer: authorizer,
+            monitoring: SpyMonitoring(),
+            roles: InMemoryRoleStore(.child)
+        )
+    }
+
+    /// The system status stays `.notDetermined` for a build Apple has not
+    /// approved, so re-reading it after a refused request showed the same screen
+    /// and "ask for access" looked like it did nothing at all.
+    func testARefusedRequestChangesTheScreen() async {
+        let model = model(
+            authorizer: StubAuthorizer(state: .notDetermined, afterRequest: .unavailable("no entitlement"))
+        )
+        XCTAssertEqual(model.status, .needsScreenTimePermission)
+
+        await model.requestScreenTime()
+
+        XCTAssertEqual(model.status, .screenTimeUnavailable("no entitlement"))
+    }
+
+    func testADeclinedPromptAlsoChangesTheScreen() async {
+        let model = model(authorizer: StubAuthorizer(state: .notDetermined, afterRequest: .denied))
+
+        await model.requestScreenTime()
+
+        XCTAssertEqual(model.status, .screenTimeDenied)
+    }
+
+    /// Granted in Settings after we last asked: the live status wins over any
+    /// remembered refusal, or the app would stay stuck on its own old answer.
+    func testAccessGrantedInSettingsWinsOverTheRememberedAnswer() async {
+        let model = model(authorizer: StubAuthorizer(state: .notDetermined, afterRequest: .denied))
+        await model.requestScreenTime()
+        XCTAssertEqual(model.status, .screenTimeDenied)
+
+        let granted = self.model(authorizer: StubAuthorizer(state: .approved))
+        granted.refresh()
+        XCTAssertEqual(granted.status, .reporting(pendingHours: 0, lastSyncAt: nil))
+    }
+
+    func testSendNowSaysSoWhenThereIsNothingToSend() async {
+        let transport = StubTransport(status: 200, body: "{}")
+        let model = model(authorizer: StubAuthorizer(state: .approved), transport: transport)
+
+        await model.syncNow()
+
+        XCTAssertNotNil(model.lastSyncNote, "an empty queue must still answer the tap")
+        XCTAssertEqual(transport.sent, [], "and must not cost a request")
+    }
+
+    func testSendNowReportsWhatItSent() async {
+        let directory = temporaryDirectory()
+        let store = FileHourStore(directory: directory)
+        try? store.merge([pendingHour()])
+        let accepted = ISO8601DateFormatter().string(from: Date(timeIntervalSince1970: Double(hour) / 1000))
+        let transport = StubTransport(status: 200, body: #"{"accepted":["\#(accepted)"],"rejected":[]}"#)
+        let model = AgentModel(
+            store: store,
+            inbox: SnapshotInbox(directory: directory),
+            credentials: InMemoryCredentialStore(
+                AgentCredentials(
+                    baseURL: URL(string: "https://schirmziit.example.ch")!,
+                    deviceId: "dev-1", token: "tok-1", parentEmail: "anna@example.ch"
+                )
+            ),
+            transport: transport,
+            authorizer: StubAuthorizer(state: .approved),
+            monitoring: SpyMonitoring(),
+            roles: InMemoryRoleStore(.child)
+        )
+
+        await model.syncNow()
+
+        XCTAssertNotNil(model.lastSyncNote)
+        XCTAssertNil(model.lastError)
+        XCTAssertEqual(transport.sent.count, 1)
+    }
+}

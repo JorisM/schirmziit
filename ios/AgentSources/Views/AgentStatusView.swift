@@ -55,6 +55,14 @@ struct AgentStatusView: View {
                 }
             }
 
+            if let note = model.lastSyncNote {
+                Section {
+                    Label(title: { Text(verbatim: note) }, icon: { Image(systemName: "paperplane") })
+                        .foregroundStyle(Palette.inkMuted)
+                        .font(.footnote)
+                }
+            }
+
             if let error = model.lastError {
                 Section {
                     Label(error, systemImage: "exclamationmark.triangle.fill")

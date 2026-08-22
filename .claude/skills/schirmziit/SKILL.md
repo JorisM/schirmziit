@@ -68,6 +68,15 @@ regenerated *and committed* fails. Adding a field to a response means: handler, 
 
 ## How to work
 
+- **A reported bug or change starts at the test suite, not at the code.** Before
+  touching anything, look for a test that already covers the behaviour. If one
+  exists, say so — the bug is then either outside what it asserts or the test is
+  vacuous, and both are useful findings. If none exists, judge whether one can be
+  written honestly: some things (a password manager's heuristics, a glass material
+  that only composites on device, an entitlement Apple has not granted) cannot be
+  asserted in a test, and pretending otherwise produces a test that passes while
+  the phone stays broken — say that plainly instead. When it *can* be tested, add
+  the test first, watch it fail for the reported reason, and develop against it.
 - **TDD, and prove the test is not vacuous.** Write the failing test, run it, watch it fail
   for the right reason, then implement. For anything that could silently lose or expose
   data, mutate the implementation afterwards and confirm the test goes red — several tests

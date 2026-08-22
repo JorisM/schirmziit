@@ -18,6 +18,18 @@
     <string name="pair_failed">Collegamento non riuscito: %1$s</string>
     <string name="pair_bad_qr">Questo codice QR non è un codice Schirmziit.</string>
     <string name="pair_bad_input">Controlla l’indirizzo del server (https) e il codice.</string>
+    <string name="pair_parent_title">Accedi per collegare questo telefono</string>
+    <string name="pair_parent_body">Accedi una volta con l’account del genitore. Questo telefono tiene una chiave propria — la sessione viene chiusa subito dopo.</string>
+    <string name="pair_email">Email del genitore</string>
+    <string name="pair_password">Password</string>
+    <string name="pair_parent_submit">Accedi</string>
+    <string name="pair_parent_wrong">Email o password non corretti.</string>
+    <string name="pair_whose">Di chi è questo telefono?</string>
+    <string name="pair_whose_empty">Su questo account non c’è ancora nessun figlio. Aggiungine uno nella dashboard.</string>
+    <string name="pair_label">Nome di questo telefono</string>
+    <string name="pair_claim">Invia da questo telefono</string>
+    <string name="pair_code_instead">Usa invece un codice</string>
+    <string name="pair_parent_instead">Accedi invece con l’account del genitore</string>
 
     <string name="status_reporting">Il tempo di schermo viene trasmesso.</string>
     <string name="status_off">L’accesso ai dati di utilizzo è disattivato — non viene registrato nulla.</string>

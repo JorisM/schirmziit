@@ -1,5 +1,19 @@
 # schirmziit android agent
 
+## Two ways to connect a phone
+
+**Signing in with the parent account is the default** (`ParentSetup`): the parent
+signs in once on the child's phone, picks the child, and the app claims a device
+token through `POST /v1/children/{id}/devices` — then ends the session. Order
+matters and is tested: the token is stored before the logout, and a failed claim
+stores nothing but still logs out. A child's phone must never be left holding a
+parent session.
+
+**Pairing codes still work** (QR or eight characters typed), for the case where
+the parent is not standing there. That is the only reason the code path exists.
+
+The parent dashboard itself is web and iOS for now; this app is the child side.
+
 ## Toolchain (pinned, as installed 2026-08-21)
 
 | Tool | Version | Install |

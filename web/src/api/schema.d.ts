@@ -100,6 +100,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/children/{id}/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Enrol the phone the parent is holding, without a pairing code.
+         * @description This is what makes one app work for both roles: a parent signs in on the
+         *     child's phone, picks the child, and the app trades that session for a device
+         *     token — then deletes the session, so no parent credentials and no parent
+         *     session stay behind on a child's phone. Codes remain for the case where the
+         *     parent is not there to sign in.
+         */
+        post: operations["claim_device"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/children/{id}/enrollments": {
         parameters: {
             query?: never;
@@ -236,6 +260,17 @@ export interface components {
             display_name: string;
             /** Format: uuid */
             id: string;
+        };
+        ClaimDevice: {
+            label: string;
+            model: string;
+            platform: string;
+        };
+        ClaimedDeviceResponse: {
+            /** Format: uuid */
+            device_id: string;
+            /** @description Long-lived, write-only. Shown once; only its hash is stored. */
+            token: string;
         };
         Credentials: {
             email: string;
@@ -620,6 +655,54 @@ export interface operations {
             };
             /** @description No such child in this family */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    claim_device: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Child id */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClaimDevice"];
+            };
+        };
+        responses: {
+            /** @description Device enrolled */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimedDeviceResponse"];
+                };
+            };
+            /** @description Not authenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No such child in this family */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Empty platform, model or label */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

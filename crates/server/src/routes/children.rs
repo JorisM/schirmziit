@@ -1,5 +1,5 @@
 use crate::AppState;
-use crate::auth::{Parent, hash_token};
+use crate::auth::{Parent, hash_token, random_token};
 use crate::db::scope;
 use crate::error::ApiError;
 use axum::extract::{Path, State};
@@ -25,6 +25,7 @@ pub fn router() -> Router<AppState> {
         .route("/v1/children", post(create).get(list))
         .route("/v1/children/{id}", delete(soft_delete))
         .route("/v1/children/{id}/enrollments", post(mint_enrollment))
+        .route("/v1/children/{id}/devices", post(claim_device))
         .route("/v1/devices", get(list_devices))
         .route("/v1/devices/{id}", delete(revoke_device))
 }
@@ -45,6 +46,20 @@ pub struct EnrollmentResponse {
     pub code: String,
     pub expires_at: chrono::DateTime<Utc>,
     pub qr_payload: String,
+}
+
+#[derive(serde::Deserialize, utoipa::ToSchema)]
+pub struct ClaimDevice {
+    pub platform: String,
+    pub model: String,
+    pub label: String,
+}
+
+#[derive(serde::Serialize, utoipa::ToSchema)]
+pub struct ClaimedDeviceResponse {
+    pub device_id: Uuid,
+    /// Long-lived, write-only. Shown once; only its hash is stored.
+    pub token: String,
 }
 
 #[derive(serde::Serialize, utoipa::ToSchema)]
@@ -202,6 +217,65 @@ pub async fn mint_enrollment(
             expires_at,
             qr_payload,
         }),
+    ))
+}
+
+/// Enrol the phone the parent is holding, without a pairing code.
+///
+/// This is what makes one app work for both roles: a parent signs in on the
+/// child's phone, picks the child, and the app trades that session for a device
+/// token — then deletes the session, so no parent credentials and no parent
+/// session stay behind on a child's phone. Codes remain for the case where the
+/// parent is not there to sign in.
+#[utoipa::path(
+    post, path = "/v1/children/{id}/devices", request_body = ClaimDevice,
+    params(("id" = Uuid, Path, description = "Child id")),
+    responses(
+        (status = 201, description = "Device enrolled", body = ClaimedDeviceResponse),
+        (status = 401, description = "Not authenticated"),
+        (status = 404, description = "No such child in this family"),
+        (status = 422, description = "Empty platform, model or label"),
+    ),
+    tag = "devices"
+)]
+pub async fn claim_device(
+    parent: Parent,
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+    Json(body): Json<ClaimDevice>,
+) -> Result<impl IntoResponse, ApiError> {
+    // Tenant check first: a parent may only claim a device for their own child,
+    // and an unknown id must not be distinguishable from another family's.
+    let child_id = scope::child_of_family(&state.pool, parent.family_id, id).await?;
+
+    let platform = body.platform.trim();
+    let model = body.model.trim();
+    let label = body.label.trim();
+    if platform.is_empty() || model.is_empty() || label.is_empty() {
+        return Err(ApiError::Validation(
+            "platform, model and label must not be empty".into(),
+        ));
+    }
+
+    let device_id = Uuid::new_v4();
+    let token = random_token();
+    sqlx::query!(
+        "INSERT INTO devices (id, family_id, child_id, platform, model, label, token_hash)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)",
+        device_id,
+        parent.family_id,
+        child_id,
+        platform,
+        model,
+        label,
+        hash_token(&token)
+    )
+    .execute(&state.pool)
+    .await?;
+
+    Ok((
+        StatusCode::CREATED,
+        Json(ClaimedDeviceResponse { device_id, token }),
     ))
 }
 

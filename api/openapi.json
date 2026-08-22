@@ -213,6 +213,59 @@
         }
       }
     },
+    "/v1/children/{id}/devices": {
+      "post": {
+        "tags": [
+          "devices"
+        ],
+        "summary": "Enrol the phone the parent is holding, without a pairing code.",
+        "description": "This is what makes one app work for both roles: a parent signs in on the\nchild's phone, picks the child, and the app trades that session for a device\ntoken — then deletes the session, so no parent credentials and no parent\nsession stay behind on a child's phone. Codes remain for the case where the\nparent is not there to sign in.",
+        "operationId": "claim_device",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Child id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClaimDevice"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Device enrolled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimedDeviceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated"
+          },
+          "404": {
+            "description": "No such child in this family"
+          },
+          "422": {
+            "description": "Empty platform, model or label"
+          }
+        }
+      }
+    },
     "/v1/children/{id}/enrollments": {
       "post": {
         "tags": [
@@ -548,6 +601,42 @@
           "id": {
             "type": "string",
             "format": "uuid"
+          }
+        }
+      },
+      "ClaimDevice": {
+        "type": "object",
+        "required": [
+          "platform",
+          "model",
+          "label"
+        ],
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "platform": {
+            "type": "string"
+          }
+        }
+      },
+      "ClaimedDeviceResponse": {
+        "type": "object",
+        "required": [
+          "device_id",
+          "token"
+        ],
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "token": {
+            "type": "string",
+            "description": "Long-lived, write-only. Shown once; only its hash is stored."
           }
         }
       },

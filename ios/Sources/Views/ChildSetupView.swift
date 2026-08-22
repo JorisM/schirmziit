@@ -76,7 +76,7 @@ struct ChildSetupView: View {
                     Spacer()
                 }
             }
-            .buttonStyle(.borderedProminent)
+            .primaryAction()
             .disabled(model.isBusy || email.isEmpty || password.isEmpty)
         }
         .listRowBackground(Color.clear)
@@ -116,7 +116,7 @@ struct ChildSetupView: View {
                     Spacer()
                 }
             }
-            .buttonStyle(.borderedProminent)
+            .primaryAction()
             .disabled(model.isBusy || chosen == nil)
         }
         .listRowBackground(Color.clear)

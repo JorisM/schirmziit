@@ -14,16 +14,34 @@ public protocol RoleStore: Sendable {
     func clear()
 }
 
-/// Stored in the App Group defaults rather than the app's own, so the role
-/// survives what the extensions do and stays readable from them.
+/// Stored in the App Group defaults when that works, so the extensions can read
+/// it too — and in the app's own defaults when it does not.
+///
+/// The distinction is not theoretical: a build signed without the App Group
+/// entitlement still gets a non-nil suite from `UserDefaults(suiteName:)`, and
+/// every write to it is silently dropped. The role then never persisted, so
+/// finishing child setup left the app with no role and it fell straight back to
+/// the setup screen — with the fields still filled, having already enrolled a
+/// device. Three of them, before this was found.
 public struct DefaultsRoleStore: RoleStore {
     private static let key = "ch.jorisda.schirmziit.role"
     private let defaults: UserDefaults
 
     public init(defaults: UserDefaults? = nil) {
-        self.defaults = defaults
-            ?? UserDefaults(suiteName: GroupContainer.identifier)
-            ?? .standard
+        self.defaults = defaults ?? Self.persistentStore()
+    }
+
+    /// Trust nothing: write a probe and read it back.
+    static func persistentStore(
+        groupIdentifier: String = GroupContainer.identifier,
+        fallback: UserDefaults = .standard
+    ) -> UserDefaults {
+        guard let suite = UserDefaults(suiteName: groupIdentifier) else { return fallback }
+        let probe = "\(key).probe"
+        suite.set(true, forKey: probe)
+        let persisted = suite.bool(forKey: probe)
+        suite.removeObject(forKey: probe)
+        return persisted ? suite : fallback
     }
 
     public func load() -> AppRole? {

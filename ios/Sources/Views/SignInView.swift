@@ -55,7 +55,7 @@ struct SignInView: View {
                             Spacer()
                         }
                     }
-                    .buttonStyle(.borderedProminent)
+                    .primaryAction()
                     .disabled(busy || email.isEmpty || password.isEmpty)
                 }
                 .listRowBackground(Color.clear)

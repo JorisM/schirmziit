@@ -132,7 +132,7 @@
 "role.child.title" = "Das Handy meines Kindes — von hier melden";
 "role.child.body" = "Einmal anmelden, um es zu verbinden. Danach meldet dieses Handy Stundenwerte. Dein Kind sieht die gleichen Zahlen.";
 "role.later" = "Das kannst du später ändern. Den Kindermodus zu verlassen braucht dein Passwort.";
-"agent.setup.title" = "Dieses Handy einrichten";
+"agent.setup.title" = "Handy einrichten";
 "agent.setup.intro" = "Melde dich mit deinem Eltern-Konto an. Die App behält nur einen Schlüssel für dieses Handy — deine Anmeldung wird direkt danach beendet.";
 "agent.setup.parentaccount" = "Dein Konto";
 "agent.setup.continue" = "Anmelden";

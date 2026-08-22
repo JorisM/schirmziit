@@ -38,6 +38,7 @@ final class RoleSetupTests: XCTestCase {
         model.becomeParentDevice()
 
         XCTAssertEqual(roles.load(), .parent)
+        XCTAssertEqual(model.role, .parent, "the view switches on this, not on the store")
         XCTAssertEqual(monitoring.started, 0, "a parent's own phone must never start reporting")
     }
 
@@ -97,6 +98,10 @@ final class RoleSetupTests: XCTestCase {
 
         XCTAssertTrue(done)
         XCTAssertEqual(roles.load(), .child)
+        XCTAssertEqual(
+            model.role, .child,
+            "without this the app bounced back to the setup screen after enrolling"
+        )
         XCTAssertEqual(credentials.load()?.token, "tok-1")
         XCTAssertEqual(
             credentials.load()?.parentEmail, "anna@example.ch",
@@ -172,6 +177,7 @@ final class RoleSetupTests: XCTestCase {
 
         XCTAssertTrue(left)
         XCTAssertNil(roles.load())
+        XCTAssertNil(model.role)
         XCTAssertNil(credentials.load(), "the device token goes with it")
         XCTAssertEqual(monitoring.stopped, 1)
         XCTAssertEqual(
@@ -198,5 +204,50 @@ final class RoleSetupTests: XCTestCase {
         XCTAssertTrue(left)
         XCTAssertNil(roles.load())
         XCTAssertNil(credentials.load())
+    }
+}
+
+/// The store the app actually uses, rather than the in-memory double.
+///
+/// A build signed without the App Group entitlement gets a non-nil suite whose
+/// writes are dropped on the floor; the role then never persisted and finishing
+/// child setup dropped the app back to the setup screen, having already enrolled
+/// a device.
+final class DefaultsRoleStoreTests: XCTestCase {
+    private var suiteName = ""
+
+    override func setUp() {
+        super.setUp()
+        suiteName = "ch.jorisda.schirmziit.tests.\(UUID().uuidString)"
+    }
+
+    override func tearDown() {
+        UserDefaults().removePersistentDomain(forName: suiteName)
+        super.tearDown()
+    }
+
+    func testARoleSurvivesANewStoreOverTheSameDefaults() {
+        let defaults = UserDefaults(suiteName: suiteName)!
+        DefaultsRoleStore(defaults: defaults).save(.child)
+
+        // A fresh instance is what the next launch gets.
+        XCTAssertEqual(DefaultsRoleStore(defaults: defaults).load(), .child)
+    }
+
+    func testClearingReallyClears() {
+        let defaults = UserDefaults(suiteName: suiteName)!
+        let store = DefaultsRoleStore(defaults: defaults)
+        store.save(.parent)
+        store.clear()
+        XCTAssertNil(store.load())
+    }
+
+    func testTheChosenStoreIsOneThatActuallyPersists() {
+        // Whatever it picks — the App Group suite or the app's own — a value must
+        // survive a read. That round-trip is the whole point of the probe.
+        let store = DefaultsRoleStore.persistentStore(groupIdentifier: "group.does.not.exist.\(UUID().uuidString)")
+        store.set("probe", forKey: "ch.jorisda.schirmziit.tests.probe")
+        XCTAssertEqual(store.string(forKey: "ch.jorisda.schirmziit.tests.probe"), "probe")
+        store.removeObject(forKey: "ch.jorisda.schirmziit.tests.probe")
     }
 }

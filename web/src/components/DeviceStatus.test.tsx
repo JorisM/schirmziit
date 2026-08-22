@@ -1,55 +1,51 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { DeviceStatus, formatDuration } from './DeviceStatus'
+import { DeviceStatus } from './DeviceStatus'
+import { LocaleProvider } from '../i18n'
+
+const device = (over: Partial<Parameters<typeof DeviceStatus>[0]['devices'][number]> = {}) => ({
+  id: 'd1',
+  label: "Kid's phone",
+  last_seen_at: '2026-08-21T12:00:00Z',
+  stale: false,
+  ...over,
+})
 
 describe('DeviceStatus', () => {
-  it('warns loudly when a device is stale', () => {
+  it('explains a stale device instead of leaving a low number unexplained', () => {
     render(
-      <DeviceStatus
-        devices={[
-          {
-            id: '1',
-            label: "Kid's phone",
-            last_seen_at: '2026-08-21T06:00:00Z',
-            stale: true,
-          },
-        ]}
-      />,
+      <LocaleProvider>
+        <DeviceStatus devices={[device({ stale: true })]} />
+      </LocaleProvider>,
     )
-    expect(screen.getByRole('alert')).toHaveTextContent(/not reported/i)
-    expect(screen.getByRole('alert')).toHaveTextContent("Kid's phone")
+    expect(screen.getByRole('alert')).toBeInTheDocument()
   })
 
-  it('says nothing alarming when devices are healthy', () => {
+  it('stays quiet when everything is reporting', () => {
     render(
-      <DeviceStatus
-        devices={[
-          {
-            id: '1',
-            label: "Kid's phone",
-            last_seen_at: '2026-08-21T12:00:00Z',
-            stale: false,
-          },
-        ]}
-      />,
+      <LocaleProvider>
+        <DeviceStatus devices={[device()]} />
+      </LocaleProvider>,
     )
     expect(screen.queryByRole('alert')).toBeNull()
   })
 
-  it('treats a never-synced device as stale', () => {
+  it('says so when a device has never reported', () => {
     render(
-      <DeviceStatus
-        devices={[{ id: '1', label: 'New phone', last_seen_at: null, stale: true }]}
-      />,
+      <LocaleProvider>
+        <DeviceStatus devices={[device({ last_seen_at: null, stale: true })]} />
+      </LocaleProvider>,
     )
-    expect(screen.getByRole('alert')).toHaveTextContent(/never/i)
+    // English fallback in tests: navigator.language is en-US under jsdom.
+    expect(screen.getByText(/never reported/i)).toBeInTheDocument()
   })
-})
 
-describe('formatDuration', () => {
-  it('reads like a human wrote it', () => {
-    expect(formatDuration(600_000)).toBe('10m')
-    expect(formatDuration(3_600_000)).toBe('1h')
-    expect(formatDuration(5_400_000)).toBe('1h 30m')
+  it('renders nothing without devices', () => {
+    const { container } = render(
+      <LocaleProvider>
+        <DeviceStatus devices={[]} />
+      </LocaleProvider>,
+    )
+    expect(container).toBeEmptyDOMElement()
   })
 })

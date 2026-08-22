@@ -1,1 +1,206 @@
 @import 'tailwindcss';
+
+/*
+ * Palette validated with the dataviz palette validator (light surface #F2F0EA,
+ * dark #1C1A17): lightness band, chroma floor, CVD separation and normal-vision
+ * floor all pass in both modes. Series order is fixed and follows the entity,
+ * never its rank. Do not reorder or "brighten" these without re-running it.
+ */
+:root {
+  --paper: #f2f0ea;
+  --card: #fbfaf7;
+  --sunken: #ebe8e0;
+  --ink: #232622;
+  --ink-muted: #5b5f59;
+  --ink-faint: #8a8d85;
+  --hairline: #dfdcd2;
+
+  --accent: #00707e;
+  --accent-hover: #005a66;
+  --ok: #2f6b4c;
+  --warn: #c87c2c;
+  --urgent: #b4472c;
+
+  /* Day ribbon: single hue, light to dark. Magnitude, so sequential. */
+  --ribbon-0: #e7e4dc;
+  --ribbon-1: #cfdcd2;
+  --ribbon-2: #a3c2ad;
+  --ribbon-3: #6f9f83;
+  --ribbon-4: #3f7d5c;
+  --ribbon-5: #2f6b4c;
+
+  --series-1: #008c9e;
+  --series-2: #d96a4e;
+  --series-3: #4757c4;
+  --series-4: #e8933f;
+  --series-5: #9b4f7e;
+  --series-6: #1f6b3f;
+
+  --radius-card: 18px;
+  --shadow-card: 0 1px 2px rgb(35 38 34 / 0.04), 0 8px 24px -16px rgb(35 38 34 / 0.18);
+}
+
+/*
+ * Dark values live here once, as --dark-* names, and both dark scopes below map
+ * the role tokens onto them. Without the explicit [data-theme='dark'] scope a
+ * toggle does nothing on an OS set to light — which is exactly what happened
+ * the first time this shipped.
+ */
+:root {
+  --dark-paper: #1c1a17;
+  --dark-card: #252320;
+  --dark-sunken: #1f1d1a;
+  --dark-ink: #f0ede6;
+  --dark-ink-muted: #a7a29a;
+  --dark-ink-faint: #7c776f;
+  --dark-hairline: #3a3733;
+
+  --dark-accent: #46b3bf;
+  --dark-accent-hover: #6ac5cf;
+  --dark-ok: #4f9d72;
+  --dark-warn: #d69a4a;
+  --dark-urgent: #dd7154;
+
+  --dark-ribbon-0: #262b27;
+  --dark-ribbon-1: #2f4a3a;
+  --dark-ribbon-2: #3e6b50;
+  --dark-ribbon-3: #559072;
+  --dark-ribbon-4: #6fae8c;
+  --dark-ribbon-5: #8cc7a5;
+
+  /* Same six hues, stepped for the dark surface and validated against it. */
+  --dark-series-1: #1b98ab;
+  --dark-series-2: #d4664a;
+  --dark-series-3: #6a79d6;
+  --dark-series-4: #c87c2c;
+  --dark-series-5: #a85e8a;
+  --dark-series-6: #2f9159;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --paper: var(--dark-paper);
+    --card: var(--dark-card);
+    --sunken: var(--dark-sunken);
+    --ink: var(--dark-ink);
+    --ink-muted: var(--dark-ink-muted);
+    --ink-faint: var(--dark-ink-faint);
+    --hairline: var(--dark-hairline);
+    --accent: var(--dark-accent);
+    --accent-hover: var(--dark-accent-hover);
+    --ok: var(--dark-ok);
+    --warn: var(--dark-warn);
+    --urgent: var(--dark-urgent);
+    --ribbon-0: var(--dark-ribbon-0);
+    --ribbon-1: var(--dark-ribbon-1);
+    --ribbon-2: var(--dark-ribbon-2);
+    --ribbon-3: var(--dark-ribbon-3);
+    --ribbon-4: var(--dark-ribbon-4);
+    --ribbon-5: var(--dark-ribbon-5);
+    --series-1: var(--dark-series-1);
+    --series-2: var(--dark-series-2);
+    --series-3: var(--dark-series-3);
+    --series-4: var(--dark-series-4);
+    --series-5: var(--dark-series-5);
+    --series-6: var(--dark-series-6);
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -16px rgb(0 0 0 / 0.6);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --paper: var(--dark-paper);
+  --card: var(--dark-card);
+  --sunken: var(--dark-sunken);
+  --ink: var(--dark-ink);
+  --ink-muted: var(--dark-ink-muted);
+  --ink-faint: var(--dark-ink-faint);
+  --hairline: var(--dark-hairline);
+  --accent: var(--dark-accent);
+  --accent-hover: var(--dark-accent-hover);
+  --ok: var(--dark-ok);
+  --warn: var(--dark-warn);
+  --urgent: var(--dark-urgent);
+  --ribbon-0: var(--dark-ribbon-0);
+  --ribbon-1: var(--dark-ribbon-1);
+  --ribbon-2: var(--dark-ribbon-2);
+  --ribbon-3: var(--dark-ribbon-3);
+  --ribbon-4: var(--dark-ribbon-4);
+  --ribbon-5: var(--dark-ribbon-5);
+  --series-1: var(--dark-series-1);
+  --series-2: var(--dark-series-2);
+  --series-3: var(--dark-series-3);
+  --series-4: var(--dark-series-4);
+  --series-5: var(--dark-series-5);
+  --series-6: var(--dark-series-6);
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -16px rgb(0 0 0 / 0.6);
+}
+
+/*
+ * Bricolage Grotesque, self-hosted. A dashboard about a child's phone use has no
+ * business calling a font CDN on every load.
+ */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  src: url('/fonts/bricolage-grotesque.woff2') format('woff2-variations');
+  font-weight: 400 800;
+  font-display: swap;
+}
+
+@theme {
+  --font-display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, monospace;
+}
+
+html,
+body {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+/* Keyboard focus stays visible everywhere; nothing here removes outlines. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* The day ribbon is 24 hours wide; Tailwind stops at 12 columns. */
+.grid-cols-24 {
+  grid-template-columns: repeat(24, minmax(0, 1fr));
+}

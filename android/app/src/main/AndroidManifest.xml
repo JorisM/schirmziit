@@ -15,6 +15,12 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Android's Doze/App Standby can defer WorkManager indefinitely on a phone
+         that sits idle, which shows up as a device going stale in the dashboard
+         while the child is simply not using it. The exemption is requested
+         through the system dialog (never granted silently) and only suggested
+         when syncs are actually being missed. -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
     <application
         android:name=".NestlingApp"

@@ -1,5 +1,5 @@
 import XCTest
-@testable import Schirmziit
+@testable import SchirmziitKit
 
 /// The read endpoints are not part of `core::wire`, so these models are
 /// hand-written — which means they can drift from the server. These fixtures are

@@ -1,9 +1,9 @@
 import XCTest
-@testable import SchirmziitAgentKit
+@testable import SchirmziitKit
 
 /// A missing translation shows an English sentence inside a German screen — on a
 /// child's phone, in the app that explains what is being measured.
-final class LocalizationTests: XCTestCase {
+final class AgentLocalizationTests: XCTestCase {
     private let languages = ["de", "fr", "it"]
 
     private func strings(_ language: String) throws -> [String: String] {
@@ -53,8 +53,8 @@ final class LocalizationTests: XCTestCase {
     func testEveryLanguageSaysNothingIsBlockedAndNothingIsHidden() throws {
         for language in ["en"] + languages {
             let strings = try strings(language)
-            XCTAssertNotNil(strings["help.never.5"], "\(language) must keep the 'nothing is blocked' line")
-            XCTAssertNotNil(strings["help.yousee"], "\(language) must keep the 'you can see everything' line")
+            XCTAssertNotNil(strings["agent.help.never.5"], "\(language) must keep the 'nothing is blocked' line")
+            XCTAssertNotNil(strings["agent.help.yousee"], "\(language) must keep the 'you can see everything' line")
         }
     }
 }

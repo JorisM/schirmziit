@@ -12,27 +12,27 @@ struct AgentPairingView: View {
     var body: some View {
         Form {
             Section {
-                Text("pairing.intro")
+                Text("agent.pairing.intro")
                     .font(.callout)
                     .foregroundStyle(Palette.inkMuted)
             }
 
-            Section(header: Text("pairing.server")) {
-                TextField(String(localized: "pairing.server.placeholder"), text: $server)
+            Section(header: Text("agent.pairing.server")) {
+                TextField(String(localized: "agent.pairing.server.placeholder"), text: $server)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
                     .keyboardType(.URL)
             }
 
-            Section(header: Text("pairing.code"), footer: Text("pairing.code.hint")) {
-                TextField(String(localized: "pairing.code.placeholder"), text: $code)
+            Section(header: Text("agent.pairing.code"), footer: Text("agent.pairing.code.hint")) {
+                TextField(String(localized: "agent.pairing.code.placeholder"), text: $code)
                     .textInputAutocapitalization(.characters)
                     .autocorrectionDisabled()
                     .font(.system(.body, design: .monospaced))
             }
 
-            Section(header: Text("pairing.label")) {
-                TextField(String(localized: "pairing.label.placeholder"), text: $label)
+            Section(header: Text("agent.pairing.label")) {
+                TextField(String(localized: "agent.pairing.label.placeholder"), text: $label)
             }
 
             if let error = model.lastError {
@@ -47,7 +47,7 @@ struct AgentPairingView: View {
                     Task { await model.pair(server: server, code: code, label: label) }
                 } label: {
                     HStack {
-                        Text(model.isBusy ? "pairing.working" : "pairing.submit")
+                        Text(model.isBusy ? "agent.pairing.working" : "agent.pairing.submit")
                         if model.isBusy {
                             Spacer()
                             ProgressView()

@@ -1,5 +1,5 @@
 import XCTest
-@testable import SchirmziitAgentKit
+@testable import SchirmziitKit
 
 final class HourStoreTests: XCTestCase {
     private func store(maxRows: Int = 100) -> FileHourStore {

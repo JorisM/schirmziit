@@ -1,5 +1,5 @@
 import XCTest
-@testable import SchirmziitAgentKit
+@testable import SchirmziitKit
 
 /// People type "schirmziit.example.ch", not a URL. Getting this wrong means a
 /// child cannot pair and has no way to tell why.

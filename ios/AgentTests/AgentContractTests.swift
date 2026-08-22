@@ -1,10 +1,10 @@
 import XCTest
-@testable import SchirmziitAgentKit
+@testable import SchirmziitKit
 
 /// The iOS agent must send exactly what the server documents. The Rust core
 /// builds the body, so this test is really about the third copy of the contract:
 /// it fails if `api/openapi.json` and the core ever drift apart.
-final class ContractTests: XCTestCase {
+final class AgentContractTests: XCTestCase {
     private func schema() throws -> [String: Any] {
         let bundle = Bundle(for: type(of: self))
         guard let url = bundle.url(forResource: "openapi", withExtension: "json") else {

@@ -4,6 +4,17 @@ struct AgentCredentials: Codable, Equatable, Sendable {
     var baseURL: URL
     var deviceId: String
     var token: String
+    /// Whose password unlocks child mode. Kept in the keychain, never shown:
+    /// without it a child's phone cannot check an unlock against the server, and
+    /// child mode would either be trivially reversible or permanent.
+    var parentEmail: String?
+
+    init(baseURL: URL, deviceId: String, token: String, parentEmail: String? = nil) {
+        self.baseURL = baseURL
+        self.deviceId = deviceId
+        self.token = token
+        self.parentEmail = parentEmail
+    }
 }
 
 protocol CredentialStore: Sendable {

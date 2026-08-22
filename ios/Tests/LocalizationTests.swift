@@ -1,5 +1,5 @@
 import XCTest
-@testable import Schirmziit
+@testable import SchirmziitKit
 
 /// A missing translation shows an English sentence inside a German screen. These
 /// read the shipped .strings files, so the check needs no device.

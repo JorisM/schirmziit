@@ -10,6 +10,19 @@ struct HttpRequest: Sendable, Equatable {
 struct HttpResponse: Sendable, Equatable {
     var status: Int
     var body: Data
+    var headers: [String: String] = [:]
+
+    /// The session cookie as a `name=value` pair, ready to send back — the child
+    /// setup flow holds one in memory for the length of the setup and never
+    /// stores it.
+    var setCookie: String? {
+        headers
+            .first { $0.key.lowercased() == "set-cookie" }?
+            .value
+            .split(separator: ";")
+            .first
+            .map(String.init)
+    }
 }
 
 /// The seam the tests use. Everything above it is real code; only the socket is
@@ -37,7 +50,13 @@ struct URLSessionTransport: Transport {
         urlRequest.timeoutInterval = 30
 
         let (data, response) = try await session.data(for: urlRequest)
-        let status = (response as? HTTPURLResponse)?.statusCode ?? 0
-        return HttpResponse(status: status, body: data)
+        let http = response as? HTTPURLResponse
+        var headers: [String: String] = [:]
+        for (name, value) in http?.allHeaderFields ?? [:] {
+            if let name = name as? String, let value = value as? String {
+                headers[name] = value
+            }
+        }
+        return HttpResponse(status: http?.statusCode ?? 0, body: data, headers: headers)
     }
 }

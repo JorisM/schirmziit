@@ -112,6 +112,7 @@
 "agent.mytime.help" = "Das sind genau die Zahlen, die deine Eltern sehen.";
 "agent.mytime.error" = "Deine Zahlen konnten nicht geladen werden. Versuch es gleich nochmal.";
 "agent.mytime.empty" = "Für diesen Tag ist noch nichts erfasst.";
+"agent.mytime.retry" = "Nochmals versuchen";
 
 "agent.help.title" = "So funktioniert Schirmziit";
 "agent.help.done" = "Fertig";

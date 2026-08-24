@@ -112,6 +112,7 @@
 "agent.mytime.help" = "Questi sono esattamente gli stessi numeri che vedono i tuoi genitori.";
 "agent.mytime.error" = "Non è stato possibile caricare i tuoi numeri. Riprova tra un momento.";
 "agent.mytime.empty" = "Per questo giorno non è ancora stato registrato nulla.";
+"agent.mytime.retry" = "Riprova";
 
 "agent.help.title" = "Come funziona Schirmziit";
 "agent.help.done" = "Fatto";

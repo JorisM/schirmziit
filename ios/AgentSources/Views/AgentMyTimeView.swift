@@ -31,6 +31,7 @@ struct AgentMyTimeView: View {
                     Label(error, systemImage: "exclamationmark.triangle.fill")
                         .foregroundStyle(Palette.urgent)
                         .font(.footnote)
+                    Button(S("agent.mytime.retry")) { Task { await load() } }
                 }
             }
 
@@ -91,10 +92,18 @@ struct AgentMyTimeView: View {
             }
         }
         .navigationTitle(L("agent.mytime.title"))
-        // The strip is one request, on appearance only. The initial day's
-        // detail is a second, separate request — the same fixed cost picking
-        // a later day also has, never the strip's cost on top.
-        .task { await model.loadMyTimeStrip() }
-        .task { await model.selectMyDay(model.mySelectedDay) }
+        // Sequenced, not two concurrent `.task`s: both write the shared
+        // `myTimeError`, so if they raced, a day fetch failing and the strip
+        // succeeding afterwards would clear the error while `myDay` stayed
+        // nil — a spinner with nothing behind it and no way to know why.
+        // Sequencing restores the all-or-nothing error semantics the original
+        // combined call had, while `selectMyDay` alone (picking a day) still
+        // costs exactly one request.
+        .task { await load() }
+    }
+
+    private func load() async {
+        await model.loadMyTimeStrip()
+        await model.selectMyDay(model.mySelectedDay)
     }
 }

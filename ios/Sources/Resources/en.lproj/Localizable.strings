@@ -112,6 +112,7 @@
 "agent.mytime.help" = "These are the same numbers your parent sees.";
 "agent.mytime.error" = "Could not load your numbers. Try again in a moment.";
 "agent.mytime.empty" = "Nothing recorded for this day yet.";
+"agent.mytime.retry" = "Try again";
 
 "agent.help.title" = "How Schirmziit works";
 "agent.help.done" = "Done";

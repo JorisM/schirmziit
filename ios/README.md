@@ -53,6 +53,18 @@ Step 4 is the important one: the wire format is built by `crates/core`, exactly
 as on Android, so the two agents cannot drift. `AgentContractTests` additionally
 checks that body against `api/openapi.json`.
 
+**The child can see their own fourteen days.** `AgentMyTimeView`, reached from a
+`NavigationLink` on `AgentStatusView`, reads the same `GET /v1/me/usage` a
+device token buys — this phone's own child, no id in the path. `AgentModel`
+drives it with `loadMyTimeStrip()` (the fourteen-day strip, fetched once when
+the screen appears) and `selectMyDay(_:)` (one day's hourly detail, the only
+request a tap on the strip costs — the strip itself is never refetched). Both
+parse the response through the **Rust core** (`parseDayStrip`/`parseDayDetail`),
+same as `ingestBody` on the sync side, so a captcha or proxy page throws instead
+of reading as an empty day. A `myTimeBusy` guard drops an overlapping call, and
+a failed load keeps whatever numbers are already on screen — only the error
+line and a retry button appear alongside them.
+
 **What does not work without Apple's approval.** Family Controls is an
 entitlement Apple grants per app; a free Personal Team cannot sign it, and App
 Groups need a paid team too. Without both, the app builds, installs and runs —

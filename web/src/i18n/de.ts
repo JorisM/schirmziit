@@ -55,6 +55,10 @@ export const de: Strings = {
     openCountColumn: 'Mal geöffnet',
     otherApps: 'Weitere Apps',
     tableView: 'Als Tabelle',
+    historyTitle: 'Die letzten 14 Tage',
+    historyHelp: 'Jeder Balken ist ein Tag. Tippe einen an, um ihn genauer anzuschauen.',
+    today: 'Heute',
+    selectedHeading: 'Ausgewählter Tag',
   },
 
   devices: {

@@ -55,6 +55,10 @@ export type Strings = {
     openCountColumn: string
     otherApps: string
     tableView: string
+    historyTitle: string
+    historyHelp: string
+    today: string
+    selectedHeading: string
   }
 
   devices: {

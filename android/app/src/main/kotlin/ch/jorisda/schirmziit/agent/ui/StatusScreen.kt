@@ -47,6 +47,7 @@ fun StatusScreen(
     batteryHint: BatteryHint,
     onSendNow: () -> Unit,
     onAllowBackground: () -> Unit,
+    onOpenMyTime: () -> Unit,
 ) {
     var helpOpen by remember { mutableStateOf(false) }
 
@@ -129,6 +130,10 @@ fun StatusScreen(
                     Text(stringResource(R.string.status_send_now))
                 }
             }
+        }
+
+        FilledTonalButton(onClick = onOpenMyTime) {
+            Text(stringResource(R.string.mytime_open))
         }
 
         // Escalates only once syncs are actually being missed; a standing banner

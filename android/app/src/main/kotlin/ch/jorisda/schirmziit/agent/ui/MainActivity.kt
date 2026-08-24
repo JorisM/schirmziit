@@ -20,6 +20,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import ch.jorisda.schirmziit.agent.R
+import ch.jorisda.schirmziit.agent.core.CoreBridge
+import ch.jorisda.schirmziit.agent.mytime.MyTime
+import ch.jorisda.schirmziit.agent.mytime.MyTimeRepository
 import ch.jorisda.schirmziit.agent.notify.OngoingNotice
 import ch.jorisda.schirmziit.agent.pair.EnrollPayloadParser
 import ch.jorisda.schirmziit.agent.pair.PairingScreen
@@ -27,12 +30,14 @@ import ch.jorisda.schirmziit.agent.power.AndroidPowerStatus
 import ch.jorisda.schirmziit.agent.store.AgentDatabase
 import ch.jorisda.schirmziit.agent.store.AgentSettings
 import ch.jorisda.schirmziit.agent.store.AgentStore
+import ch.jorisda.schirmziit.agent.sync.SchirmziitClient
 import ch.jorisda.schirmziit.agent.sync.SyncWorker
 import ch.jorisda.schirmziit.agent.ui.theme.SchirmziitTheme
 import ch.jorisda.schirmziit.agent.usage.AndroidUsageSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
 
 class MainActivity : ComponentActivity() {
 
@@ -87,6 +92,32 @@ class MainActivity : ComponentActivity() {
                     // resume is what makes the prompt disappear once it is done.
                     OnResume(::refresh)
 
+                    var showMyTime by remember { mutableStateOf(false) }
+                    var myTime by remember { mutableStateOf<MyTime?>(null) }
+
+                    fun loadMyTime(selected: String) {
+                        val token = settings.deviceToken ?: return
+                        val baseUrl = settings.baseUrl ?: return
+                        scope.launch {
+                            // The client does network work and Room forbids
+                            // main-thread access; both belong off-thread, and
+                            // the repository never throws, so this is safe even
+                            // offline — it comes back with failed = true.
+                            val result = withContext(Dispatchers.IO) {
+                                val client = SchirmziitClient(baseUrl, OkHttpClient())
+                                val bridge = CoreBridge()
+                                MyTimeRepository(
+                                    fetch = { from, to, bucket, tz ->
+                                        client.myUsage(token, from, to, bucket, tz)
+                                    },
+                                    parseStrip = bridge::dayStrip,
+                                    parseDetail = bridge::dayDetail,
+                                ).load(selected, tz = java.util.TimeZone.getDefault().id)
+                            }
+                            myTime = result
+                        }
+                    }
+
                     when {
                         !state.hasPermission -> PermissionScreen(onGranted = ::refresh)
 
@@ -94,6 +125,17 @@ class MainActivity : ComponentActivity() {
                             OngoingNotice.update(this@MainActivity, settings)
                             refresh()
                         }
+
+                        showMyTime -> MyTimeScreen(
+                            state = myTime ?: MyTime(
+                                emptyList(),
+                                null,
+                                java.time.LocalDate.now().toString(),
+                                failed = false,
+                            ),
+                            onSelectDay = ::loadMyTime,
+                            onBack = { showMyTime = false },
+                        )
 
                         else -> StatusScreen(
                             settings = settings,
@@ -105,6 +147,10 @@ class MainActivity : ComponentActivity() {
                                 refresh()
                             },
                             onAllowBackground = { power.requestExemption(this@MainActivity) },
+                            onOpenMyTime = {
+                                showMyTime = true
+                                loadMyTime(java.time.LocalDate.now().toString())
+                            },
                         )
                     }
                 }

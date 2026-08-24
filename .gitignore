@@ -22,3 +22,4 @@ build/
 dist
 .astro
 node_modules
+

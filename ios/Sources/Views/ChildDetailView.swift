@@ -68,21 +68,9 @@ struct ChildDetailView: View {
                 }
 
                 if !usage.series.isEmpty {
-                  Section(header: L("child.apps")) {
-                    let ranked = usage.series.sorted { $0.totalMs > $1.totalMs }
-                    ForEach(Array(ranked.prefix(8).enumerated()), id: \.element.id) { index, entry in
-                        HStack {
-                            Circle()
-                                .fill(Palette.series[index % Palette.series.count])
-                                .frame(width: 10, height: 10)
-                            Text(verbatim: entry.label)
-                            Spacer()
-                            Text(verbatim: Formatting.duration(entry.totalMs))
-                                .monospacedDigit()
-                                .foregroundStyle(Palette.inkMuted)
-                        }
+                    Section(header: L("child.apps")) {
+                        AppRowsView(series: usage.series)
                     }
-                  }
                 }
 
                 Section(header: L("devices.title")) {

@@ -22,6 +22,7 @@
 "child.nodata" = "Rien de signalé aujourd'hui";
 "child.nodata.hint" = "Cela peut vouloir dire que le téléphone n'a pas été utilisé — ou qu'il n'a pas encore envoyé ses données. Regarde les appareils ci-dessous.";
 "child.apps" = "Applications";
+"child.apps.brief" = "Applis de moins d’une minute";
 "child.ribbon.title" = "La forme de la journée";
 "child.ribbon.help" = "Chaque case représente une heure, de minuit à minuit. Plus c'est foncé, plus l'écran est resté allumé. Tu vois donc non seulement combien, mais quand. Touche une heure pour le détail.";
 "child.ribbon.quiet" = "calme";

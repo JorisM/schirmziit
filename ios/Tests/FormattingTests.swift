@@ -84,4 +84,23 @@ final class FormattingTests: XCTestCase {
         let days = Formatting.dailyTotals(series([("2026-07-01", 60_000)]), from: "2026-08-18", to: "2026-08-20")
         XCTAssertEqual(days.map(\.ms), [0, 0, 0])
     }
+
+    func testSplitAppsSeparatesTheGlancesFromTheDay() {
+        let (shown, brief) = Formatting.splitApps([
+            (label: "A", ms: 3_600_000), (label: "B", ms: 45_000), (label: "C", ms: 60_000),
+        ])
+        XCTAssertEqual(shown.map(\.label), ["A", "C"])
+        XCTAssertEqual(brief.map(\.label), ["B"])
+    }
+
+    func testSplitAppsDropsAnAppThatRoundsToZeroSeconds() {
+        let (shown, brief) = Formatting.splitApps([(label: "A", ms: 3_600_000), (label: "Blink", ms: 300)])
+        XCTAssertEqual(shown.map(\.label), ["A"])
+        XCTAssertTrue(brief.isEmpty)
+    }
+
+    func testSplitAppsKeepsAnAppThatRoundsToOneSecond() {
+        let (_, brief) = Formatting.splitApps([(label: "Blink", ms: 900)])
+        XCTAssertEqual(brief.map(\.label), ["Blink"])
+    }
 }

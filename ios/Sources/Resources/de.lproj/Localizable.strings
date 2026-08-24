@@ -22,6 +22,7 @@
 "child.nodata" = "Heute noch nichts gemeldet";
 "child.nodata.hint" = "Das kann heissen: das Handy wurde nicht benutzt — oder es hat noch nicht gemeldet. Schau bei den Geräten unten.";
 "child.apps" = "Apps";
+"child.apps.brief" = "Apps unter einer Minute";
 "child.ribbon.title" = "Der Tag im Verlauf";
 "child.ribbon.help" = "Jedes Feld ist eine Stunde, von Mitternacht bis Mitternacht. Je dunkler, desto länger war der Bildschirm an. So siehst du nicht nur wie viel, sondern wann. Tippe eine Stunde an für Details.";
 "child.ribbon.quiet" = "ruhig";

@@ -22,6 +22,7 @@
 "child.nodata" = "Oggi non è stato segnalato nulla";
 "child.nodata.hint" = "Può significare che il telefono non è stato usato — oppure che non ha ancora inviato i dati. Guarda i dispositivi qui sotto.";
 "child.apps" = "App";
+"child.apps.brief" = "App sotto un minuto";
 "child.ribbon.title" = "La forma della giornata";
 "child.ribbon.help" = "Ogni casella è un'ora, da mezzanotte a mezzanotte. Più è scura, più lo schermo è rimasto acceso. Così vedi non solo quanto, ma quando. Tocca un'ora per i dettagli.";
 "child.ribbon.quiet" = "tranquillo";

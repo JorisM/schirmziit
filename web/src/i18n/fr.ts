@@ -55,6 +55,10 @@ export const fr: Strings = {
     openCountColumn: 'Ouvertures',
     otherApps: 'Autres applications',
     tableView: 'En tableau',
+    historyTitle: 'Les 14 derniers jours',
+    historyHelp: 'Chaque barre est un jour. Touche une barre pour voir ce jour en détail.',
+    today: "Aujourd'hui",
+    selectedHeading: 'Jour sélectionné',
   },
 
   devices: {

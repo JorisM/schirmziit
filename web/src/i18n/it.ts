@@ -55,6 +55,7 @@ export const it: Strings = {
     timeColumn: 'Tempo',
     openCountColumn: 'Aperture',
     otherApps: 'Altre app',
+    briefApps: 'App sotto un minuto',
     tableView: 'Come tabella',
     historyTitle: 'Gli ultimi 14 giorni',
     historyHelp: 'Ogni barra è un giorno. Tocca una barra per vedere quel giorno nel dettaglio.',

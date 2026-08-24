@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { AppBars, foldApps } from './AppBars'
+import { AppBars, foldApps, splitApps } from './AppBars'
 import { LocaleProvider } from '../i18n'
 
 const point = (ms: number, launches = 1) => ({
@@ -64,5 +64,59 @@ describe('AppBars', () => {
       </LocaleProvider>,
     )
     expect(container).toBeEmptyDOMElement()
+  })
+})
+
+describe('splitApps', () => {
+  const app = (label: string, ms: number) => ({ package: label, label, ms, launches: 1 })
+
+  it('separates the apps under a minute from the ones above it', () => {
+    const { shown, brief } = splitApps([app('A', 3_600_000), app('B', 45_000), app('C', 60_000)])
+    expect(shown.map((a) => a.label)).toEqual(['A', 'C'])
+    expect(brief.map((a) => a.label)).toEqual(['B'])
+  })
+
+  it('drops an app that rounds to zero seconds', () => {
+    // A row reading "0 s" carries nothing; it is the one thing worth hiding.
+    const { shown, brief } = splitApps([app('A', 3_600_000), app('Blink', 300)])
+    expect(shown.map((a) => a.label)).toEqual(['A'])
+    expect(brief).toHaveLength(0)
+  })
+
+  it('keeps an app that rounds to one second', () => {
+    const { brief } = splitApps([app('Blink', 900)])
+    expect(brief.map((a) => a.label)).toEqual(['Blink'])
+  })
+})
+
+describe('splitApps with the tail fold', () => {
+  // foldApps only ever sees `shown` (never `brief`), so a sub-minute app can't
+  // land inside the __other__ row's sum as well as its own brief row.
+  it('never counts a sub-minute app in both folds', () => {
+    const many = Array.from({ length: 10 }, (_, i) => ({
+      package: `com.app${i}`,
+      label: `App ${i}`,
+      ms: (10 - i) * 60_000,
+      launches: 1,
+    }))
+    const brief = { package: 'com.brief', label: 'Brief', ms: 20_000, launches: 1 }
+    const { shown, brief: folded } = splitApps([...many, brief])
+
+    expect(folded.map((a) => a.label)).toEqual(['Brief'])
+
+    // Refold `shown` exactly as AppBars does: round-trip it through the series
+    // shape foldApps expects, since foldApps is not being asked to change.
+    const other = foldApps(
+      shown.map((a) => ({
+        package: a.package,
+        label: a.label,
+        points: [{ start: '2026-08-20', foreground_ms: a.ms, launch_count: a.launches }],
+      })),
+    ).find((a) => a.package === '__other__')
+
+    const expectedOtherTotal = shown.slice(5).reduce((sum, a) => sum + a.ms, 0)
+    expect(other?.ms).toBe(expectedOtherTotal)
+    // The brief app's time must not have leaked into the folded tail.
+    expect(other?.ms).not.toBe(expectedOtherTotal + brief.ms)
   })
 })

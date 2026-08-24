@@ -22,6 +22,7 @@
 "child.nodata" = "Nothing reported today";
 "child.nodata.hint" = "That can mean the phone was not used — or that it has not reported yet. Check the devices below.";
 "child.apps" = "Apps";
+"child.apps.brief" = "Apps under a minute";
 "child.ribbon.title" = "The shape of the day";
 "child.ribbon.help" = "Each cell is one hour, midnight to midnight. Darker means the screen was on longer, so you see not just how much but when. Tap an hour for the detail.";
 "child.ribbon.quiet" = "quiet";

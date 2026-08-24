@@ -55,6 +55,7 @@ export type Strings = {
     timeColumn: string
     openCountColumn: string
     otherApps: string
+    briefApps: string
     tableView: string
     historyTitle: string
     historyHelp: string

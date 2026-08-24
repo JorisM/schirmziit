@@ -232,6 +232,36 @@ final class SnapshotTests: XCTestCase {
         assert(DayRibbonView(totals: totals).padding(), named: "day-ribbon")
     }
 
+    func testAppRowsFoldTheSubMinuteGlances() {
+        // Three ordinary apps, two glances under a minute (folded into one
+        // disclosure row), and one that rounds to 0 s — the single case that
+        // must not appear anywhere in the image, folded or not.
+        let apps: [UsageSeries] = [
+            UsageSeries(package: "com.games.puzzle", label: "Puzzle", points: [
+                UsagePoint(start: "2026-08-24", foregroundMs: 3_600_000, launchCount: 4),
+            ]),
+            UsageSeries(package: "com.chat.messenger", label: "Messenger", points: [
+                UsagePoint(start: "2026-08-24", foregroundMs: 1_800_000, launchCount: 9),
+            ]),
+            UsageSeries(package: "com.video.stream", label: "StreamTV", points: [
+                UsagePoint(start: "2026-08-24", foregroundMs: 600_000, launchCount: 2),
+            ]),
+            UsageSeries(package: "com.utility.check", label: "QuickCheck", points: [
+                UsagePoint(start: "2026-08-24", foregroundMs: 45_000, launchCount: 1),
+            ]),
+            UsageSeries(package: "com.weather", label: "Weather", points: [
+                UsagePoint(start: "2026-08-24", foregroundMs: 20_000, launchCount: 1),
+            ]),
+            UsageSeries(package: "com.system.blink", label: "Blink", points: [
+                UsagePoint(start: "2026-08-24", foregroundMs: 300, launchCount: 1),
+            ]),
+        ]
+        assert(
+            List { Section(header: L("child.apps")) { AppRowsView(series: apps) } },
+            named: "app-rows"
+        )
+    }
+
     func testDayStrip() {
         // Fixed figures, a fortnight with one zero day: a strip that changes
         // shape between runs is not a snapshot test, it is a random image

@@ -23,6 +23,25 @@ enum Formatting {
         return rest == 0 ? "\(hours) \(hourUnit)" : "\(hours) \(hourUnit) \(rest) \(minuteUnit)"
     }
 
+    /// Apps worth a row of their own, and the glances that are not.
+    ///
+    /// A launcher, a clock and a keyboard fill the list with rows nobody wants
+    /// to talk about and push the day's real apps off the screen. They stay
+    /// reachable — a parent and a child must be able to see the same numbers —
+    /// but folded.
+    static func splitApps(
+        _ apps: [(label: String, ms: Int)]
+    ) -> (shown: [(label: String, ms: Int)], brief: [(label: String, ms: Int)]) {
+        var shown: [(label: String, ms: Int)] = []
+        var brief: [(label: String, ms: Int)] = []
+        for app in apps {
+            // Rounded, not raw: the row would render "0 s", which says nothing at all.
+            if Int((Double(app.ms) / 1_000).rounded()) == 0 { continue }
+            if app.ms < 60_000 { brief.append(app) } else { shown.append(app) }
+        }
+        return (shown, brief)
+    }
+
     /// Screen-on milliseconds per local hour, 0..23.
     ///
     /// The server already applied the caller's timezone, so the local hour is the

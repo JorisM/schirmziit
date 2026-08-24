@@ -54,6 +54,7 @@ export const en: Strings = {
     timeColumn: 'Time',
     openCountColumn: 'Times opened',
     otherApps: 'Other apps',
+    briefApps: 'Apps under a minute',
     tableView: 'As a table',
     historyTitle: 'The last 14 days',
     historyHelp: 'Each bar is one day. Tap a bar to look at that day.',

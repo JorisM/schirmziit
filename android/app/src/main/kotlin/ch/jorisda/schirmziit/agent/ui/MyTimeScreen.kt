@@ -33,7 +33,16 @@ import ch.jorisda.schirmziit.agent.mytime.MyTime
  * carrying the phone.
  */
 @Composable
-fun MyTimeScreen(state: MyTime, onSelectDay: (String) -> Unit, onBack: () -> Unit) {
+fun MyTimeScreen(
+    state: MyTime,
+    onSelectDay: (String) -> Unit,
+    onBack: () -> Unit,
+    // Independent of `state`: a first load in flight is passed a placeholder
+    // `MyTime` (there is nothing real to show yet), and this flag is what
+    // stops that placeholder's empty `detail` from being read as a genuinely
+    // empty day below.
+    loading: Boolean = false,
+) {
     Column(
         modifier = Modifier.safeDrawingPadding().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -96,7 +105,18 @@ fun MyTimeScreen(state: MyTime, onSelectDay: (String) -> Unit, onBack: () -> Uni
         }
 
         val detail = state.detail
-        if (detail == null || detail.totalMs == 0L) {
+        if (detail == null) {
+            // `detail == null` while `loading` means "not known yet", not
+            // "nothing recorded" — showing mytime_empty here would be the
+            // same silent-zero lie the failed-state guard above exists to
+            // prevent, just told by network latency instead of a dropped
+            // connection. Say nothing rather than say something false.
+            if (!loading) {
+                Text(stringResource(R.string.mytime_empty), style = MaterialTheme.typography.bodyMedium)
+            }
+            return@Column
+        }
+        if (detail.totalMs == 0L) {
             Text(stringResource(R.string.mytime_empty), style = MaterialTheme.typography.bodyMedium)
             return@Column
         }

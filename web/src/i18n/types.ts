@@ -42,6 +42,7 @@ export type Strings = {
     firstActivity: string
     lastActivity: string
     noDataToday: string
+    noDataDay: string
     noDataHint: string
     ribbonTitle: string
     ribbonHelp: string

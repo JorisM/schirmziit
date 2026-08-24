@@ -112,7 +112,7 @@ export function ChildDetail({ childId }: { childId: string }) {
 
       {screenTime === 0 && (
         <section className="card p-5">
-          <p className="font-medium">{t.child.noDataToday}</p>
+          <p className="font-medium">{selected === today() ? t.child.noDataToday : t.child.noDataDay}</p>
           <p className="mt-1 max-w-prose text-sm" style={{ color: 'var(--ink-muted)' }}>
             {t.child.noDataHint}
           </p>

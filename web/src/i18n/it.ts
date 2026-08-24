@@ -39,6 +39,7 @@ export const it: Strings = {
     firstActivity: 'Primo utilizzo',
     lastActivity: 'Ultimo utilizzo',
     noDataToday: 'Oggi non è stato segnalato nulla.',
+    noDataDay: 'Per questo giorno non è stato segnalato nulla.',
     noDataHint:
       'Può significare che il telefono non è stato usato — oppure che non ha ancora inviato i dati. Sotto vedi quando l’ha fatto l’ultima volta.',
     ribbonTitle: 'La forma della giornata',

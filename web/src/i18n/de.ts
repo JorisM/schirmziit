@@ -40,6 +40,7 @@ export const de: Strings = {
     firstActivity: 'Zuerst benutzt',
     lastActivity: 'Zuletzt benutzt',
     noDataToday: 'Heute noch nichts gemeldet.',
+    noDataDay: 'An diesem Tag wurde nichts gemeldet.',
     noDataHint:
       'Das kann heissen: das Handy wurde nicht benutzt — oder es hat noch nicht gemeldet. Unten steht, wann es sich zuletzt gemeldet hat.',
     ribbonTitle: 'Der Tag im Verlauf',

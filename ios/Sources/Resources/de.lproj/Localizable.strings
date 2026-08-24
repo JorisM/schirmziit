@@ -108,6 +108,11 @@
 "agent.status.unpair" = "Dieses Handy trennen";
 "agent.status.unpair.confirm" = "Meldungen stoppen und den Server vergessen?";
 
+"agent.mytime.title" = "Deine Zeit";
+"agent.mytime.help" = "Das sind genau die Zahlen, die deine Eltern sehen.";
+"agent.mytime.error" = "Deine Zahlen konnten nicht geladen werden. Versuch es gleich nochmal.";
+"agent.mytime.empty" = "Für diesen Tag ist noch nichts erfasst.";
+
 "agent.help.title" = "So funktioniert Schirmziit";
 "agent.help.done" = "Fertig";
 "agent.help.intro" = "Schirmziit zeigt, wie lange und wann dieses Handy benutzt wird. Nichts davon ist vor dir versteckt: du siehst die gleichen Zahlen wie deine Eltern.";

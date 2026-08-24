@@ -80,7 +80,8 @@ final class SnapshotTests: XCTestCase {
     private func agent(
         credentials: AgentCredentials? = nil,
         authorization: ScreenTimeAuthorization = .approved,
-        role: AppRole? = .child
+        role: AppRole? = .child,
+        transport: Transport = StubTransport(status: 200, body: "{}")
     ) -> AgentModel {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
@@ -89,11 +90,26 @@ final class SnapshotTests: XCTestCase {
             store: FileHourStore(directory: directory),
             inbox: SnapshotInbox(directory: directory),
             credentials: InMemoryCredentialStore(credentials),
-            transport: StubTransport(status: 200, body: "{}"),
+            transport: transport,
             authorizer: StubAuthorizer(state: authorization),
             monitoring: SpyMonitoring(),
             roles: InMemoryRoleStore(role)
         )
+    }
+
+    /// `AgentMyTimeView` loads itself in `.task`, and a snapshot can mount a
+    /// view more than once (once per light/dark render). Answering by query
+    /// shape rather than call order keeps every mount fed the same data
+    /// instead of the second one draining a fixed reply queue and showing a
+    /// spurious error banner.
+    private struct MyTimeStub: Transport {
+        let stripBody: String
+        let dayBody: String
+
+        func send(_ request: HttpRequest) async throws -> HttpResponse {
+            let isStrip = request.url.absoluteString.contains("bucket=day")
+            return HttpResponse(status: 200, body: Data((isStrip ? stripBody : dayBody).utf8))
+        }
     }
 
     private var paired: AgentCredentials {
@@ -133,6 +149,66 @@ final class SnapshotTests: XCTestCase {
 
     func testChildHelp() {
         assert(AgentHelpView(), named: "child-help")
+    }
+
+    func testMyTime() async {
+        // Fixed figures, the same fortnight `testDayStrip` uses, so the strip
+        // reads identically whether a parent or a child is looking at it.
+        let stripBody = """
+        {"from":"2026-08-11","to":"2026-08-24","series":[
+            {"package":"com.games.puzzle","label":"Puzzle","points":[
+                {"start":"2026-08-11","foreground_ms":2400000,"launch_count":3},
+                {"start":"2026-08-12","foreground_ms":3300000,"launch_count":4},
+                {"start":"2026-08-14","foreground_ms":720000,"launch_count":1},
+                {"start":"2026-08-15","foreground_ms":5400000,"launch_count":6},
+                {"start":"2026-08-16","foreground_ms":3900000,"launch_count":5},
+                {"start":"2026-08-17","foreground_ms":1800000,"launch_count":2},
+                {"start":"2026-08-18","foreground_ms":2700000,"launch_count":3},
+                {"start":"2026-08-19","foreground_ms":1200000,"launch_count":2},
+                {"start":"2026-08-20","foreground_ms":6000000,"launch_count":7},
+                {"start":"2026-08-21","foreground_ms":900000,"launch_count":1},
+                {"start":"2026-08-22","foreground_ms":3600000,"launch_count":4},
+                {"start":"2026-08-23","foreground_ms":2100000,"launch_count":3},
+                {"start":"2026-08-24","foreground_ms":3000000,"launch_count":4}
+            ]}
+        ],"device_totals":[]}
+        """
+        // Fixed figures, the same shape `testDayRibbon` uses.
+        let dayBody = """
+        {"from":"2026-08-24","to":"2026-08-24","series":[
+            {"package":"com.games.puzzle","label":"Puzzle","points":[
+                {"start":"2026-08-24T13:00:00+02:00","foreground_ms":3000000,"launch_count":6}]},
+            {"package":"com.chat.messenger","label":"Messenger","points":[
+                {"start":"2026-08-24T18:00:00+02:00","foreground_ms":1800000,"launch_count":9}]},
+            {"package":"com.video.stream","label":"StreamTV","points":[
+                {"start":"2026-08-24T19:00:00+02:00","foreground_ms":1200000,"launch_count":2}]},
+            {"package":"com.social.feed","label":"Feed","points":[
+                {"start":"2026-08-24T08:00:00+02:00","foreground_ms":600000,"launch_count":5}]},
+            {"package":"com.music.player","label":"Music","points":[
+                {"start":"2026-08-24T20:00:00+02:00","foreground_ms":300000,"launch_count":1}]},
+            {"package":"com.browser","label":"Browser","points":[
+                {"start":"2026-08-24T21:00:00+02:00","foreground_ms":120000,"launch_count":1}]}
+        ],"device_totals":[
+            {"start":"2026-08-24T07:00:00+02:00","screen_on_ms":720000,"unlock_count":3},
+            {"start":"2026-08-24T08:00:00+02:00","screen_on_ms":2040000,"unlock_count":3},
+            {"start":"2026-08-24T09:00:00+02:00","screen_on_ms":480000,"unlock_count":3},
+            {"start":"2026-08-24T12:00:00+02:00","screen_on_ms":2460000,"unlock_count":3},
+            {"start":"2026-08-24T13:00:00+02:00","screen_on_ms":3300000,"unlock_count":3},
+            {"start":"2026-08-24T14:00:00+02:00","screen_on_ms":1320000,"unlock_count":3},
+            {"start":"2026-08-24T15:00:00+02:00","screen_on_ms":360000,"unlock_count":3},
+            {"start":"2026-08-24T18:00:00+02:00","screen_on_ms":3780000,"unlock_count":3},
+            {"start":"2026-08-24T19:00:00+02:00","screen_on_ms":2880000,"unlock_count":3},
+            {"start":"2026-08-24T20:00:00+02:00","screen_on_ms":1140000,"unlock_count":3},
+            {"start":"2026-08-24T21:00:00+02:00","screen_on_ms":240000,"unlock_count":3}
+        ]}
+        """
+        let model = agent(credentials: paired, transport: MyTimeStub(stripBody: stripBody, dayBody: dayBody))
+        // Loaded ahead of the render rather than left to the view's own
+        // `.task`: the snapshot host does not reliably run that to completion
+        // inside the settle wait, and a view that mounts twice (light, dark)
+        // must show the real numbers both times, not a spinner half of the time.
+        await model.loadMyTime()
+        assert(AgentMyTimeView(model: model), named: "my-time")
     }
 
     // MARK: - Parent mode

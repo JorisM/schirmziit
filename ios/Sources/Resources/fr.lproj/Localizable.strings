@@ -108,6 +108,11 @@
 "agent.status.unpair" = "Déconnecter ce téléphone";
 "agent.status.unpair.confirm" = "Arrêter la transmission et oublier le serveur ?";
 
+"agent.mytime.title" = "Ton temps";
+"agent.mytime.help" = "Ce sont exactement les mêmes chiffres que voient tes parents.";
+"agent.mytime.error" = "Impossible de charger tes chiffres. Réessaie dans un instant.";
+"agent.mytime.empty" = "Rien n'est encore enregistré pour ce jour.";
+
 "agent.help.title" = "Comment fonctionne Schirmziit";
 "agent.help.done" = "Terminé";
 "agent.help.intro" = "Schirmziit montre combien de temps et à quel moment ce téléphone est utilisé. Rien ne t'est caché : tu vois les mêmes chiffres que tes parents.";

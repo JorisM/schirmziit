@@ -108,6 +108,11 @@
 "agent.status.unpair" = "Scollega questo telefono";
 "agent.status.unpair.confirm" = "Fermare gli invii e dimenticare il server?";
 
+"agent.mytime.title" = "Il tuo tempo";
+"agent.mytime.help" = "Questi sono esattamente gli stessi numeri che vedono i tuoi genitori.";
+"agent.mytime.error" = "Non è stato possibile caricare i tuoi numeri. Riprova tra un momento.";
+"agent.mytime.empty" = "Per questo giorno non è ancora stato registrato nulla.";
+
 "agent.help.title" = "Come funziona Schirmziit";
 "agent.help.done" = "Fatto";
 "agent.help.intro" = "Schirmziit mostra quanto e quando viene usato questo telefono. Niente ti viene nascosto: vedi gli stessi numeri dei tuoi genitori.";

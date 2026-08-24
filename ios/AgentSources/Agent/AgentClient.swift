@@ -13,9 +13,9 @@ enum AgentClientError: Error, Equatable {
     case malformedResponse
 }
 
-/// The two endpoints a child device is allowed to touch. Both are write-only by
-/// design on the server side, so a stolen device token cannot read the family's
-/// history.
+/// The endpoints a child device is allowed to touch: two write-only ones
+/// (`enroll`, `ingest`), and one read that hands back only this same device's
+/// own child — never another child's history, and never anyone else's phone.
 struct AgentClient: Sendable {
     let baseURL: URL
     let transport: Transport
@@ -59,6 +59,38 @@ struct AgentClient: Sendable {
                 ],
                 body: Data(body.utf8)
             )
+        )
+
+        switch response.status {
+        case 200...299:
+            guard let text = String(data: response.body, encoding: .utf8) else {
+                throw AgentClientError.malformedResponse
+            }
+            return text
+        case 401, 403:
+            throw AgentClientError.unauthorized
+        case let status:
+            throw AgentClientError.http(status)
+        }
+    }
+
+    /// The one read a device token buys: this phone's own child, no id in the
+    /// path. Returns the raw body — the core parses it, so both agents agree on
+    /// what a day means.
+    func myUsage(token: String, from: String, to: String, bucket: String, tz: String) async throws -> String {
+        var components = URLComponents(
+            url: baseURL.appendingPathComponent("v1/me/usage"), resolvingAgainstBaseURL: false
+        )
+        components?.queryItems = [
+            URLQueryItem(name: "from", value: from),
+            URLQueryItem(name: "to", value: to),
+            URLQueryItem(name: "bucket", value: bucket),
+            URLQueryItem(name: "tz", value: tz),
+        ]
+        guard let url = components?.url else { throw AgentClientError.malformedResponse }
+
+        let response = try await transport.send(
+            HttpRequest(url: url, method: "GET", headers: ["authorization": "Bearer \(token)"], body: nil)
         )
 
         switch response.status {

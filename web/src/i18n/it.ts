@@ -154,5 +154,5 @@ export const it: Strings = {
     offline: 'Nessuna connessione al server.',
   },
 
-  units: { hoursShort: 'h', minutesShort: 'min' },
+  units: { hoursShort: 'h', minutesShort: 'min', secondsShort: 's' },
 }

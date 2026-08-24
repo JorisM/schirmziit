@@ -66,6 +66,7 @@
 
 "unit.hour" = "h";
 "unit.minute" = "min";
+"unit.second" = "s";
 
 /* ── Child mode ───────────────────────────────────────────── */
 "agent.title" = "Schirmziit";

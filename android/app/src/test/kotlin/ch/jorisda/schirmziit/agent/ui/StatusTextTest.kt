@@ -71,4 +71,28 @@ class StatusTextTest {
         // under-reports every single value by up to 59 seconds.
         assertEquals("3 min", StatusText.duration(2 * minute + 45_000))
     }
+
+    @Test
+    fun `renders seconds below a minute`() {
+        assertEquals("20 s", StatusText.duration(20_000))
+        assertEquals("45 s", StatusText.duration(45_400))
+    }
+
+    @Test
+    fun `keeps zero as zero minutes`() {
+        assertEquals("0 min", StatusText.duration(0))
+    }
+
+    @Test
+    fun `never renders sixty seconds`() {
+        assertEquals("1 min", StatusText.duration(59_500))
+        assertEquals("1 min", StatusText.duration(60_000))
+    }
+
+    @Test
+    fun `leaves longer spans alone`() {
+        assertEquals("2 min", StatusText.duration(90_000))
+        assertEquals("1 h", StatusText.duration(3_600_000))
+        assertEquals("2 h 14 min", StatusText.duration(8_040_000))
+    }
 }

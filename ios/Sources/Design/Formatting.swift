@@ -1,11 +1,22 @@
 import Foundation
 
 enum Formatting {
-    /// "2 h 14 min" / "18 min" — never "0.23 h". Matches the dashboard.
+    /// "2 h 14 min" / "18 min" / "45 s" — never "0.23 h". Matches the dashboard.
     static func duration(_ milliseconds: Int) -> String {
+        let minuteUnit = String(localized: "unit.minute")
+        // Below a minute the minute is the wrong unit: a twenty-second glance at
+        // a phone is not "0 min", and it is not "1 min" either.
+        if milliseconds > 0, milliseconds < 60_000 {
+            let seconds = Int((Double(milliseconds) / 1_000).rounded())
+            // 59.5s rounds to 60, which must read as the minute it is.
+            if seconds < 60 {
+                let secondUnit = String(localized: "unit.second")
+                return "\(seconds) \(secondUnit)"
+            }
+            return "1 \(minuteUnit)"
+        }
         let minutes = Int((Double(milliseconds) / 60_000).rounded())
         let hourUnit = String(localized: "unit.hour")
-        let minuteUnit = String(localized: "unit.minute")
         if minutes < 60 { return "\(minutes) \(minuteUnit)" }
         let hours = minutes / 60
         let rest = minutes % 60

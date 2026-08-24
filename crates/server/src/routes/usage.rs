@@ -151,6 +151,17 @@ pub async fn usage(
     Query(q): Query<UsageQuery>,
 ) -> Result<Json<UsageResponse>, ApiError> {
     let child_id = scope::child_of_family(&state.pool, parent.family_id, id).await?;
+    Ok(Json(usage_for_child(&state.pool, child_id, &q).await?))
+}
+
+/// The one place usage is read. A parent and a child must never see different
+/// numbers for the same day, and one query path is the cheapest way to promise
+/// that.
+pub(crate) async fn usage_for_child(
+    pool: &sqlx::PgPool,
+    child_id: Uuid,
+    q: &UsageQuery,
+) -> Result<UsageResponse, ApiError> {
     let tz = zone(&q.tz)?;
     let (start, end) = bounds(q.from, q.to, tz)?;
 
@@ -162,7 +173,7 @@ pub async fn usage(
          WHERE child_id = $1 AND revoked_at IS NULL ORDER BY created_at",
         child_id
     )
-    .fetch_all(&state.pool)
+    .fetch_all(pool)
     .await?;
 
     let now = Utc::now();
@@ -193,7 +204,7 @@ pub async fn usage(
             end,
             q.tz
         )
-        .fetch_all(&state.pool)
+        .fetch_all(pool)
         .await?;
 
         for r in rows {
@@ -224,7 +235,7 @@ pub async fn usage(
             start,
             end
         )
-        .fetch_all(&state.pool)
+        .fetch_all(pool)
         .await?;
 
         for r in rows {
@@ -240,27 +251,61 @@ pub async fn usage(
         }
     }
 
-    let totals = sqlx::query!(
-        r#"SELECT h.hour_start,
-                  SUM(h.screen_on_ms)::bigint AS "screen_on_ms!",
-                  SUM(h.unlock_count)::int    AS "unlock_count!"
-           FROM device_hours h
-           JOIN devices d ON d.id = h.device_id
-           WHERE d.child_id = $1 AND h.hour_start >= $2 AND h.hour_start < $3
-           GROUP BY h.hour_start ORDER BY h.hour_start"#,
-        child_id,
-        start,
-        end
-    )
-    .fetch_all(&state.pool)
-    .await?;
+    // Daily totals must actually be daily: grouping by hour_start regardless
+    // of bucket would hand a 14-day view 336 rows nobody asked for.
+    let device_totals = if q.bucket == "day" {
+        let rows = sqlx::query!(
+            r#"SELECT (h.hour_start AT TIME ZONE $4)::date AS "day!",
+                      SUM(h.screen_on_ms)::bigint AS "screen_on_ms!",
+                      SUM(h.unlock_count)::int    AS "unlock_count!"
+               FROM device_hours h
+               JOIN devices d ON d.id = h.device_id
+               WHERE d.child_id = $1 AND h.hour_start >= $2 AND h.hour_start < $3
+               GROUP BY 1 ORDER BY 1"#,
+            child_id,
+            start,
+            end,
+            q.tz
+        )
+        .fetch_all(pool)
+        .await?;
+        rows.iter()
+            .map(|t| DeviceTotal {
+                start: t.day.to_string(),
+                screen_on_ms: t.screen_on_ms,
+                unlock_count: t.unlock_count,
+            })
+            .collect()
+    } else {
+        let rows = sqlx::query!(
+            r#"SELECT h.hour_start,
+                      SUM(h.screen_on_ms)::bigint AS "screen_on_ms!",
+                      SUM(h.unlock_count)::int    AS "unlock_count!"
+               FROM device_hours h
+               JOIN devices d ON d.id = h.device_id
+               WHERE d.child_id = $1 AND h.hour_start >= $2 AND h.hour_start < $3
+               GROUP BY h.hour_start ORDER BY h.hour_start"#,
+            child_id,
+            start,
+            end
+        )
+        .fetch_all(pool)
+        .await?;
+        rows.iter()
+            .map(|t| DeviceTotal {
+                start: t.hour_start.with_timezone(&tz).to_rfc3339(),
+                screen_on_ms: t.screen_on_ms,
+                unlock_count: t.unlock_count,
+            })
+            .collect()
+    };
 
-    Ok(Json(UsageResponse {
+    Ok(UsageResponse {
         child_id,
         from: q.from,
         to: q.to,
-        bucket: q.bucket,
-        tz: q.tz,
+        bucket: q.bucket.clone(),
+        tz: q.tz.clone(),
         devices: devices_json,
         series: series
             .into_iter()
@@ -270,15 +315,8 @@ pub async fn usage(
                 points,
             })
             .collect(),
-        device_totals: totals
-            .iter()
-            .map(|t| DeviceTotal {
-                start: t.hour_start.with_timezone(&tz).to_rfc3339(),
-                screen_on_ms: t.screen_on_ms,
-                unlock_count: t.unlock_count,
-            })
-            .collect(),
-    }))
+        device_totals,
+    })
 }
 
 #[derive(serde::Deserialize, utoipa::IntoParams)]

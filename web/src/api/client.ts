@@ -12,12 +12,33 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Where the API lives, relative to the page.
+ *
+ * Empty is the self-hosted shape: one binary serves this dashboard and the API
+ * from the same origin, so relative paths are right and no CORS is in play.
+ * Hosted, the dashboard is on `app.` and the API on `api.`, and this is set at
+ * build time to the latter.
+ */
+const API_BASE: string = import.meta.env.VITE_API_BASE ?? ''
+
+export function apiUrl(path: string, base: string = API_BASE): string {
+  // A trailing slash in the env var would produce `//v1/me` — a 404 that reads
+  // like a routing bug rather than a typo in a deployment variable.
+  return base ? `${base.replace(/\/$/, '')}${path}` : path
+}
+
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
-  const response = await fetch(path, {
+  const response = await fetch(apiUrl(path), {
     method,
     headers: body ? { 'content-type': 'application/json' } : undefined,
     body: body ? JSON.stringify(body) : undefined,
-    credentials: 'same-origin',
+    // `include`, not `same-origin`: on the split hosts the session cookie is
+    // set by and sent to `api.`, which is a different origin from the page.
+    // Both are under `schirmziit.ch`, so this stays a same-SITE cookie and no
+    // third-party-cookie policy applies. Same-origin self-hosting is
+    // unaffected — `include` behaves identically there.
+    credentials: 'include',
   })
 
   if (!response.ok) {

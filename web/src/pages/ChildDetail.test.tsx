@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { SWRConfig } from 'swr'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ChildDetail } from './ChildDetail'
-import { LocaleProvider } from '../i18n'
+import { LocaleProvider, locales } from '../i18n'
 import { api } from '../api/client'
 
 const usage = (bucket: string, from: string, to: string) => ({
@@ -69,5 +69,30 @@ describe('ChildDetail', () => {
     })
     const daily = get.mock.calls.map(([p]) => p as string).filter((p) => p.includes('bucket=day'))
     expect(daily, 'selecting a day must not re-fetch the strip').toHaveLength(1)
+  })
+
+  it('names the day, not "today", when an empty past day is selected', async () => {
+    vi.spyOn(api, 'get').mockImplementation(async (path: string) => {
+      const url = new URL(path, 'http://x')
+      const bucket = url.searchParams.get('bucket')!
+      const from = url.searchParams.get('from')!
+      const to = url.searchParams.get('to')!
+      // The strip has data (so the button under test is real and clickable),
+      // but every hourly/detail response — today's included — is empty, so
+      // only the day-aware copy distinguishes "today" from "this day".
+      if (bucket === 'hour') {
+        return { child_id: 'kid', from, to, bucket, tz: 'Europe/Zurich', devices: [], device_totals: [], series: [] } as never
+      }
+      return usage(bucket, from, to) as never
+    })
+
+    renderPage()
+    await waitFor(() => expect(screen.getByText(locales.en.child.noDataToday)).toBeInTheDocument())
+
+    // The strip's first button is the oldest day in range (today − 13) — never today.
+    await userEvent.click(screen.getAllByRole('button')[0]!)
+
+    await waitFor(() => expect(screen.getByText(locales.en.child.noDataDay)).toBeInTheDocument())
+    expect(screen.queryByText(locales.en.child.noDataToday)).not.toBeInTheDocument()
   })
 })

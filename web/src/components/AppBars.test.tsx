@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { AppBars, foldApps, splitApps } from './AppBars'
 import { LocaleProvider } from '../i18n'
@@ -118,5 +119,69 @@ describe('splitApps with the tail fold', () => {
     expect(other?.ms).toBe(expectedOtherTotal)
     // The brief app's time must not have leaked into the folded tail.
     expect(other?.ms).not.toBe(expectedOtherTotal + brief.ms)
+  })
+})
+
+describe('AppBars with both folds at once', () => {
+  // Proves the wiring inside AppBars itself, not just that the two exported
+  // functions compose correctly in isolation: renders a series that needs
+  // BOTH the sub-minute split and the six-row tail fold at the same time, and
+  // reads the result back out of the DOM.
+  it('keeps the sub-minute app out of the __other__ row, at the DOM level', async () => {
+    const bothFoldsSeries = [
+      { package: 'com.a0', label: 'App0', points: [point(600_000)] },
+      { package: 'com.a1', label: 'App1', points: [point(540_000)] },
+      { package: 'com.a2', label: 'App2', points: [point(480_000)] },
+      { package: 'com.a3', label: 'App3', points: [point(420_000)] },
+      { package: 'com.a4', label: 'App4', points: [point(360_000)] },
+      // These three fold into __other__: 300_000 + 240_000 + 75_000 = 615_000ms = "10 min".
+      { package: 'com.a5', label: 'App5', points: [point(300_000)] },
+      { package: 'com.a6', label: 'App6', points: [point(240_000)] },
+      { package: 'com.a7', label: 'App7', points: [point(75_000)] },
+      // Sub-minute: if it leaked into __other__'s sum, the total would round to
+      // "11 min" instead of "10 min", and no disclosure button would exist.
+      { package: 'com.brief', label: 'BriefApp', points: [point(45_000)] },
+    ]
+
+    render(
+      <LocaleProvider>
+        <AppBars series={bothFoldsSeries} />
+      </LocaleProvider>,
+    )
+
+    // English fallback in tests: navigator.language is en-US under jsdom.
+    expect(screen.getByTitle('Other apps — 10 min')).toBeInTheDocument()
+    expect(screen.queryByTitle('Other apps — 11 min')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Apps under a minute (1)' })).toBeInTheDocument()
+  })
+})
+
+describe('AppBars disclosure', () => {
+  it('reveals the brief apps behind a real, labelled, keyboard-reachable control', async () => {
+    const disclosureSeries = [
+      { package: 'com.games.puzzle', label: 'Puzzle', points: [point(3_600_000)] },
+      { package: 'com.utility.check', label: 'QuickCheck', points: [point(45_000)] },
+      { package: 'com.weather', label: 'Weather', points: [point(20_000)] },
+    ]
+
+    render(
+      <LocaleProvider>
+        <AppBars series={disclosureSeries} />
+      </LocaleProvider>,
+    )
+
+    // English fallback in tests: navigator.language is en-US under jsdom.
+    const toggle = screen.getByRole('button', { name: 'Apps under a minute (2)' })
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByText('QuickCheck')).not.toBeInTheDocument()
+    expect(screen.queryByText('Weather')).not.toBeInTheDocument()
+
+    await userEvent.click(toggle)
+
+    expect(toggle).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByText('QuickCheck')).toBeInTheDocument()
+    expect(screen.getByText('45 s')).toBeInTheDocument()
+    expect(screen.getByText('Weather')).toBeInTheDocument()
+    expect(screen.getByText('20 s')).toBeInTheDocument()
   })
 })

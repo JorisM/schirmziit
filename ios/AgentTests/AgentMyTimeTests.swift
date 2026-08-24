@@ -52,4 +52,31 @@ final class AgentMyTimeTests: XCTestCase {
         XCTAssertTrue(picked.url.absoluteString.contains("bucket=hour"), "the day request, not the strip")
         XCTAssertEqual(agent.mySelectedDay, "2026-08-20")
     }
+
+    /// The `catch` blocks in `AgentModel` simply never touch `myDays`/`myDay`,
+    /// so nothing today would zero a child's screen on a failed load — but
+    /// nothing would fail either if a future edit added `myDays = []` to a
+    /// catch block "to be safe". Pinned so that regresses loudly.
+    func testAFailedLoadNeverZeroesThePreviousNumbers() async {
+        let transport = StubTransport(replies: [
+            .success(HttpResponse(status: 200, body: Data(stripBody().utf8))),
+            .success(HttpResponse(status: 200, body: Data(dayBody().utf8))),
+            .failure(URLError(.timedOut)),
+        ])
+        let agent = model(transport: transport)
+
+        await agent.loadMyTimeStrip()
+        await agent.selectMyDay("2026-08-20")
+        let daysBefore = agent.myDays
+        let dayBefore = agent.myDay
+        XCTAssertFalse(daysBefore.isEmpty, "sanity: the first load actually populated something")
+        XCTAssertNotNil(dayBefore, "sanity: the first load actually populated something")
+
+        // A captcha page, a timeout, a 500 — whatever it is, the third call fails.
+        await agent.selectMyDay("2026-08-21")
+
+        XCTAssertEqual(agent.myDays, daysBefore, "a failed day fetch must not touch the strip already on screen")
+        XCTAssertEqual(agent.myDay, dayBefore, "the previous day's numbers stay on screen — never a silent zero")
+        XCTAssertNotNil(agent.myTimeError, "the failure must still be visible, even though the numbers held")
+    }
 }

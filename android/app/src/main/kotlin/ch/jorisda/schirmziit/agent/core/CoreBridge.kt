@@ -1,5 +1,7 @@
 package ch.jorisda.schirmziit.agent.core
 
+import ch.jorisda.schirmziit.core.DayDetailFfi
+import ch.jorisda.schirmziit.core.DayTotalFfi
 import ch.jorisda.schirmziit.core.EventKindFfi
 import ch.jorisda.schirmziit.core.OpenAppFfi
 import ch.jorisda.schirmziit.core.PendingHourFfi
@@ -8,6 +10,8 @@ import ch.jorisda.schirmziit.core.SessionFfi
 import ch.jorisda.schirmziit.core.applyIngestResult
 import ch.jorisda.schirmziit.core.bucketSessions
 import ch.jorisda.schirmziit.core.ingestBody
+import ch.jorisda.schirmziit.core.parseDayDetail
+import ch.jorisda.schirmziit.core.parseDayStrip
 import ch.jorisda.schirmziit.core.planNextSync
 import ch.jorisda.schirmziit.core.stitchEvents
 
@@ -93,4 +97,8 @@ open class CoreBridge {
         pending: List<PendingHourFfi>,
         responseJson: String,
     ): List<PendingHourFfi> = applyIngestResult(pending, responseJson)
+
+    open fun dayStrip(json: String): List<DayTotalFfi> = parseDayStrip(json)
+
+    open fun dayDetail(json: String): DayDetailFfi = parseDayDetail(json)
 }

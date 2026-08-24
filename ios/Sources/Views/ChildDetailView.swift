@@ -5,7 +5,18 @@ struct ChildDetailView: View {
     let client: ApiClient
 
     @State private var usage: UsageResponse?
+    @State private var strip: UsageResponse?
+    @State private var selected = ISO8601DateFormatter.dayOnly.string(from: Date())
     @State private var errorText: String?
+
+    private static let stripDays = 14
+
+    private var from: String {
+        let start = Calendar.current.date(byAdding: .day, value: -(Self.stripDays - 1), to: Date()) ?? Date()
+        return ISO8601DateFormatter.dayOnly.string(from: start)
+    }
+
+    private var today: String { ISO8601DateFormatter.dayOnly.string(from: Date()) }
 
     var body: some View {
         List {
@@ -18,8 +29,17 @@ struct ChildDetailView: View {
 
             if let usage {
                 Section {
+                    DayStripView(
+                        days: Formatting.dailyTotals(strip?.series ?? [], from: from, to: today),
+                        selected: selected,
+                        onSelect: { selected = $0 }
+                    )
+                    .padding(.vertical, 4)
+                }
+
+                Section {
                     VStack(alignment: .leading, spacing: 4) {
-                        L("child.total")
+                        L(selected == today ? "child.total" : "child.selected")
                             .font(.subheadline)
                             .foregroundStyle(Palette.inkMuted)
                         Text(verbatim: Formatting.duration(usage.screenTimeMs))
@@ -100,15 +120,18 @@ struct ChildDetailView: View {
         }
         .navigationTitle(child.displayName)
         .refreshable { await load() }
-        .task { await load() }
+        .task { await loadStrip() }
+        // id: selected — selecting a day re-issues the day request and nothing
+        // else. The strip is fourteen days of rows; re-fetching it on every tap
+        // would be the expensive half of the screen doing the least work.
+        .task(id: selected) { await load() }
     }
 
     private func load() async {
-        let day = ISO8601DateFormatter.dayOnly.string(from: Date())
         let zone = TimeZone.current.identifier
         do {
             usage = try await client.get(
-                "v1/children/\(child.id)/usage?from=\(day)&to=\(day)&bucket=hour&tz=\(zone)",
+                "v1/children/\(child.id)/usage?from=\(selected)&to=\(selected)&bucket=hour&tz=\(zone)",
                 as: UsageResponse.self
             )
             errorText = nil
@@ -117,6 +140,14 @@ struct ChildDetailView: View {
         } catch {
             errorText = S("error.offline")
         }
+    }
+
+    private func loadStrip() async {
+        let zone = TimeZone.current.identifier
+        strip = try? await client.get(
+            "v1/children/\(child.id)/usage?from=\(from)&to=\(today)&bucket=day&tz=\(zone)",
+            as: UsageResponse.self
+        )
     }
 }
 

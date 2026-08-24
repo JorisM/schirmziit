@@ -49,6 +49,48 @@ enum Formatting {
         default: return 1
         }
     }
+
+    /// Foreground milliseconds per local day, one entry per day in `from...to`.
+    ///
+    /// Zero-filled: a day with no rows is a quiet day, not a missing one. Same
+    /// measure as the hero total — screen-on time would be a second, different
+    /// number for the same day on the same screen.
+    static func dailyTotals(
+        _ series: [UsageSeries],
+        from: String,
+        to: String
+    ) -> [(day: String, ms: Int)] {
+        var totals: [String: Int] = [:]
+        var order: [String] = []
+        var day = from
+        while day <= to {
+            totals[day] = 0
+            order.append(day)
+            guard let next = nextDay(day) else { break }
+            day = next
+        }
+        for entry in series {
+            for point in entry.points where totals[point.start] != nil {
+                // Only days the response claimed: a stray point must not land
+                // on day one and invent a busy Monday.
+                totals[point.start, default: 0] += point.foregroundMs
+            }
+        }
+        return order.map { (day: $0, ms: totals[$0] ?? 0) }
+    }
+
+    static func nextDay(_ day: String) -> String? {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC")!
+        let formatter = DateFormatter()
+        formatter.calendar = calendar
+        formatter.timeZone = calendar.timeZone
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+        guard let date = formatter.date(from: day),
+              let next = calendar.date(byAdding: .day, value: 1, to: date) else { return nil }
+        return formatter.string(from: next)
+    }
 }
 
 extension String {

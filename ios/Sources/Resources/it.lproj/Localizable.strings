@@ -26,6 +26,10 @@
 "child.ribbon.help" = "Ogni casella è un'ora, da mezzanotte a mezzanotte. Più è scura, più lo schermo è rimasto acceso. Così vedi non solo quanto, ma quando. Tocca un'ora per i dettagli.";
 "child.ribbon.quiet" = "tranquillo";
 "child.ribbon.busy" = "intenso";
+"child.history.title" = "Gli ultimi 14 giorni";
+"child.history.help" = "Ogni barra è un giorno. Tocca una barra per vedere quel giorno nel dettaglio.";
+"child.today" = "Oggi";
+"child.selected" = "Giorno selezionato";
 
 "devices.title" = "Dispositivi";
 "devices.fresh" = "invia i dati";

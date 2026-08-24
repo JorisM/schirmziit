@@ -42,4 +42,26 @@ final class FormattingTests: XCTestCase {
     func testRampDoesNotDivideByZeroOnAnUnusedDay() {
         XCTAssertEqual(Formatting.rampStep(ms: 0, busiest: 0), 0)
     }
+
+    private func series(_ points: [(String, Int)]) -> [UsageSeries] {
+        [UsageSeries(
+            package: "com.a",
+            label: "A",
+            points: points.map { UsagePoint(start: $0.0, foregroundMs: $0.1, launchCount: 1) }
+        )]
+    }
+
+    func testEveryDayInRangeAppearsEvenWithNoRows() {
+        let days = Formatting.dailyTotals(
+            series([("2026-08-18", 60_000), ("2026-08-20", 30_000)]),
+            from: "2026-08-18", to: "2026-08-20"
+        )
+        XCTAssertEqual(days.map(\.day), ["2026-08-18", "2026-08-19", "2026-08-20"])
+        XCTAssertEqual(days.map(\.ms), [60_000, 0, 30_000])
+    }
+
+    func testAPointOutsideTheRangeIsDroppedNotFoldedIntoTheFirstDay() {
+        let days = Formatting.dailyTotals(series([("2026-07-01", 60_000)]), from: "2026-08-18", to: "2026-08-20")
+        XCTAssertEqual(days.map(\.ms), [0, 0, 0])
+    }
 }

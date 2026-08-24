@@ -25,3 +25,4 @@ node_modules
 
 # Isolated workspaces for plan execution.
 .worktrees
+.superpowers

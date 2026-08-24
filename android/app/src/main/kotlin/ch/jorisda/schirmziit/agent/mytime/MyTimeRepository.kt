@@ -23,8 +23,14 @@ class MyTimeRepository(
     private val parseStrip: (String) -> List<DayTotalFfi>,
     private val parseDetail: (String) -> DayDetailFfi,
 ) {
-    fun load(selected: String, from: String = minus13(selected), tz: String = "UTC"): MyTime = try {
-        val days = parseStrip(fetch(from, selected, "day", tz))
+    // `from` is nullable rather than a `= minus13(selected)` default: a Kotlin
+    // default-parameter expression evaluates in the prologue, before this
+    // method's try/catch runs, so a malformed `selected` would throw past the
+    // guarantee this repository exists to give — resolve it inside the try
+    // instead, where every parse failure lands on `failed = true`.
+    fun load(selected: String, from: String? = null, tz: String = "UTC"): MyTime = try {
+        val resolvedFrom = from ?: minus13(selected)
+        val days = parseStrip(fetch(resolvedFrom, selected, "day", tz))
         val detail = parseDetail(fetch(selected, selected, "hour", tz))
         MyTime(days, detail, selected, failed = false)
     } catch (error: Exception) {

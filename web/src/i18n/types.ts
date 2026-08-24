@@ -106,5 +106,5 @@ export type Strings = {
 
   errors: { generic: string; notFound: string; offline: string }
 
-  units: { hoursShort: string; minutesShort: string }
+  units: { hoursShort: string; minutesShort: string; secondsShort: string }
 }

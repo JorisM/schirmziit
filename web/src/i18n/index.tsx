@@ -76,8 +76,16 @@ export function useI18n(): LocaleContextValue {
   return value
 }
 
-/** Durations read as "2 h 14 min" / "18 min" — never "0.23 h". */
+/** Durations read as "2 h 14 min" / "18 min" / "45 s" — never "0.23 h". */
 export function formatDuration(ms: number, t: Strings): string {
+  // Below a minute the minute is the wrong unit: a twenty-second glance at a
+  // phone is not "0 min", and it is not "1 min" either.
+  if (ms > 0 && ms < 60_000) {
+    const seconds = Math.round(ms / 1000)
+    // 59.5s rounds to 60, which must read as the minute it is.
+    if (seconds < 60) return `${seconds} ${t.units.secondsShort}`
+    return `1 ${t.units.minutesShort}`
+  }
   const minutes = Math.round(ms / 60_000)
   if (minutes < 60) return `${minutes} ${t.units.minutesShort}`
   const hours = Math.floor(minutes / 60)

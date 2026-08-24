@@ -6,5 +6,6 @@ pub mod error;
 pub mod events;
 pub mod ffi;
 pub mod queue;
+pub mod selfusage;
 pub mod sessions;
 pub mod wire;

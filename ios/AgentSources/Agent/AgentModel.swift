@@ -29,6 +29,13 @@ public final class AgentModel {
     /// on when a load failed. Never a silent zero — "you used nothing today" is
     /// the wrong thing to tell someone because the wifi was off.
     public private(set) var myTimeError: String?
+    /// Guards `loadMyTimeStrip`/`selectMyDay` against overlapping calls — a
+    /// double-tap on retry, or two bars tapped in quick succession. Both
+    /// functions write the shared `myTimeError`, so letting two runs overlap
+    /// can interleave their completions: one fails and sets the error, the
+    /// other then succeeds and clears it while never having touched `myDay`
+    /// — a spinner with nothing behind it and no error to explain why.
+    public private(set) var myTimeBusy = false
 
     private let store: HourStore
     private let inbox: SnapshotInbox
@@ -171,6 +178,9 @@ public final class AgentModel {
     /// fourteen days of rows and must not be refetched every time a day is
     /// picked, same shape as the web dashboard and the iOS parent view.
     public func loadMyTimeStrip() async {
+        guard !myTimeBusy else { return }
+        myTimeBusy = true
+        defer { myTimeBusy = false }
         guard let credentials = credentials.load() else { return }
         let client = AgentClient(baseURL: credentials.baseURL, transport: transport)
         let zone = TimeZone.current.identifier
@@ -197,6 +207,9 @@ public final class AgentModel {
     /// strip is allowed to cost. Never re-fetches the strip: a child's phone
     /// is the most likely of the three surfaces to be on a metered connection.
     public func selectMyDay(_ day: String) async {
+        guard !myTimeBusy else { return }
+        myTimeBusy = true
+        defer { myTimeBusy = false }
         guard let credentials = credentials.load() else { return }
         let client = AgentClient(baseURL: credentials.baseURL, transport: transport)
         let zone = TimeZone.current.identifier

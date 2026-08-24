@@ -32,6 +32,7 @@ struct AgentMyTimeView: View {
                         .foregroundStyle(Palette.urgent)
                         .font(.footnote)
                     Button(S("agent.mytime.retry")) { Task { await load() } }
+                        .disabled(model.myTimeBusy)
                 }
             }
 

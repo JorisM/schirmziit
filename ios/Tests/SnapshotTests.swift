@@ -207,7 +207,8 @@ final class SnapshotTests: XCTestCase {
         // `.task`: the snapshot host does not reliably run that to completion
         // inside the settle wait, and a view that mounts twice (light, dark)
         // must show the real numbers both times, not a spinner half of the time.
-        await model.loadMyTime()
+        await model.loadMyTimeStrip()
+        await model.selectMyDay(model.mySelectedDay)
         assert(AgentMyTimeView(model: model), named: "my-time")
     }
 

@@ -38,7 +38,7 @@ struct AgentMyTimeView: View {
                 DayStripView(
                     days: model.myDays.map { (day: $0.day, ms: Int(truncatingIfNeeded: $0.foregroundMs)) },
                     selected: model.mySelectedDay,
-                    onSelect: { day in Task { await model.loadMyTime(day: day) } }
+                    onSelect: { day in Task { await model.selectMyDay(day) } }
                 )
                 .padding(.vertical, 4)
             }
@@ -91,6 +91,10 @@ struct AgentMyTimeView: View {
             }
         }
         .navigationTitle(L("agent.mytime.title"))
-        .task { await model.loadMyTime() }
+        // The strip is one request, on appearance only. The initial day's
+        // detail is a second, separate request — the same fixed cost picking
+        // a later day also has, never the strip's cost on top.
+        .task { await model.loadMyTimeStrip() }
+        .task { await model.selectMyDay(model.mySelectedDay) }
     }
 }

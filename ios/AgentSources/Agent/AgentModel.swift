@@ -166,14 +166,13 @@ public final class AgentModel {
         refresh()
     }
 
-    /// The same fourteen-day strip and one-day detail the parent's dashboard
-    /// shows, but for this phone's own child, over this phone's own device
-    /// token. `day` picks which day the detail is for; omitted, it stays on
-    /// whatever was selected before (today, the first time).
-    public func loadMyTime(day: String? = nil) async {
+    /// The fourteen-day strip for this phone's own child, over this phone's
+    /// own device token. Called once when the screen appears — the strip is
+    /// fourteen days of rows and must not be refetched every time a day is
+    /// picked, same shape as the web dashboard and the iOS parent view.
+    public func loadMyTimeStrip() async {
         guard let credentials = credentials.load() else { return }
         let client = AgentClient(baseURL: credentials.baseURL, transport: transport)
-        let selected = day ?? mySelectedDay
         let zone = TimeZone.current.identifier
         let from = ISO8601DateFormatter.dayOnly.string(
             from: Calendar.current.date(byAdding: .day, value: -13, to: Date()) ?? Date()
@@ -184,14 +183,32 @@ public final class AgentModel {
             let stripBody = try await client.myUsage(
                 token: credentials.token, from: from, to: today, bucket: "day", tz: zone
             )
+            // Through the core: a captcha page throws here rather than becoming
+            // an empty fortnight that tells a child they used nothing.
+            myDays = try parseDayStrip(json: stripBody)
+            myTimeError = nil
+        } catch {
+            // The previous numbers stay on screen; only the error line is new.
+            myTimeError = S("agent.mytime.error")
+        }
+    }
+
+    /// The ribbon and app list for one day — the one request a tap on the
+    /// strip is allowed to cost. Never re-fetches the strip: a child's phone
+    /// is the most likely of the three surfaces to be on a metered connection.
+    public func selectMyDay(_ day: String) async {
+        guard let credentials = credentials.load() else { return }
+        let client = AgentClient(baseURL: credentials.baseURL, transport: transport)
+        let zone = TimeZone.current.identifier
+
+        do {
             let dayBody = try await client.myUsage(
-                token: credentials.token, from: selected, to: selected, bucket: "hour", tz: zone
+                token: credentials.token, from: day, to: day, bucket: "hour", tz: zone
             )
             // Through the core: a captcha page throws here rather than becoming
             // an empty day that tells a child they used nothing.
-            myDays = try parseDayStrip(json: stripBody)
             myDay = try parseDayDetail(json: dayBody)
-            mySelectedDay = selected
+            mySelectedDay = day
             myTimeError = nil
         } catch {
             // The previous numbers stay on screen; only the error line is new.

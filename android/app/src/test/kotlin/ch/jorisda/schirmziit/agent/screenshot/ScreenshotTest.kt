@@ -120,12 +120,13 @@ class ScreenshotTest {
     @Test
     @Config(qualifiers = LIGHT_EN)
     fun `my time screen could not load`() {
+        // Real days and a real detail underneath the failure, not an already-
+        // empty MyTime: the point of this image is proving the failed-state
+        // guard *suppresses* that data, which a `MyTime(emptyList(), ...)`
+        // input can't demonstrate — there'd be nothing to suppress, so the
+        // image would look identical whether the guard fired or not.
         shoot("mytime-failed-en-light") {
-            MyTimeScreen(
-                state = MyTime(emptyList(), null, "2026-08-20", failed = true),
-                onSelectDay = {},
-                onBack = {},
-            )
+            MyTimeScreen(state = sampleMyTime().copy(failed = true), onSelectDay = {}, onBack = {})
         }
     }
 

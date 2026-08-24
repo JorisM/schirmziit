@@ -46,6 +46,10 @@ class MainActivity : ComponentActivity() {
         val source = AndroidUsageSource(this)
         val power = AndroidPowerStatus(this)
         val settings: AgentSettings? = runCatching { AgentStore(this) }.getOrNull()
+        // Hoisted rather than built per load: this screen is designed around
+        // repeated tapping (one day, then another), and a fresh OkHttpClient
+        // per call would each own its own connection pool and thread pool.
+        val httpClient = OkHttpClient()
 
         val link = intent?.data?.toString()
         val deepLink = link?.let(EnrollPayloadParser::parse)
@@ -94,17 +98,33 @@ class MainActivity : ComponentActivity() {
 
                     var showMyTime by remember { mutableStateOf(false) }
                     var myTime by remember { mutableStateOf<MyTime?>(null) }
+                    // The day the child last tapped. Compared against on
+                    // completion so a slow response for a day the child has
+                    // since tapped away from can't overwrite a faster, newer
+                    // one — the highlighted day and the numbers underneath it
+                    // must always agree.
+                    var pendingDay by remember { mutableStateOf<String?>(null) }
+                    // True only while the day currently pending has not yet
+                    // landed. Kept apart from `myTime` on purpose: an earlier
+                    // version faked an empty `MyTime` while loading, which
+                    // `MyTimeScreen` then rendered as "nothing recorded" —
+                    // exactly the silent-zero lie the failed-state guard
+                    // exists to prevent, just arriving through latency instead
+                    // of a dropped connection.
+                    var myTimeLoading by remember { mutableStateOf(false) }
 
                     fun loadMyTime(selected: String) {
                         val token = settings.deviceToken ?: return
                         val baseUrl = settings.baseUrl ?: return
+                        pendingDay = selected
+                        myTimeLoading = true
                         scope.launch {
                             // The client does network work and Room forbids
                             // main-thread access; both belong off-thread, and
                             // the repository never throws, so this is safe even
                             // offline — it comes back with failed = true.
                             val result = withContext(Dispatchers.IO) {
-                                val client = SchirmziitClient(baseUrl, OkHttpClient())
+                                val client = SchirmziitClient(baseUrl, httpClient)
                                 val bridge = CoreBridge()
                                 MyTimeRepository(
                                     fetch = { from, to, bucket, tz ->
@@ -114,7 +134,14 @@ class MainActivity : ComponentActivity() {
                                     parseDetail = bridge::dayDetail,
                                 ).load(selected, tz = java.util.TimeZone.getDefault().id)
                             }
-                            myTime = result
+                            // A tap for a different day may have landed while
+                            // this one was in flight; only the response for
+                            // the day still pending is allowed to win, and
+                            // only it may clear the loading flag.
+                            if (pendingDay == selected) {
+                                myTime = result
+                                myTimeLoading = false
+                            }
                         }
                     }
 
@@ -133,6 +160,7 @@ class MainActivity : ComponentActivity() {
                                 java.time.LocalDate.now().toString(),
                                 failed = false,
                             ),
+                            loading = myTimeLoading,
                             onSelectDay = ::loadMyTime,
                             onBack = { showMyTime = false },
                         )

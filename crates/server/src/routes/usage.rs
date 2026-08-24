@@ -2,6 +2,7 @@ use crate::AppState;
 use crate::auth::Parent;
 use crate::db::scope;
 use crate::error::ApiError;
+use crate::routes::enroll::Device;
 use axum::extract::{Path, Query, State};
 use axum::{Json, Router, routing::get};
 use chrono::{DateTime, Duration, NaiveDate, TimeZone, Utc};
@@ -12,10 +13,29 @@ use uuid::Uuid;
 /// Three missed 30-minute syncs.
 const STALE_AFTER_MINUTES: i64 = 90;
 
+/// Generous: a child may open the app repeatedly, and this is one indexed
+/// read. It exists to stop a loop, not to ration a family.
+const MAX_READS_PER_HOUR: u32 = 240;
+
 pub fn router() -> Router<AppState> {
     Router::new()
         .route("/v1/children/{id}/usage", get(usage))
         .route("/v1/children/{id}/summary", get(summary))
+        .route("/v1/me/usage", get(my_usage))
+}
+
+fn check_read_limit(state: &AppState, device_id: Uuid) -> Result<(), ApiError> {
+    let mut limits = state.read_limits.lock().expect("read limiter mutex");
+    let now = Utc::now();
+    let entry = limits.entry(device_id).or_insert((now, 0));
+    if now - entry.0 > Duration::hours(1) {
+        *entry = (now, 0);
+    }
+    entry.1 += 1;
+    if entry.1 > MAX_READS_PER_HOUR {
+        return Err(ApiError::RateLimited);
+    }
+    Ok(())
 }
 
 #[derive(serde::Serialize, utoipa::ToSchema)]
@@ -152,6 +172,32 @@ pub async fn usage(
 ) -> Result<Json<UsageResponse>, ApiError> {
     let child_id = scope::child_of_family(&state.pool, parent.family_id, id).await?;
     Ok(Json(usage_for_child(&state.pool, child_id, &q).await?))
+}
+
+#[utoipa::path(
+    get, path = "/v1/me/usage",
+    params(UsageQuery),
+    responses(
+        (status = 200, description = "This device's own child, for the requested local dates", body = UsageResponse),
+        (status = 401, description = "Unknown or revoked device token"),
+        (status = 422, description = "Unknown timezone"),
+        (status = 429, description = "Device read limit"),
+    ),
+    security(("device_token" = [])),
+    tag = "usage"
+)]
+/// The one read a device token buys, and it takes no id: a device sees the child
+/// it was enrolled for and has no way to name another. `/v1/children` and every
+/// other parent route still refuse a device token — there is a test for it.
+pub async fn my_usage(
+    device: Device,
+    State(state): State<AppState>,
+    Query(q): Query<UsageQuery>,
+) -> Result<Json<UsageResponse>, ApiError> {
+    check_read_limit(&state, device.id)?;
+    Ok(Json(
+        usage_for_child(&state.pool, device.child_id, &q).await?,
+    ))
 }
 
 /// The one place usage is read. A parent and a child must never see different

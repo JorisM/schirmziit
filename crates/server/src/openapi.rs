@@ -21,6 +21,7 @@ use utoipa::OpenApi;
         crate::routes::ingest::ingest,
         crate::routes::usage::usage,
         crate::routes::usage::summary,
+        crate::routes::usage::my_usage,
         crate::routes::purge::purge,
     ),
     components(schemas(

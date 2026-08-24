@@ -111,3 +111,27 @@ async fn a_device_token_cannot_read_anything(pool: PgPool) {
     let children = a.get_as_device("/v1/children", &token).await;
     assert_eq!(children.status, StatusCode::UNAUTHORIZED);
 }
+
+#[sqlx::test]
+async fn a_revoked_device_cannot_read_its_child(pool: PgPool) {
+    let app = TestApp::registered(pool.clone()).await;
+    let child_id = app.create_child("Kid").await;
+    let (device_id, token) = app.enroll_device(&child_id).await;
+
+    assert_eq!(
+        app.delete(&format!("/v1/devices/{device_id}")).await.status,
+        StatusCode::NO_CONTENT
+    );
+
+    let response = app
+        .get_as_device(
+            "/v1/me/usage?from=2026-08-20&to=2026-08-20&bucket=hour&tz=Europe/Zurich",
+            &token,
+        )
+        .await;
+    assert_eq!(
+        response.status,
+        StatusCode::UNAUTHORIZED,
+        "a revoked device keeps no read either"
+    );
+}

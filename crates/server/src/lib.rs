@@ -26,6 +26,9 @@ pub struct AppState {
     pub pool: PgPool,
     pub config: config::Config,
     pub ingest_limits: IngestLimits,
+    /// Same shape, separate budget: a child's screen refreshing on foreground
+    /// must not eat into the ingest allowance, or a busy day stops reporting.
+    pub read_limits: IngestLimits,
 }
 
 impl AppState {
@@ -34,6 +37,7 @@ impl AppState {
             pool,
             config,
             ingest_limits: Default::default(),
+            read_limits: Default::default(),
         }
     }
 }

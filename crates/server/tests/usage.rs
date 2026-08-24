@@ -209,3 +209,66 @@ async fn a_revoked_device_disappears_from_the_usage_view(pool: PgPool) {
     let managed = app.get("/v1/devices").await;
     assert_eq!(managed.json[0]["revoked"], true);
 }
+
+#[sqlx::test]
+async fn a_device_reads_its_own_child(pool: PgPool) {
+    let app = TestApp::registered(pool.clone()).await;
+    let child_id = app.create_child("Kid").await;
+    let (device_id, token) = app.enroll_device(&child_id).await;
+    seed(&pool, &device_id, 10, "com.a", 60_000).await;
+
+    let response = app
+        .get_as_device(
+            "/v1/me/usage?from=2026-08-20&to=2026-08-20&bucket=hour&tz=Europe/Zurich",
+            &token,
+        )
+        .await;
+
+    assert_eq!(response.status, StatusCode::OK, "{}", response.json);
+    assert_eq!(response.json["child_id"], child_id);
+    assert_eq!(response.json["series"][0]["package"], "com.a");
+}
+
+#[sqlx::test]
+async fn a_device_sees_only_its_own_child(pool: PgPool) {
+    let app = TestApp::registered(pool.clone()).await;
+    let mine = app.create_child("Mine").await;
+    let sibling = app.create_child("Sibling").await;
+    let (my_device, my_token) = app.enroll_device(&mine).await;
+    let (sibling_device, _) = app.enroll_device(&sibling).await;
+    seed(&pool, &my_device, 10, "com.mine", 60_000).await;
+    seed(&pool, &sibling_device, 10, "com.sibling", 60_000).await;
+
+    let response = app
+        .get_as_device(
+            "/v1/me/usage?from=2026-08-20&to=2026-08-20&bucket=hour&tz=Europe/Zurich",
+            &my_token,
+        )
+        .await;
+
+    assert_eq!(response.json["child_id"], mine);
+    let packages: Vec<String> = response.json["series"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|s| s["package"].as_str().unwrap().to_string())
+        .collect();
+    assert_eq!(
+        packages,
+        vec!["com.mine".to_string()],
+        "a sibling's phone is not this child's"
+    );
+}
+
+#[sqlx::test]
+async fn a_parent_session_is_not_a_device(pool: PgPool) {
+    let app = TestApp::registered(pool.clone()).await;
+    let child_id = app.create_child("Kid").await;
+    let _ = app.enroll_device(&child_id).await;
+
+    // Session cookie, no bearer token: this route is for devices.
+    let response = app
+        .get("/v1/me/usage?from=2026-08-20&to=2026-08-20&bucket=hour&tz=Europe/Zurich")
+        .await;
+    assert_eq!(response.status, StatusCode::UNAUTHORIZED);
+}

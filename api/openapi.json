@@ -584,6 +584,77 @@
           }
         }
       }
+    },
+    "/v1/me/usage": {
+      "get": {
+        "tags": [
+          "usage"
+        ],
+        "summary": "The one read a device token buys, and it takes no id: a device sees the child\nit was enrolled for and has no way to name another. `/v1/children` and every\nother parent route still refuse a device token — there is a test for it.",
+        "operationId": "my_usage",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "bucket",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tz",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "This device's own child, for the requested local dates",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unknown or revoked device token"
+          },
+          "422": {
+            "description": "Unknown timezone"
+          },
+          "429": {
+            "description": "Device read limit"
+          }
+        },
+        "security": [
+          {
+            "device_token": []
+          }
+        ]
+      }
     }
   },
   "components": {

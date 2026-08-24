@@ -153,6 +153,35 @@ async fn summary_returns_top_apps_and_first_last_activity(pool: PgPool) {
 }
 
 #[sqlx::test]
+async fn daily_bucket_returns_one_device_total_per_day(pool: PgPool) {
+    let (app, child_id, device_id) = setup(pool.clone()).await;
+    seed(&pool, &device_id, 10, "com.a", 60_000).await;
+    seed(&pool, &device_id, 11, "com.a", 30_000).await;
+
+    let response = app
+        .get(&format!(
+            "/v1/children/{child_id}/usage?from=2026-08-20&to=2026-08-20&bucket=day&tz=Europe/Zurich"
+        ))
+        .await;
+
+    let totals = response.json["device_totals"].as_array().unwrap();
+    assert_eq!(
+        totals.len(),
+        1,
+        "a daily bucket means one row per day: {totals:?}"
+    );
+    assert_eq!(
+        totals[0]["start"], "2026-08-20",
+        "daily rows are YYYY-MM-DD"
+    );
+    assert_eq!(totals[0]["screen_on_ms"], 90_000);
+    assert_eq!(
+        totals[0]["unlock_count"], 14,
+        "7 unlocks in each of two seeded hours"
+    );
+}
+
+#[sqlx::test]
 async fn a_revoked_device_disappears_from_the_usage_view(pool: PgPool) {
     // It would otherwise sit there as "not reporting" forever, reading as a
     // fault instead of a choice. The management list keeps it, with its flag.

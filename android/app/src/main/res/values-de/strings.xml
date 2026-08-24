@@ -74,6 +74,16 @@
     <string name="help_show">Was wird gesendet?</string>
     <string name="help_hide">Schliessen</string>
 
+    <string name="mytime_open">Deine Zeit</string>
+    <string name="mytime_title">Deine Zeit</string>
+    <string name="mytime_back">Zurück</string>
+    <string name="mytime_help">Das sind genau die Zahlen, die deine Eltern sehen.</string>
+    <string name="mytime_total">Total an diesem Tag</string>
+    <string name="mytime_unlocks">Mal entsperrt</string>
+    <string name="mytime_apps">Apps</string>
+    <string name="mytime_error">Deine Zahlen konnten nicht geladen werden. Probier es gleich nochmals.</string>
+    <string name="mytime_empty">Für diesen Tag ist noch nichts aufgezeichnet.</string>
+
     <string name="notification_channel">Bildschirmzeit-Übermittlung</string>
     <string name="notification_channel_description">Zeigt, dass dieses Handy Bildschirmzeit an ein Elternteil meldet.</string>
     <string name="notification_title">Bildschirmzeit wird übermittelt</string>

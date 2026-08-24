@@ -73,6 +73,16 @@
     <string name="help_show">Qu’est-ce qui est envoyé ?</string>
     <string name="help_hide">Fermer</string>
 
+    <string name="mytime_open">Ton temps</string>
+    <string name="mytime_title">Ton temps</string>
+    <string name="mytime_back">Retour</string>
+    <string name="mytime_help">Ce sont exactement les chiffres que voient tes parents.</string>
+    <string name="mytime_total">Total pour ce jour</string>
+    <string name="mytime_unlocks">Déverrouillages</string>
+    <string name="mytime_apps">Applis</string>
+    <string name="mytime_error">Tes chiffres n\'ont pas pu être chargés. Réessaie dans un instant.</string>
+    <string name="mytime_empty">Rien n\'est encore enregistré pour ce jour.</string>
+
     <string name="notification_channel">Transmission du temps d’écran</string>
     <string name="notification_channel_description">Indique que ce téléphone transmet le temps d’écran à un parent.</string>
     <string name="notification_title">Le temps d’écran est transmis</string>

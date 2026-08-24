@@ -26,6 +26,10 @@
 "child.ribbon.help" = "Jedes Feld ist eine Stunde, von Mitternacht bis Mitternacht. Je dunkler, desto länger war der Bildschirm an. So siehst du nicht nur wie viel, sondern wann. Tippe eine Stunde an für Details.";
 "child.ribbon.quiet" = "ruhig";
 "child.ribbon.busy" = "viel";
+"child.history.title" = "Die letzten 14 Tage";
+"child.history.help" = "Jeder Balken ist ein Tag. Tippe einen an, um ihn genauer anzuschauen.";
+"child.today" = "Heute";
+"child.selected" = "Ausgewählter Tag";
 
 "devices.title" = "Geräte";
 "devices.fresh" = "meldet sich";

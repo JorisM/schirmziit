@@ -155,6 +155,20 @@ final class SnapshotTests: XCTestCase {
         assert(DayRibbonView(totals: totals).padding(), named: "day-ribbon")
     }
 
+    func testDayStrip() {
+        // Fixed figures, a fortnight with one zero day: a strip that changes
+        // shape between runs is not a snapshot test, it is a random image
+        // generator.
+        let minutes = [40, 55, 0, 12, 90, 65, 30, 45, 20, 100, 15, 60, 35, 50]
+        let days = minutes.enumerated().map { offset, value in
+            (day: String(format: "2026-08-%02d", 11 + offset), ms: value * 60_000)
+        }
+        assert(
+            DayStripView(days: days, selected: days[10].day, onSelect: { _ in }).padding(),
+            named: "day-strip"
+        )
+    }
+
     // MARK: - The four languages, where the text is longest
 
     func testHelpInEveryLanguage() {

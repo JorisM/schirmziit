@@ -26,6 +26,10 @@
 "child.ribbon.help" = "Chaque case représente une heure, de minuit à minuit. Plus c'est foncé, plus l'écran est resté allumé. Tu vois donc non seulement combien, mais quand. Touche une heure pour le détail.";
 "child.ribbon.quiet" = "calme";
 "child.ribbon.busy" = "chargé";
+"child.history.title" = "Les 14 derniers jours";
+"child.history.help" = "Chaque barre est un jour. Touche une barre pour voir ce jour en détail.";
+"child.today" = "Aujourd'hui";
+"child.selected" = "Jour sélectionné";
 
 "devices.title" = "Appareils";
 "devices.fresh" = "envoie ses données";

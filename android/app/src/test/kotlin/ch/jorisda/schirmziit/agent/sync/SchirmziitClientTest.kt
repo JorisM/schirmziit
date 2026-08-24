@@ -163,18 +163,24 @@ class SchirmziitClientTest {
     @Test
     fun `my usage sends the device token and returns the raw body`() {
         val server = MockWebServer().apply {
-            enqueue(MockResponse().setBody("""{"from":"2026-08-20","to":"2026-08-20","series":[],"device_totals":[]}"""))
+            enqueue(MockResponse().setBody("""{"from":"2026-08-07","to":"2026-08-20","series":[],"device_totals":[]}"""))
             start()
         }
         val client = SchirmziitClient(server.url("/").toString(), OkHttpClient())
 
-        val body = client.myUsage("t0ken", "2026-08-20", "2026-08-20", "day", "Europe/Zurich")
+        // from/to deliberately distinct: a transposed argument in myUsage must
+        // not sail past this test looking like a pass.
+        val body = client.myUsage("t0ken", "2026-08-07", "2026-08-20", "day", "Europe/Zurich")
 
         assertTrue(body.contains("device_totals"))
         val request = server.takeRequest()
         assertEquals("Bearer t0ken", request.getHeader("authorization"))
         assertTrue(request.path!!.startsWith("/v1/me/usage"))
-        assertTrue(request.path!!.contains("bucket=day"))
+        val url = request.requestUrl!!
+        assertEquals("2026-08-07", url.queryParameter("from"))
+        assertEquals("2026-08-20", url.queryParameter("to"))
+        assertEquals("day", url.queryParameter("bucket"))
+        assertEquals("Europe/Zurich", url.queryParameter("tz"))
         server.shutdown()
     }
 

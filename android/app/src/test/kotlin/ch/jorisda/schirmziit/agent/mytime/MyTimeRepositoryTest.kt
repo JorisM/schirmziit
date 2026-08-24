@@ -52,4 +52,18 @@ class MyTimeRepositoryTest {
 
         assertTrue(repo.load("2026-08-20").failed)
     }
+
+    @Test
+    fun `a malformed selected day is a failure, not a crash`() {
+        // The default `from` used to be computed outside the try/catch, so a
+        // bad selected day threw straight out of load() instead of landing on
+        // failed = true.
+        val repo = MyTimeRepository(
+            fetch = { _, _, _, _ -> error("must not be called") },
+            parseStrip = { strip },
+            parseDetail = { detail },
+        )
+
+        assertTrue(repo.load("not-a-date").failed)
+    }
 }

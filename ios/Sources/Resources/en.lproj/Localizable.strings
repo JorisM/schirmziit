@@ -108,6 +108,11 @@
 "agent.status.unpair" = "Disconnect this phone";
 "agent.status.unpair.confirm" = "Stop reporting and forget the server?";
 
+"agent.mytime.title" = "Your time";
+"agent.mytime.help" = "These are the same numbers your parent sees.";
+"agent.mytime.error" = "Could not load your numbers. Try again in a moment.";
+"agent.mytime.empty" = "Nothing recorded for this day yet.";
+
 "agent.help.title" = "How Schirmziit works";
 "agent.help.done" = "Done";
 "agent.help.intro" = "Schirmziit shows how long and when this phone is used. Nothing is hidden from you: you see the same numbers as your parents.";

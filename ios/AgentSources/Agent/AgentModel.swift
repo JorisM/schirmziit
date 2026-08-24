@@ -22,6 +22,14 @@ public final class AgentModel {
     /// as setup finishes.
     public private(set) var setupChildren: [SetupChild] = []
 
+    public private(set) var myDays: [DayTotalFfi] = []
+    public private(set) var myDay: DayDetailFfi?
+    public private(set) var mySelectedDay: String = ISO8601DateFormatter.dayOnly.string(from: Date())
+    /// Nil while it has never been loaded; set to a sentence the child can act
+    /// on when a load failed. Never a silent zero — "you used nothing today" is
+    /// the wrong thing to tell someone because the wifi was off.
+    public private(set) var myTimeError: String?
+
     private let store: HourStore
     private let inbox: SnapshotInbox
     private let credentials: CredentialStore
@@ -156,6 +164,39 @@ public final class AgentModel {
             lastError = String(localized: "agent.status.sync.failed")
         }
         refresh()
+    }
+
+    /// The same fourteen-day strip and one-day detail the parent's dashboard
+    /// shows, but for this phone's own child, over this phone's own device
+    /// token. `day` picks which day the detail is for; omitted, it stays on
+    /// whatever was selected before (today, the first time).
+    public func loadMyTime(day: String? = nil) async {
+        guard let credentials = credentials.load() else { return }
+        let client = AgentClient(baseURL: credentials.baseURL, transport: transport)
+        let selected = day ?? mySelectedDay
+        let zone = TimeZone.current.identifier
+        let from = ISO8601DateFormatter.dayOnly.string(
+            from: Calendar.current.date(byAdding: .day, value: -13, to: Date()) ?? Date()
+        )
+        let today = ISO8601DateFormatter.dayOnly.string(from: Date())
+
+        do {
+            let stripBody = try await client.myUsage(
+                token: credentials.token, from: from, to: today, bucket: "day", tz: zone
+            )
+            let dayBody = try await client.myUsage(
+                token: credentials.token, from: selected, to: selected, bucket: "hour", tz: zone
+            )
+            // Through the core: a captcha page throws here rather than becoming
+            // an empty day that tells a child they used nothing.
+            myDays = try parseDayStrip(json: stripBody)
+            myDay = try parseDayDetail(json: dayBody)
+            mySelectedDay = selected
+            myTimeError = nil
+        } catch {
+            // The previous numbers stay on screen; only the error line is new.
+            myTimeError = S("agent.mytime.error")
+        }
     }
 
     public func unpair() {

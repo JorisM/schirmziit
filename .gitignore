@@ -22,3 +22,6 @@ build/
 dist
 .astro
 node_modules
+
+# Isolated workspaces for plan execution.
+.worktrees

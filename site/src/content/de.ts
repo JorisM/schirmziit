@@ -42,7 +42,7 @@ export const de: Site = {
 
     childSeesTitle: 'Das Kind sieht dieselben Zahlen',
     childSeesBody:
-      'Die App auf dem Kinderhandy ist sichtbar und zeigt dieselben Werte wie deine Übersicht: wie lange, welche App, wie oft entsperrt. So bleibt es eine gemeinsame Grundlage statt einer Kontrolle im Hintergrund.',
+      'Deine Übersicht zeigt die letzten 14 Tage auf einen Blick; du kannst jeden Tag antippen und siehst ihn Stunde für Stunde. Die App auf dem Kinderhandy zeigt genau dasselbe — dieselben 14 Tage, denselben Tag im Detail, dieselben Zahlen. So bleibt es eine gemeinsame Grundlage statt einer Kontrolle im Hintergrund.',
 
     platformsTitle: 'Geräte',
     platformsBody: 'Was heute geht — und was nicht.',

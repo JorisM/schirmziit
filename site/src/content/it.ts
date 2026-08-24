@@ -41,7 +41,7 @@ export const it: Site = {
 
     childSeesTitle: 'Il bambino vede gli stessi numeri',
     childSeesBody:
-      'L’app sul telefono del bambino è visibile e mostra esattamente ciò che vedi tu: quanto tempo, quale app, quante volte è stato sbloccato. Resta una base comune per parlarne, non un controllo che gira in sottofondo.',
+      'La tua panoramica mostra gli ultimi 14 giorni in un colpo d’occhio; tocca un giorno per vederlo ora per ora. L’app sul telefono del bambino mostra esattamente lo stesso — gli stessi 14 giorni, lo stesso giorno nel dettaglio, gli stessi numeri. Resta una base comune per parlarne, non un controllo che gira in sottofondo.',
 
     platformsTitle: 'Dispositivi',
     platformsBody: 'Cosa funziona oggi — e cosa no.',

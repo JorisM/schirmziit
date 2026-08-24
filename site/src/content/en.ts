@@ -41,7 +41,7 @@ export const en: Site = {
 
     childSeesTitle: 'The child sees the same numbers',
     childSeesBody:
-      'The app on the child’s phone is visible and shows exactly what your dashboard shows: how long, which app, how often unlocked. It stays a shared basis for a conversation rather than a check running in the background.',
+      'Your dashboard shows the last 14 days at a glance; tap any one of them to see it hour by hour. The app on the child’s phone shows exactly the same — the same 14 days, the same day in detail, the same numbers. It stays a shared basis for a conversation rather than a check running in the background.',
 
     platformsTitle: 'Devices',
     platformsBody: 'What works today — and what does not.',

@@ -14,6 +14,23 @@ the parent is not standing there. That is the only reason the code path exists.
 
 The parent dashboard itself is web and iOS for now; this app is the child side.
 
+## My time
+
+`MyTimeScreen`, reached from `StatusScreen` (`onOpenMyTime`), shows the child
+its own fourteen-day strip and, on a tap, one day's hourly detail — the same
+`GET /v1/me/usage` a device token buys, no path id, own child only.
+`MyTimeRepository.load(selected, from, tz)` fetches both requests and parses
+each through the **Rust core** (`DayTotalFfi`/`DayDetailFfi`, same
+`parseDayStrip`/`parseDayDetail` the agents share), so a captcha or proxy page
+throws instead of reading as an empty day. A failed load reports `failed = true`
+with no numbers; `MainActivity` keeps a still-loading first open
+(`myTimeLoading`) apart from `MyTime` itself, because an earlier version faked
+an empty `MyTime` while loading and `MyTimeScreen` rendered that as "nothing
+recorded" — the same silent-zero lie the failed state exists to prevent,
+arriving through latency instead of a dropped connection. `pendingDay` is
+compared against the day that lands so a stale response from an earlier tap is
+dropped rather than overwriting a newer selection.
+
 ## Toolchain (pinned, as installed 2026-08-21)
 
 | Tool | Version | Install |

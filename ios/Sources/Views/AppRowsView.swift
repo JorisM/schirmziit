@@ -9,10 +9,6 @@ import SwiftUI
 struct AppRowsView: View {
     let series: [UsageSeries]
 
-    /// Ranked rows shown on their own, past which the rest is still reachable
-    /// but not worth a full screen of rows.
-    private static let keep = 8
-
     private var split: (shown: [(label: String, ms: Int)], brief: [(label: String, ms: Int)]) {
         let ranked = series
             .sorted { $0.totalMs > $1.totalMs }
@@ -21,17 +17,20 @@ struct AppRowsView: View {
     }
 
     var body: some View {
-        let (shown, brief) = split
-        ForEach(Array(shown.prefix(Self.keep).enumerated()), id: \.offset) { index, entry in
+        // `Formatting.visibleApps` — the same call `AgentMyTimeView` makes —
+        // rather than `shown.prefix` inlined here with its own comment
+        // claiming the same cap: a comment is not a constant.
+        let visible = Formatting.visibleApps(split, cap: Formatting.appRowCap)
+        ForEach(Array(visible.shown.enumerated()), id: \.offset) { index, entry in
             row(entry, index: index)
         }
-        if !brief.isEmpty {
+        if !visible.brief.isEmpty {
             DisclosureGroup {
-                ForEach(Array(brief.enumerated()), id: \.offset) { index, entry in
-                    row(entry, index: shown.count + index)
+                ForEach(Array(visible.brief.enumerated()), id: \.offset) { index, entry in
+                    row(entry, index: visible.shown.count + index)
                 }
             } label: {
-                Text(verbatim: "\(S("child.apps.brief")) (\(brief.count))")
+                Text(verbatim: "\(S("child.apps.brief")) (\(visible.brief.count))")
             }
         }
     }

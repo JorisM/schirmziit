@@ -33,7 +33,7 @@ struct DayStripView: View {
                         }
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel(Text(verbatim: entry.day))
+                    .accessibilityLabel(Self.spokenDay(entry.day))
                     .accessibilityValue(Text(verbatim: Formatting.duration(entry.ms)))
                     .accessibilityAddTraits(entry.day == selected ? [.isSelected] : [])
                 }
@@ -41,5 +41,16 @@ struct DayStripView: View {
 
             L("child.history.help").font(.caption).foregroundStyle(Palette.inkMuted)
         }
+    }
+
+    /// VoiceOver spelled out the raw "2026-08-24" digit by digit — this is the
+    /// headline new control on this branch, and that is a bad first
+    /// impression of it. Falls back to the raw string only if the day somehow
+    /// fails to parse, which is better than announcing nothing at all.
+    private static func spokenDay(_ day: String) -> Text {
+        guard let date = ISO8601DateFormatter.dayOnly.date(from: day) else {
+            return Text(verbatim: day)
+        }
+        return Text(date, format: .dateTime.weekday(.wide).month(.wide).day())
     }
 }

@@ -9,10 +9,6 @@ struct AgentMyTimeView: View {
 
     private var today: String { ISO8601DateFormatter.dayOnly.string(from: Date()) }
 
-    /// Ranked rows shown on their own, past which the rest is still reachable
-    /// but not worth a full screen of rows. Same cap as `AppRowsView`.
-    private static let appRowCap = 8
-
     /// `AppTotalFfi.foregroundMs` is an `Int64`; `Formatting.splitApps` takes
     /// the same `(label, ms: Int)` tuple `AppRowsView` maps `UsageSeries`
     /// into, so this is the one place the type gets narrowed for it.
@@ -54,6 +50,13 @@ struct AgentMyTimeView: View {
                     onSelect: { day in Task { await model.selectMyDay(day) } }
                 )
                 .padding(.vertical, 4)
+                // `selectMyDay` no-ops while a load is already in flight, so
+                // without this a tap on a slow connection did nothing at all
+                // and looked like a broken button, not a busy one.
+                .disabled(model.myTimeBusy)
+                if model.myTimeBusy {
+                    ProgressView().padding(.vertical, 4)
+                }
             }
 
             if let day = model.myDay {
@@ -65,6 +68,16 @@ struct AgentMyTimeView: View {
                         Text(verbatim: Formatting.duration(Int(truncatingIfNeeded: day.totalMs)))
                             .font(.system(size: 40, weight: .bold, design: .rounded))
                             .monospacedDigit()
+                        // The core already parses this for us (`day.unlockCount`);
+                        // both parent surfaces and Android's child screen show it,
+                        // and the site now claims all four show the same numbers.
+                        // `LocalizedStringKey` interpolation needs an exact format-specifier
+                        // match with the string table's `%lld` key — `Int32`
+                        // formats as `%d` and silently misses the table, falling
+                        // back to the raw, untranslated key text.
+                        L("child.unlocks \(Int(day.unlockCount))")
+                            .font(.subheadline)
+                            .foregroundStyle(Palette.inkMuted)
                     }
                     .padding(.vertical, 4)
                 }
@@ -84,7 +97,7 @@ struct AgentMyTimeView: View {
                     // applies to `shown` alone, after the split, so a brief
                     // app already folded behind the disclosure can never be
                     // the thing the cap pushes out.
-                    let visible = Formatting.visibleApps(appSplit(day.apps), cap: Self.appRowCap)
+                    let visible = Formatting.visibleApps(appSplit(day.apps), cap: Formatting.appRowCap)
                     Section(header: L("child.apps")) {
                         ForEach(Array(visible.shown.enumerated()), id: \.offset) { index, entry in
                             appRow(entry, index: index)

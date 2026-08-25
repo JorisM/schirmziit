@@ -48,6 +48,14 @@ export const de: Strings = {
     ribbonQuiet: 'ruhig',
     ribbonBusy: 'viel',
     ribbonNight: 'Nacht',
+    backgroundTitle: 'Im Hintergrund gehört',
+    backgroundHelp:
+      'Musik, Podcasts oder Hörbücher, die bei ausgeschaltetem Bildschirm liefen. Das zählt für sich — es ist keine Bildschirmzeit und wird nie dazugerechnet.',
+    backgroundTotal: 'Im Hintergrund gehört',
+    backgroundNotMeasured:
+      'Auf den Handys dieses Kindes lässt sich Hören im Hintergrund nicht messen. iPhones melden es nicht, und auf Android braucht es eine Einstellung, die nicht aktiviert ist.',
+    backgroundEmpty: 'An diesem Tag lief nichts bei ausgeschaltetem Bildschirm.',
+    backgroundHour: 'im Hintergrund gehört',
     appsTitle: 'Apps',
     appsHelp: 'Wie lange jede App im Vordergrund war. Zusammengezählt über alle Geräte des Kindes.',
     appColumn: 'App',

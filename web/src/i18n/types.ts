@@ -48,6 +48,12 @@ export type Strings = {
     ribbonQuiet: string
     ribbonBusy: string
     ribbonNight: string
+    backgroundTitle: string
+    backgroundHelp: string
+    backgroundTotal: string
+    backgroundNotMeasured: string
+    backgroundEmpty: string
+    backgroundHour: string
     appsTitle: string
     appsHelp: string
     appColumn: string

@@ -47,6 +47,14 @@ export const fr: Strings = {
     ribbonQuiet: 'calme',
     ribbonBusy: 'chargé',
     ribbonNight: 'nuit',
+    backgroundTitle: 'Écoute en arrière-plan',
+    backgroundHelp:
+      'Musique, podcasts ou livres audio qui jouaient pendant que l’écran était éteint. C’est compté à part — ce n’est pas du temps d’écran et cela ne s’y ajoute jamais.',
+    backgroundTotal: 'Écouté en arrière-plan',
+    backgroundNotMeasured:
+      'L’écoute en arrière-plan ne peut pas être mesurée sur les téléphones de cet enfant. Les iPhone ne la signalent pas, et sur Android cela demande un réglage qui n’est pas activé.',
+    backgroundEmpty: 'Rien n’a joué avec l’écran éteint ce jour-là.',
+    backgroundHour: 'écouté en arrière-plan',
     appsTitle: 'Applications',
     appsHelp:
       'Combien de temps chaque application est restée au premier plan, additionné sur tous les appareils de l’enfant.',

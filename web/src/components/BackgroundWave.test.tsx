@@ -1,5 +1,7 @@
+import { render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { FULL_SCALE_MS, backgroundHours, wavePath } from './BackgroundWave'
+import { BackgroundWave, FULL_SCALE_MS, backgroundHours, wavePath } from './BackgroundWave'
+import { LocaleProvider } from '../i18n'
 
 /**
  * Every number in the path is part of an x,y pair (M takes one point, each C
@@ -85,5 +87,61 @@ describe('wavePath', () => {
     const samples = new Array(24).fill(0)
     samples[10] = FULL_SCALE_MS
     expect(Math.max(...ys(wavePath(samples, 240, 40)))).toBeLessThanOrEqual(40)
+  })
+})
+
+const wave = () => document.querySelector('path[data-wave]')
+
+const show = (props: Parameters<typeof BackgroundWave>[0]) =>
+  render(
+    <LocaleProvider>
+      <BackgroundWave {...props} />
+    </LocaleProvider>,
+  )
+
+describe('BackgroundWave', () => {
+  it('says it cannot measure rather than drawing a flat zero line', () => {
+    // A flat line reads as "nothing played". That is the silent zero this app
+    // exists not to tell.
+    show({ series: [], measured: false })
+    expect(screen.getByText(/cannot be measured/i)).toBeInTheDocument()
+    expect(wave()).toBeNull()
+  })
+
+  it('draws the wave when the day was measured', () => {
+    show({ series: series([{ start: '2026-08-20T22:00:00+02:00', background_ms: 1_800_000 }]), measured: true })
+    expect(wave()).not.toBeNull()
+  })
+
+  it('shows an invitation, not an error, for a measured but silent day', () => {
+    show({ series: [], measured: true })
+    expect(screen.getByText(/Nothing played/i)).toBeInTheDocument()
+    expect(wave()).not.toBeNull()
+  })
+
+  it('draws itself in and settles on the full path', async () => {
+    // jsdom has no SVG layout, so getTotalLength is absent and the component
+    // would skip the animation entirely. Stubbing it is what makes this an
+    // assertion about the entry motion rather than about jsdom.
+    const proto = (globalThis as unknown as { SVGElement: { prototype: Record<string, unknown> } })
+      .SVGElement.prototype
+    proto.getTotalLength = () => 100
+
+    show({ series: series([{ start: '2026-08-20T22:00:00+02:00', background_ms: 1_800_000 }]), measured: true })
+    expect(wave()!.getAttribute('stroke-dasharray')).toBe('100')
+    expect(wave()!.getAttribute('stroke-dashoffset')).toBe('100')
+
+    // Tests assert the settled state. Loosening this to accommodate the
+    // animation would be the wrong fix.
+    await waitFor(() => expect(wave()!.getAttribute('stroke-dashoffset')).toBe('0'))
+    expect(wave()!.getAttribute('d')).toContain('C')
+
+    delete proto.getTotalLength
+  })
+
+  it('names the hour and its duration for every hour of the day', () => {
+    show({ series: series([{ start: '2026-08-20T22:00:00+02:00', background_ms: 1_800_000 }]), measured: true })
+    expect(screen.getByTitle('22:00 — 30 min')).toBeInTheDocument()
+    expect(screen.getByTitle('03:00 — 0 min')).toBeInTheDocument()
   })
 })

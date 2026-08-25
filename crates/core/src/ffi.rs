@@ -117,7 +117,7 @@ pub fn stitch_events(
         })
         .collect();
 
-    let result = stitch(prev, &mapped, to_utc(window_end_millis));
+    let result = stitch(prev, None, &mapped, to_utc(window_end_millis));
     StitchOutcome {
         closed: result
             .sessions

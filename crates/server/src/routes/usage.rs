@@ -127,7 +127,7 @@ fn default_bucket() -> String {
     "hour".into()
 }
 
-fn zone(tz: &str) -> Result<Tz, ApiError> {
+pub(crate) fn zone(tz: &str) -> Result<Tz, ApiError> {
     tz.parse()
         .map_err(|_| ApiError::Validation(format!("unknown timezone: {tz}")))
 }
@@ -135,7 +135,7 @@ fn zone(tz: &str) -> Result<Tz, ApiError> {
 /// Local date range -> UTC instants. `to` is inclusive, so the upper bound is
 /// the start of the following local day. The caller never does timezone
 /// arithmetic; that is the whole point of storing `tz` per row.
-fn bounds(
+pub(crate) fn bounds(
     from: NaiveDate,
     to: NaiveDate,
     tz: Tz,

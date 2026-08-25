@@ -63,7 +63,8 @@ struct ChildrenView: View {
 
     private func load() async {
         do {
-            children = try await client.get("v1/children", as: [ChildResponse].self)
+            let zone = TimeZone.current.identifier
+            children = try await client.get("v1/children?tz=\(zone)", as: [ChildResponse].self)
             errorText = nil
         } catch let ApiError.problem(problem) {
             errorText = problem.detail

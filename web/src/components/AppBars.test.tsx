@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
-import { AppBars, foldApps, splitApps } from './AppBars'
+import { AppBars, foldTail, splitApps } from './AppBars'
 import { LocaleProvider } from '../i18n'
 
 const point = (ms: number, launches = 1) => ({
@@ -17,32 +17,46 @@ const series = (count: number) =>
     points: [point((count - index) * 60_000)],
   }))
 
-describe('foldApps', () => {
-  it('ranks apps by time', () => {
-    const apps = foldApps(series(3))
-    expect(apps.map((a) => a.label)).toEqual(['App 0', 'App 1', 'App 2'])
+const total = (label: string, ms: number, launches = 1) => ({
+  package: label,
+  label,
+  ms,
+  launches,
+})
+
+describe('foldTail', () => {
+  it('leaves a short list alone', () => {
+    const apps = [total('App 0', 3_000), total('App 1', 2_000), total('App 2', 1_000)]
+    expect(foldTail(apps).map((a) => a.label)).toEqual(['App 0', 'App 1', 'App 2'])
   })
 
   it('folds the tail into one row rather than inventing a seventh colour', () => {
-    const apps = foldApps(series(10))
-    expect(apps).toHaveLength(6)
-    expect(apps[5]?.package).toBe('__other__')
+    const apps = Array.from({ length: 10 }, (_, i) => total(`App ${i}`, (10 - i) * 60_000))
+    const folded = foldTail(apps)
+    expect(folded).toHaveLength(6)
+    expect(folded[5]?.package).toBe('__other__')
   })
 
   it('keeps the folded total honest', () => {
-    const apps = foldApps(series(10))
-    const total = apps.reduce((sum, app) => sum + app.ms, 0)
-    const expected = series(10)
-      .flatMap((s) => s.points)
-      .reduce((sum, p) => sum + p.foreground_ms, 0)
-    expect(total).toBe(expected)
+    const apps = Array.from({ length: 10 }, (_, i) => total(`App ${i}`, (10 - i) * 60_000))
+    const folded = foldTail(apps)
+    const foldedSum = folded.reduce((sum, app) => sum + app.ms, 0)
+    const rawSum = apps.reduce((sum, app) => sum + app.ms, 0)
+    expect(foldedSum).toBe(rawSum)
   })
 
-  it('sums launches across an app’s hours', () => {
-    const apps = foldApps([
-      { package: 'com.a', label: 'A', points: [point(60_000, 3), point(60_000, 4)] },
-    ])
-    expect(apps[0]?.launches).toBe(7)
+  it('sums launches across the folded tail', () => {
+    const apps = [
+      total('App 0', 60_000, 3),
+      total('App 1', 50_000, 4),
+      total('App 2', 40_000, 1),
+      total('App 3', 30_000, 1),
+      total('App 4', 20_000, 1),
+      total('App 5', 10_000, 2),
+      total('App 6', 5_000, 5),
+    ]
+    const folded = foldTail(apps)
+    expect(folded[5]?.launches, 'the folded row sums the launches it swallowed').toBe(7)
   })
 })
 
@@ -91,7 +105,7 @@ describe('splitApps', () => {
 })
 
 describe('splitApps with the tail fold', () => {
-  // foldApps only ever sees `shown` (never `brief`), so a sub-minute app can't
+  // foldTail only ever sees `shown` (never `brief`), so a sub-minute app can't
   // land inside the __other__ row's sum as well as its own brief row.
   it('never counts a sub-minute app in both folds', () => {
     const many = Array.from({ length: 10 }, (_, i) => ({
@@ -105,15 +119,8 @@ describe('splitApps with the tail fold', () => {
 
     expect(folded.map((a) => a.label)).toEqual(['Brief'])
 
-    // Refold `shown` exactly as AppBars does: round-trip it through the series
-    // shape foldApps expects, since foldApps is not being asked to change.
-    const other = foldApps(
-      shown.map((a) => ({
-        package: a.package,
-        label: a.label,
-        points: [{ start: '2026-08-20', foreground_ms: a.ms, launch_count: a.launches }],
-      })),
-    ).find((a) => a.package === '__other__')
+    // Refold `shown` exactly as AppBars does.
+    const other = foldTail(shown).find((a) => a.package === '__other__')
 
     const expectedOtherTotal = shown.slice(5).reduce((sum, a) => sum + a.ms, 0)
     expect(other?.ms).toBe(expectedOtherTotal)

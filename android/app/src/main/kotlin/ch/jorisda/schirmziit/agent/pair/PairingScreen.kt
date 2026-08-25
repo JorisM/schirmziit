@@ -51,7 +51,7 @@ import okhttp3.OkHttpClient
 /// The instance this build points at by default. A self-hoster types their own
 /// address over it; prefilling the common case saves a parent typing a URL on a
 /// phone keyboard, which is where pairing usually goes wrong.
-const val DEFAULT_SERVER = "https://schirmziit.jorisda.ch"
+const val DEFAULT_SERVER = "https://api.schirmziit.ch"
 
 /**
  * Two ways to connect this phone.

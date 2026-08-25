@@ -110,7 +110,7 @@ private struct LoginAck: Codable, Sendable {
 /// The instance this build points at by default. Self-hosters replace it in the
 /// field; it is prefilled because typing a URL on a phone is where sign-in
 /// usually goes wrong.
-private let defaultServer = "https://schirmziit.jorisda.ch"
+private let defaultServer = "https://api.schirmziit.ch"
 
 private enum Prefill {
 #if DEBUG

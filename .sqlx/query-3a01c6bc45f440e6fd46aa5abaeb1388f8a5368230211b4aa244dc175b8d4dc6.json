@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO usage_days\n             (child_id, package, day, foreground_ms, launch_count, background_ms)\n           SELECT d.child_id, u.package, (u.hour_start AT TIME ZONE u.tz)::date,\n                  SUM(u.foreground_ms), SUM(u.launch_count), SUM(u.background_ms)\n           FROM usage_hours u\n           JOIN devices d ON d.id = u.device_id\n           WHERE u.hour_start < $1\n           GROUP BY d.child_id, u.package, 3\n           ON CONFLICT (child_id, package, day) DO UPDATE\n             SET foreground_ms = usage_days.foreground_ms + EXCLUDED.foreground_ms,\n                 launch_count  = usage_days.launch_count  + EXCLUDED.launch_count,\n                 background_ms = usage_days.background_ms + EXCLUDED.background_ms",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "3a01c6bc45f440e6fd46aa5abaeb1388f8a5368230211b4aa244dc175b8d4dc6"
+}

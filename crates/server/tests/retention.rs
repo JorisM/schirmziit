@@ -123,3 +123,45 @@ async fn purge_deletes_everything_for_one_child_and_reports_counts(pool: PgPool)
         .unwrap();
     assert_eq!(remaining, 0);
 }
+
+async fn insert_background_hour(pool: &PgPool, device_id: &str, at: DateTime<Utc>, ms: i64) {
+    let id: uuid::Uuid = device_id.parse().unwrap();
+    sqlx::query(
+        "INSERT INTO usage_hours
+           (device_id, package, hour_start, tz, foreground_ms, launch_count, computed_at,
+            background_ms)
+         VALUES ($1, 'com.abs', $2, 'Europe/Zurich', 0, 0, now(), $3)",
+    )
+    .bind(id)
+    .bind(at)
+    .bind(ms)
+    .execute(pool)
+    .await
+    .unwrap();
+}
+
+#[sqlx::test]
+async fn the_fold_keeps_background_ms(pool: PgPool) {
+    // A rollup that dropped this column would make old background listening
+    // vanish while old screen time survived — a silent hole in the history.
+    let (_, _, device_id) = setup(pool.clone()).await;
+
+    let old = Utc.with_ymd_and_hms(2026, 8, 20, 22, 0, 0).unwrap();
+    insert_background_hour(&pool, &device_id, old, 1_800_000).await;
+    insert_background_hour(&pool, &device_id, old + Duration::hours(1), 600_000).await;
+
+    retention::run_once(&pool, 13, old + Duration::days(430))
+        .await
+        .unwrap();
+
+    let (foreground, background): (i64, i64) =
+        sqlx::query_as("SELECT foreground_ms, background_ms FROM usage_days")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(background, 2_400_000);
+    assert_eq!(
+        foreground, 0,
+        "background time is not folded into screen time"
+    );
+}

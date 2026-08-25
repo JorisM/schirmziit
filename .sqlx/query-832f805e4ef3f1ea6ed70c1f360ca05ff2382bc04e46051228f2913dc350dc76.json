@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT h.hour_start,\n                  SUM(h.screen_on_ms)::bigint AS \"screen_on_ms!\",\n                  SUM(h.unlock_count)::int    AS \"unlock_count!\"\n           FROM device_hours h\n           JOIN devices d ON d.id = h.device_id\n           WHERE d.child_id = $1 AND h.hour_start >= $2 AND h.hour_start < $3\n           GROUP BY h.hour_start ORDER BY h.hour_start",
+  "query": "SELECT h.hour_start,\n                      SUM(h.screen_on_ms)::bigint AS \"screen_on_ms!\",\n                      SUM(h.unlock_count)::int    AS \"unlock_count!\"\n               FROM device_hours h\n               JOIN devices d ON d.id = h.device_id\n               WHERE d.child_id = $1 AND h.hour_start >= $2 AND h.hour_start < $3\n               GROUP BY h.hour_start ORDER BY h.hour_start",
   "describe": {
     "columns": [
       {
@@ -40,5 +40,5 @@
       null
     ]
   },
-  "hash": "02d5e202fe056b3ccfd6fde1489895fad5cde9a17cdfb1ad5fa426240de545d8"
+  "hash": "832f805e4ef3f1ea6ed70c1f360ca05ff2382bc04e46051228f2913dc350dc76"
 }

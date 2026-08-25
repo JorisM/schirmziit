@@ -252,6 +252,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/me/usage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The one read a device token buys, and it takes no id: a device sees the child
+         *     it was enrolled for and has no way to name another. `/v1/children` and every
+         *     other parent route still refuse a device token — there is a test for it.
+         */
+        get: operations["my_usage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -300,6 +321,11 @@ export interface components {
         DeviceTotal: {
             /** Format: int64 */
             screen_on_ms: number;
+            /**
+             * @description RFC3339 instant for hourly buckets, `YYYY-MM-DD` for daily ones — same
+             *     dual format as `Point.start`, and the exact field a wrong `bucket` on
+             *     the client side answers wrong for (`crates/core/src/selfusage.rs`).
+             */
             start: string;
             /** Format: int32 */
             unlock_count: number;
@@ -980,6 +1006,52 @@ export interface operations {
             };
             /** @description Not authenticated */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    my_usage: {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
+                bucket?: string;
+                tz: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description This device's own child, for the requested local dates */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsageResponse"];
+                };
+            };
+            /** @description Unknown or revoked device token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown timezone */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Device read limit */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

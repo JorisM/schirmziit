@@ -80,7 +80,8 @@ final class SnapshotTests: XCTestCase {
     private func agent(
         credentials: AgentCredentials? = nil,
         authorization: ScreenTimeAuthorization = .approved,
-        role: AppRole? = .child
+        role: AppRole? = .child,
+        transport: Transport = StubTransport(status: 200, body: "{}")
     ) -> AgentModel {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
@@ -89,16 +90,31 @@ final class SnapshotTests: XCTestCase {
             store: FileHourStore(directory: directory),
             inbox: SnapshotInbox(directory: directory),
             credentials: InMemoryCredentialStore(credentials),
-            transport: StubTransport(status: 200, body: "{}"),
+            transport: transport,
             authorizer: StubAuthorizer(state: authorization),
             monitoring: SpyMonitoring(),
             roles: InMemoryRoleStore(role)
         )
     }
 
+    /// `AgentMyTimeView` loads itself in `.task`, and a snapshot can mount a
+    /// view more than once (once per light/dark render). Answering by query
+    /// shape rather than call order keeps every mount fed the same data
+    /// instead of the second one draining a fixed reply queue and showing a
+    /// spurious error banner.
+    private struct MyTimeStub: Transport {
+        let stripBody: String
+        let dayBody: String
+
+        func send(_ request: HttpRequest) async throws -> HttpResponse {
+            let isStrip = request.url.absoluteString.contains("bucket=day")
+            return HttpResponse(status: 200, body: Data((isStrip ? stripBody : dayBody).utf8))
+        }
+    }
+
     private var paired: AgentCredentials {
         AgentCredentials(
-            baseURL: URL(string: "https://schirmziit.jorisda.ch")!,
+            baseURL: URL(string: "https://api.schirmziit.ch")!,
             deviceId: "dev-1",
             token: "tok-1",
             parentEmail: "anna@example.ch"
@@ -135,6 +151,109 @@ final class SnapshotTests: XCTestCase {
         assert(AgentHelpView(), named: "child-help")
     }
 
+    func testMyTime() async {
+        // Fixed figures, the same fortnight `testDayStrip` uses, so the strip
+        // reads identically whether a parent or a child is looking at it.
+        let stripBody = """
+        {"from":"2026-08-11","to":"2026-08-24","bucket":"day","series":[
+            {"package":"com.games.puzzle","label":"Puzzle","points":[
+                {"start":"2026-08-11","foreground_ms":2400000,"launch_count":3},
+                {"start":"2026-08-12","foreground_ms":3300000,"launch_count":4},
+                {"start":"2026-08-14","foreground_ms":720000,"launch_count":1},
+                {"start":"2026-08-15","foreground_ms":5400000,"launch_count":6},
+                {"start":"2026-08-16","foreground_ms":3900000,"launch_count":5},
+                {"start":"2026-08-17","foreground_ms":1800000,"launch_count":2},
+                {"start":"2026-08-18","foreground_ms":2700000,"launch_count":3},
+                {"start":"2026-08-19","foreground_ms":1200000,"launch_count":2},
+                {"start":"2026-08-20","foreground_ms":6000000,"launch_count":7},
+                {"start":"2026-08-21","foreground_ms":900000,"launch_count":1},
+                {"start":"2026-08-22","foreground_ms":3600000,"launch_count":4},
+                {"start":"2026-08-23","foreground_ms":2100000,"launch_count":3},
+                {"start":"2026-08-24","foreground_ms":3000000,"launch_count":4}
+            ]}
+        ],"device_totals":[]}
+        """
+        // Fixed figures, the same shape `testDayRibbon` uses.
+        let dayBody = """
+        {"from":"2026-08-24","to":"2026-08-24","bucket":"hour","series":[
+            {"package":"com.games.puzzle","label":"Puzzle","points":[
+                {"start":"2026-08-24T13:00:00+02:00","foreground_ms":3000000,"launch_count":6}]},
+            {"package":"com.chat.messenger","label":"Messenger","points":[
+                {"start":"2026-08-24T18:00:00+02:00","foreground_ms":1800000,"launch_count":9}]},
+            {"package":"com.video.stream","label":"StreamTV","points":[
+                {"start":"2026-08-24T19:00:00+02:00","foreground_ms":1200000,"launch_count":2}]},
+            {"package":"com.social.feed","label":"Feed","points":[
+                {"start":"2026-08-24T08:00:00+02:00","foreground_ms":600000,"launch_count":5}]},
+            {"package":"com.music.player","label":"Music","points":[
+                {"start":"2026-08-24T20:00:00+02:00","foreground_ms":300000,"launch_count":1}]},
+            {"package":"com.browser","label":"Browser","points":[
+                {"start":"2026-08-24T21:00:00+02:00","foreground_ms":120000,"launch_count":1}]}
+        ],"device_totals":[
+            {"start":"2026-08-24T07:00:00+02:00","screen_on_ms":720000,"unlock_count":3},
+            {"start":"2026-08-24T08:00:00+02:00","screen_on_ms":2040000,"unlock_count":3},
+            {"start":"2026-08-24T09:00:00+02:00","screen_on_ms":480000,"unlock_count":3},
+            {"start":"2026-08-24T12:00:00+02:00","screen_on_ms":2460000,"unlock_count":3},
+            {"start":"2026-08-24T13:00:00+02:00","screen_on_ms":3300000,"unlock_count":3},
+            {"start":"2026-08-24T14:00:00+02:00","screen_on_ms":1320000,"unlock_count":3},
+            {"start":"2026-08-24T15:00:00+02:00","screen_on_ms":360000,"unlock_count":3},
+            {"start":"2026-08-24T18:00:00+02:00","screen_on_ms":3780000,"unlock_count":3},
+            {"start":"2026-08-24T19:00:00+02:00","screen_on_ms":2880000,"unlock_count":3},
+            {"start":"2026-08-24T20:00:00+02:00","screen_on_ms":1140000,"unlock_count":3},
+            {"start":"2026-08-24T21:00:00+02:00","screen_on_ms":240000,"unlock_count":3}
+        ]}
+        """
+        let model = agent(credentials: paired, transport: MyTimeStub(stripBody: stripBody, dayBody: dayBody))
+        // Loaded ahead of the render rather than left to the view's own
+        // `.task`: the snapshot host does not reliably run that to completion
+        // inside the settle wait, and a view that mounts twice (light, dark)
+        // must show the real numbers both times, not a spinner half of the time.
+        await model.loadMyTimeStrip()
+        // An explicit day, not model.mySelectedDay (today's real date):
+        // the fixture above is dated 2026-08-24, and comparing against the
+        // wall clock meant no bar drew its selection outline from 2026-08-25
+        // on — the diff stayed under tolerance and the test stopped proving
+        // the selection renders at all.
+        await model.selectMyDay("2026-08-24")
+        assert(AgentMyTimeView(model: model), named: "my-time")
+    }
+
+    /// The child's own list folds sub-minute glances exactly as the parent's
+    /// `AppRowsView` does: two glances behind the disclosure, and one that
+    /// rounds to 0 s dropped from the image entirely — a child and a parent
+    /// must never be shown a different list.
+    func testMyTimeFoldsTheSubMinuteApps() async {
+        let stripBody = """
+        {"from":"2026-08-11","to":"2026-08-24","bucket":"day","series":[
+            {"package":"com.games.puzzle","label":"Puzzle","points":[
+                {"start":"2026-08-24","foreground_ms":3000000,"launch_count":4}
+            ]}
+        ],"device_totals":[]}
+        """
+        let dayBody = """
+        {"from":"2026-08-24","to":"2026-08-24","bucket":"hour","series":[
+            {"package":"com.games.puzzle","label":"Puzzle","points":[
+                {"start":"2026-08-24T13:00:00+02:00","foreground_ms":3000000,"launch_count":6}]},
+            {"package":"com.utility.check","label":"QuickCheck","points":[
+                {"start":"2026-08-24T14:00:00+02:00","foreground_ms":45000,"launch_count":1}]},
+            {"package":"com.weather","label":"Weather","points":[
+                {"start":"2026-08-24T15:00:00+02:00","foreground_ms":20000,"launch_count":1}]},
+            {"package":"com.system.blink","label":"Blink","points":[
+                {"start":"2026-08-24T16:00:00+02:00","foreground_ms":300,"launch_count":1}]}
+        ],"device_totals":[
+            {"start":"2026-08-24T13:00:00+02:00","screen_on_ms":3000000,"unlock_count":3}
+        ]}
+        """
+        let model = agent(credentials: paired, transport: MyTimeStub(stripBody: stripBody, dayBody: dayBody))
+        await model.loadMyTimeStrip()
+        // An explicit day, not model.mySelectedDay (today's real date):
+        // the fixture above is dated 2026-08-24, and comparing against the
+        // wall clock meant no bar drew its selection outline from 2026-08-25
+        // on — the diff stayed under tolerance and the test stopped proving
+        // the selection renders at all.
+        await model.selectMyDay("2026-08-24")
+        assert(AgentMyTimeView(model: model), named: "my-time-folded")
+    }
+
     // MARK: - Parent mode
 
     func testSignIn() {
@@ -153,6 +272,50 @@ final class SnapshotTests: XCTestCase {
             )
         }
         assert(DayRibbonView(totals: totals).padding(), named: "day-ribbon")
+    }
+
+    func testAppRowsFoldTheSubMinuteGlances() {
+        // Three ordinary apps, two glances under a minute (folded into one
+        // disclosure row), and one that rounds to 0 s — the single case that
+        // must not appear anywhere in the image, folded or not.
+        let apps: [UsageSeries] = [
+            UsageSeries(package: "com.games.puzzle", label: "Puzzle", points: [
+                UsagePoint(start: "2026-08-24", foregroundMs: 3_600_000, launchCount: 4),
+            ]),
+            UsageSeries(package: "com.chat.messenger", label: "Messenger", points: [
+                UsagePoint(start: "2026-08-24", foregroundMs: 1_800_000, launchCount: 9),
+            ]),
+            UsageSeries(package: "com.video.stream", label: "StreamTV", points: [
+                UsagePoint(start: "2026-08-24", foregroundMs: 600_000, launchCount: 2),
+            ]),
+            UsageSeries(package: "com.utility.check", label: "QuickCheck", points: [
+                UsagePoint(start: "2026-08-24", foregroundMs: 45_000, launchCount: 1),
+            ]),
+            UsageSeries(package: "com.weather", label: "Weather", points: [
+                UsagePoint(start: "2026-08-24", foregroundMs: 20_000, launchCount: 1),
+            ]),
+            UsageSeries(package: "com.system.blink", label: "Blink", points: [
+                UsagePoint(start: "2026-08-24", foregroundMs: 300, launchCount: 1),
+            ]),
+        ]
+        assert(
+            List { Section(header: L("child.apps")) { AppRowsView(series: apps) } },
+            named: "app-rows"
+        )
+    }
+
+    func testDayStrip() {
+        // Fixed figures, a fortnight with one zero day: a strip that changes
+        // shape between runs is not a snapshot test, it is a random image
+        // generator.
+        let minutes = [40, 55, 0, 12, 90, 65, 30, 45, 20, 100, 15, 60, 35, 50]
+        let days = minutes.enumerated().map { offset, value in
+            (day: String(format: "2026-08-%02d", 11 + offset), ms: value * 60_000)
+        }
+        assert(
+            DayStripView(days: days, selected: days[10].day, onSelect: { _ in }).padding(),
+            named: "day-strip"
+        )
     }
 
     // MARK: - The four languages, where the text is longest

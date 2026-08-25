@@ -22,10 +22,14 @@
 "child.nodata" = "Rien de signalé aujourd'hui";
 "child.nodata.hint" = "Cela peut vouloir dire que le téléphone n'a pas été utilisé — ou qu'il n'a pas encore envoyé ses données. Regarde les appareils ci-dessous.";
 "child.apps" = "Applications";
+"child.apps.brief" = "Applis de moins d’une minute";
 "child.ribbon.title" = "La forme de la journée";
 "child.ribbon.help" = "Chaque case représente une heure, de minuit à minuit. Plus c'est foncé, plus l'écran est resté allumé. Tu vois donc non seulement combien, mais quand. Touche une heure pour le détail.";
 "child.ribbon.quiet" = "calme";
 "child.ribbon.busy" = "chargé";
+"child.history.title" = "Les 14 derniers jours";
+"child.history.help" = "Chaque barre est un jour. Touche une barre pour voir ce jour en détail.";
+"child.selected" = "Jour sélectionné";
 
 "devices.title" = "Appareils";
 "devices.fresh" = "envoie ses données";
@@ -62,6 +66,7 @@
 
 "unit.hour" = "h";
 "unit.minute" = "min";
+"unit.second" = "s";
 
 /* ── Child mode ───────────────────────────────────────────── */
 "agent.title" = "Schirmziit";
@@ -103,6 +108,12 @@
 "agent.status.sync.failed" = "Envoi échoué. Les chiffres restent sur le téléphone et partiront plus tard.";
 "agent.status.unpair" = "Déconnecter ce téléphone";
 "agent.status.unpair.confirm" = "Arrêter la transmission et oublier le serveur ?";
+
+"agent.mytime.title" = "Ton temps";
+"agent.mytime.help" = "Ce sont exactement les mêmes chiffres que voient tes parents.";
+"agent.mytime.error" = "Impossible de charger tes chiffres. Réessaie dans un instant.";
+"agent.mytime.empty" = "Rien n’est encore enregistré pour ce jour.";
+"agent.mytime.retry" = "Réessayer";
 
 "agent.help.title" = "Comment fonctionne Schirmziit";
 "agent.help.done" = "Terminé";

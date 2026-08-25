@@ -41,7 +41,7 @@ export const it: Site = {
 
     childSeesTitle: 'Il bambino vede gli stessi numeri',
     childSeesBody:
-      'L’app sul telefono del bambino è visibile e mostra esattamente ciò che vedi tu: quanto tempo, quale app, quante volte è stato sbloccato. Resta una base comune per parlarne, non un controllo che gira in sottofondo.',
+      'La tua panoramica mostra gli ultimi 14 giorni in un colpo d’occhio; tocca un giorno per vederlo ora per ora. L’app sul telefono del bambino mostra esattamente lo stesso — gli stessi 14 giorni, lo stesso giorno nel dettaglio, gli stessi numeri. Resta una base comune per parlarne, non un controllo che gira in sottofondo.',
 
     platformsTitle: 'Dispositivi',
     platformsBody: 'Cosa funziona oggi — e cosa no.',
@@ -50,7 +50,7 @@ export const it: Site = {
       'Completo: tempo per app e per ora, sblocchi, forma della giornata. Da Android 8 in poi.',
     iosLabel: 'iPhone',
     iosBody:
-      'Per ora solo come vista per i genitori. Leggere il tempo di schermo su un iPhone richiede un’autorizzazione di Apple che non abbiamo ancora — lo scriveremo qui appena cambia.',
+      'Entrambi i ruoli funzionano ora su iPhone — una panoramica per i genitori, e ora anche una vista per il bambino stesso. Misurare il tempo di schermo direttamente su un iPhone richiede ancora un’autorizzazione di Apple che non abbiamo — per ora può essere misurato solo un telefono Android. Lo scriveremo qui appena cambia.',
 
     openTitle: 'Libero e verificabile',
     openBody:

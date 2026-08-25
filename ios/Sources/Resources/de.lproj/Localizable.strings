@@ -22,10 +22,14 @@
 "child.nodata" = "Heute noch nichts gemeldet";
 "child.nodata.hint" = "Das kann heissen: das Handy wurde nicht benutzt — oder es hat noch nicht gemeldet. Schau bei den Geräten unten.";
 "child.apps" = "Apps";
+"child.apps.brief" = "Apps unter einer Minute";
 "child.ribbon.title" = "Der Tag im Verlauf";
 "child.ribbon.help" = "Jedes Feld ist eine Stunde, von Mitternacht bis Mitternacht. Je dunkler, desto länger war der Bildschirm an. So siehst du nicht nur wie viel, sondern wann. Tippe eine Stunde an für Details.";
 "child.ribbon.quiet" = "ruhig";
 "child.ribbon.busy" = "viel";
+"child.history.title" = "Die letzten 14 Tage";
+"child.history.help" = "Jeder Balken ist ein Tag. Tippe einen an, um ihn genauer anzuschauen.";
+"child.selected" = "Ausgewählter Tag";
 
 "devices.title" = "Geräte";
 "devices.fresh" = "meldet sich";
@@ -62,6 +66,7 @@
 
 "unit.hour" = "h";
 "unit.minute" = "min";
+"unit.second" = "s";
 
 /* ── Child mode ───────────────────────────────────────────── */
 "agent.title" = "Schirmziit";
@@ -103,6 +108,12 @@
 "agent.status.sync.failed" = "Senden fehlgeschlagen. Die Zahlen bleiben auf dem Handy und gehen später raus.";
 "agent.status.unpair" = "Dieses Handy trennen";
 "agent.status.unpair.confirm" = "Meldungen stoppen und den Server vergessen?";
+
+"agent.mytime.title" = "Deine Zeit";
+"agent.mytime.help" = "Das sind genau die Zahlen, die deine Eltern sehen.";
+"agent.mytime.error" = "Deine Zahlen konnten nicht geladen werden. Versuch es gleich nochmal.";
+"agent.mytime.empty" = "Für diesen Tag ist noch nichts erfasst.";
+"agent.mytime.retry" = "Nochmals versuchen";
 
 "agent.help.title" = "So funktioniert Schirmziit";
 "agent.help.done" = "Fertig";

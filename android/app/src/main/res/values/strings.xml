@@ -78,6 +78,18 @@
     <string name="help_show">What is sent?</string>
     <string name="help_hide">Close</string>
 
+    <string name="mytime_open">Your time</string>
+    <string name="mytime_title">Your time</string>
+    <string name="mytime_back">Back</string>
+    <string name="mytime_help">These are the same numbers your parent sees.</string>
+    <string name="mytime_total">Total for this day</string>
+    <string name="mytime_unlocks">Times unlocked</string>
+    <string name="mytime_apps">Apps</string>
+    <string name="mytime_brief_apps">Apps under a minute</string>
+    <string name="mytime_error">Could not load your numbers. Try again in a moment.</string>
+    <string name="mytime_retry">Try again</string>
+    <string name="mytime_empty">Nothing recorded for this day yet.</string>
+
     <string name="notification_channel">Screen-time reporting</string>
     <string name="notification_channel_description">Shows that this phone reports screen time to a parent.</string>
     <string name="notification_title">Screen time is being reported</string>

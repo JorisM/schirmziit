@@ -73,6 +73,18 @@
     <string name="help_show">Cosa viene inviato?</string>
     <string name="help_hide">Chiudi</string>
 
+    <string name="mytime_open">Il tuo tempo</string>
+    <string name="mytime_title">Il tuo tempo</string>
+    <string name="mytime_back">Indietro</string>
+    <string name="mytime_help">Sono esattamente i numeri che vedono i tuoi genitori.</string>
+    <string name="mytime_total">Totale di questo giorno</string>
+    <string name="mytime_unlocks">Sbloccato</string>
+    <string name="mytime_apps">App</string>
+    <string name="mytime_brief_apps">App sotto un minuto</string>
+    <string name="mytime_error">Non è stato possibile caricare i tuoi numeri. Riprova tra un momento.</string>
+    <string name="mytime_retry">Riprova</string>
+    <string name="mytime_empty">Per questo giorno non c’è ancora nulla.</string>
+
     <string name="notification_channel">Trasmissione del tempo di schermo</string>
     <string name="notification_channel_description">Mostra che questo telefono trasmette il tempo di schermo a un genitore.</string>
     <string name="notification_title">Il tempo di schermo viene trasmesso</string>

@@ -33,12 +33,12 @@ export const en: Strings = {
   },
 
   child: {
-    todayHeading: 'Today',
     totalToday: 'Screen time today',
     unlocks: 'times unlocked',
     firstActivity: 'First used',
     lastActivity: 'Last used',
     noDataToday: 'Nothing reported today.',
+    noDataDay: 'Nothing reported for this day.',
     noDataHint:
       'That can mean the phone was not used — or that it has not reported yet. Below you can see when it last did.',
     ribbonTitle: 'The shape of the day',
@@ -53,7 +53,13 @@ export const en: Strings = {
     timeColumn: 'Time',
     openCountColumn: 'Times opened',
     otherApps: 'Other apps',
+    briefApps: 'Apps under a minute',
     tableView: 'As a table',
+    historyTitle: 'The last 14 days',
+    historyHelp: 'Each bar is one day. Tap a bar to look at that day.',
+    historyError: 'Could not load the last 14 days. Try again in a moment.',
+    today: 'Today',
+    selectedHeading: 'Selected day',
   },
 
   devices: {
@@ -148,5 +154,5 @@ export const en: Strings = {
     offline: 'No connection to the server.',
   },
 
-  units: { hoursShort: 'h', minutesShort: 'min' },
+  units: { hoursShort: 'h', minutesShort: 'min', secondsShort: 's' },
 }

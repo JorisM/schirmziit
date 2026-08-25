@@ -30,4 +30,30 @@ object StatusText {
             is Bucket.Hours -> context.getString(R.string.status_hours_ago, bucket.value)
             Bucket.OverADay -> context.getString(R.string.status_over_a_day)
         }
+
+    /**
+     * "2 h 14 min" / "18 min" / "45 s" — never a decimal hour. Matches the
+     * dashboard (`web/src/i18n/index.tsx`) and the iOS agent
+     * (`Formatting.duration`).
+     *
+     * "h"/"min"/"s" are hardcoded rather than resource strings: the web and iOS
+     * copies confirm those abbreviations are already identical across all four
+     * locales, and a pure function here (no Context) is what let the equivalent
+     * `bucket` function above stay unit-testable without Robolectric.
+     */
+    fun duration(millis: Long): String {
+        // Below a minute the minute is the wrong unit: a twenty-second glance at
+        // a phone is not "0 min", and it is not "1 min" either.
+        if (millis > 0 && millis < 60_000) {
+            val seconds = Math.round(millis / 1_000.0)
+            // 59.5s rounds to 60, which must read as the minute it is.
+            if (seconds < 60) return "$seconds s"
+            return "1 min"
+        }
+        val minutes = Math.round(millis / 60_000.0)
+        if (minutes < 60) return "$minutes min"
+        val hours = minutes / 60
+        val rest = minutes % 60
+        return if (rest == 0L) "$hours h" else "$hours h $rest min"
+    }
 }

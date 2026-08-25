@@ -7,6 +7,7 @@ use crate::buckets::bucket_hours;
 use crate::error::CoreError;
 use crate::events::{EventKind, RawEvent};
 use crate::queue::{apply_result, plan_sync};
+use crate::selfusage::{day_detail, day_strip};
 use crate::sessions::{OpenApp, Session, stitch};
 use crate::wire::{IngestApp, IngestHour, IngestRequest, IngestResponse, SCHEMA_VERSION};
 use chrono::{DateTime, TimeZone, Utc};
@@ -24,6 +25,7 @@ impl From<CoreError> for FfiError {
     fn from(err: CoreError) -> Self {
         match err {
             CoreError::UnknownTimezone(tz) => FfiError::UnknownTimezone { tz },
+            CoreError::BadJson(detail) => FfiError::BadJson { detail },
         }
     }
 }
@@ -272,6 +274,57 @@ pub fn apply_ingest_result(
         .into_iter()
         .filter(|p| keep_millis.contains(&p.hour_start_millis))
         .collect())
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
+pub struct DayTotalFfi {
+    pub day: String,
+    pub foreground_ms: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
+pub struct AppTotalFfi {
+    pub package: String,
+    pub label: String,
+    pub foreground_ms: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
+pub struct DayDetailFfi {
+    pub total_ms: i64,
+    pub unlock_count: i32,
+    pub hours: Vec<i64>,
+    pub apps: Vec<AppTotalFfi>,
+}
+
+#[uniffi::export]
+pub fn parse_day_strip(json: String) -> Result<Vec<DayTotalFfi>, FfiError> {
+    Ok(day_strip(&json)?
+        .into_iter()
+        .map(|d| DayTotalFfi {
+            day: d.day,
+            foreground_ms: d.foreground_ms,
+        })
+        .collect())
+}
+
+#[uniffi::export]
+pub fn parse_day_detail(json: String) -> Result<DayDetailFfi, FfiError> {
+    let detail = day_detail(&json)?;
+    Ok(DayDetailFfi {
+        total_ms: detail.total_ms,
+        unlock_count: detail.unlock_count,
+        hours: detail.hours,
+        apps: detail
+            .apps
+            .into_iter()
+            .map(|a| AppTotalFfi {
+                package: a.package,
+                label: a.label,
+                foreground_ms: a.foreground_ms,
+            })
+            .collect(),
+    })
 }
 
 #[cfg(test)]

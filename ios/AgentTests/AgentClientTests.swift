@@ -59,4 +59,32 @@ final class AgentClientTests: XCTestCase {
             XCTAssertEqual(error as? AgentClientError, .unauthorized)
         }
     }
+
+    func testMyUsageSendsTheDeviceTokenAndReturnsTheRawBody() async throws {
+        let transport = StubTransport(
+            status: 200,
+            body: #"{"from":"2026-08-20","to":"2026-08-20","series":[],"device_totals":[]}"#
+        )
+        let client = AgentClient(baseURL: base, transport: transport)
+
+        let body = try await client.myUsage(
+            token: "t0ken", from: "2026-08-20", to: "2026-08-20", bucket: "day", tz: "Europe/Zurich"
+        )
+
+        XCTAssertTrue(body.contains("device_totals"), "the core parses it, not the agent")
+        let request = try XCTUnwrap(transport.sent.first)
+        XCTAssertEqual(request.headers["authorization"], "Bearer t0ken")
+        XCTAssertTrue(request.url.absoluteString.contains("/v1/me/usage"))
+        XCTAssertTrue(request.url.absoluteString.contains("bucket=day"))
+    }
+
+    func testMyUsageReportsAnExpiredTokenAsUnauthorized() async {
+        let client = AgentClient(baseURL: base, transport: StubTransport(status: 401, body: ""))
+        do {
+            _ = try await client.myUsage(token: "old", from: "2026-08-20", to: "2026-08-20", bucket: "day", tz: "UTC")
+            XCTFail("expected unauthorized")
+        } catch {
+            XCTAssertEqual(error as? AgentClientError, .unauthorized)
+        }
+    }
 }

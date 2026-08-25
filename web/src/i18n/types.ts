@@ -36,12 +36,12 @@ export type Strings = {
   }
 
   child: {
-    todayHeading: string
     totalToday: string
     unlocks: string
     firstActivity: string
     lastActivity: string
     noDataToday: string
+    noDataDay: string
     noDataHint: string
     ribbonTitle: string
     ribbonHelp: string
@@ -54,7 +54,13 @@ export type Strings = {
     timeColumn: string
     openCountColumn: string
     otherApps: string
+    briefApps: string
     tableView: string
+    historyTitle: string
+    historyHelp: string
+    historyError: string
+    today: string
+    selectedHeading: string
   }
 
   devices: {
@@ -101,5 +107,5 @@ export type Strings = {
 
   errors: { generic: string; notFound: string; offline: string }
 
-  units: { hoursShort: string; minutesShort: string }
+  units: { hoursShort: string; minutesShort: string; secondsShort: string }
 }

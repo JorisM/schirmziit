@@ -50,7 +50,7 @@ export const it: Site = {
       'Completo: tempo per app e per ora, sblocchi, forma della giornata. Da Android 8 in poi.',
     iosLabel: 'iPhone',
     iosBody:
-      'Per ora solo come vista per i genitori. Leggere il tempo di schermo su un iPhone richiede un’autorizzazione di Apple che non abbiamo ancora — lo scriveremo qui appena cambia.',
+      'Entrambi i ruoli funzionano ora su iPhone — una panoramica per i genitori, e ora anche una vista per il bambino stesso. Misurare il tempo di schermo direttamente su un iPhone richiede ancora un’autorizzazione di Apple che non abbiamo — per ora può essere misurato solo un telefono Android. Lo scriveremo qui appena cambia.',
 
     openTitle: 'Libero e verificabile',
     openBody:

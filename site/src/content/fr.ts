@@ -50,7 +50,7 @@ export const fr: Site = {
       'Complet : temps par application et par heure, déverrouillages, forme de la journée. À partir d’Android 8.',
     iosLabel: 'iPhone',
     iosBody:
-      'Pour l’instant uniquement comme vue pour les parents. Lire le temps d’écran sur un iPhone exige une autorisation d’Apple que nous n’avons pas encore — nous le dirons ici dès que cela change.',
+      'Les deux rôles fonctionnent maintenant sur iPhone — un tableau de bord pour les parents, et désormais une vue pour l’enfant aussi. Mesurer le temps d’écran directement sur un iPhone exige encore une autorisation d’Apple que nous n’avons pas — pour l’instant, seul un téléphone Android peut être mesuré. Nous le dirons ici dès que cela change.',
 
     openTitle: 'Libre et vérifiable',
     openBody:

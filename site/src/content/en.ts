@@ -50,7 +50,7 @@ export const en: Site = {
       'Complete: per-app time per hour, unlocks, the shape of the day. Android 8 and newer.',
     iosLabel: 'iPhone',
     iosBody:
-      'For now, only as a viewer for parents. Reading screen time on an iPhone needs an Apple entitlement we do not have yet — we will say so here the moment that changes.',
+      'Both roles work on iPhone now — a dashboard for parents, and now a view for the child too. Measuring screen time directly on an iPhone still needs an Apple entitlement we do not have — for now, only Android can be the phone being measured. We will say so here the moment that changes.',
 
     openTitle: 'Free and checkable',
     openBody:

@@ -1,22 +1,43 @@
+import { useState } from 'react'
 import useSWR from 'swr'
 import { Link } from 'react-router-dom'
 import { ApiError, api } from '../api/client'
 import type { components } from '../api/schema'
 import { AppBars } from '../components/AppBars'
 import { DayRibbon } from '../components/DayRibbon'
+import { DayStrip } from '../components/DayStrip'
 import { DeviceStatus } from '../components/DeviceStatus'
 import { formatDuration, useI18n } from '../i18n'
 
 type UsageResponse = components['schemas']['UsageResponse']
 
-const today = () => new Date().toISOString().slice(0, 10)
+const STRIP_DAYS = 14
+
+// `toISOString` reports the UTC date, which is still "yesterday" for the first
+// couple of hours after local midnight in Zurich (UTC+1/+2) — exactly the
+// window a teenager is most likely checking. `en-CA` formats as YYYY-MM-DD in
+// the viewer's own zone, matching the `tz=` this page already sends the server.
+export const localToday = (now: Date = new Date()) => now.toLocaleDateString('en-CA')
+const today = () => localToday()
+const daysAgo = (n: number) => {
+  const date = new Date(`${today()}T00:00:00Z`)
+  date.setUTCDate(date.getUTCDate() - n)
+  return date.toISOString().slice(0, 10)
+}
 const localZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone
 
 export function ChildDetail({ childId }: { childId: string }) {
   const { t, locale } = useI18n()
-  const day = today()
+  const [selected, setSelected] = useState(today())
+  const from = daysAgo(STRIP_DAYS - 1)
+
+  const { data: strip, error: stripError } = useSWR<UsageResponse>(
+    `/v1/children/${childId}/usage?from=${from}&to=${today()}&bucket=day&tz=${localZone()}`,
+    api.get,
+    { refreshInterval: 60_000, shouldRetryOnError: false },
+  )
   const { data, error } = useSWR<UsageResponse>(
-    `/v1/children/${childId}/usage?from=${day}&to=${day}&bucket=hour&tz=${localZone()}`,
+    `/v1/children/${childId}/usage?from=${selected}&to=${selected}&bucket=hour&tz=${localZone()}`,
     api.get,
     { refreshInterval: 60_000, shouldRetryOnError: false },
   )
@@ -45,8 +66,31 @@ export function ChildDetail({ childId }: { childId: string }) {
         <Link to="/" className="text-sm underline" style={{ color: 'var(--accent)' }}>
           {t.children.heading}
         </Link>
-        <h1 className="text-2xl">{t.child.todayHeading}</h1>
+        <h1 className="text-2xl">
+          {selected === today()
+            ? t.child.today
+            : new Date(`${selected}T00:00:00`).toLocaleDateString(locale, {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+              })}
+        </h1>
       </header>
+
+      <section className="card p-6">
+        {stripError ? (
+          // Never zero-fill in place of a failed fetch: fourteen grey bars read as a
+          // genuinely quiet fortnight, which is exactly the "lost day" this app promises
+          // never to show.
+          <p role="alert" style={{ color: 'var(--urgent)' }}>
+            {t.child.historyError}
+          </p>
+        ) : strip ? (
+          <DayStrip series={strip.series} from={from} to={today()} selected={selected} onSelect={setSelected} />
+        ) : (
+          <p style={{ color: 'var(--ink-faint)' }}>…</p>
+        )}
+      </section>
 
       {/* The hero is the day's total in the display face, with the numbers that
           qualify it right beneath — a big number alone invites the wrong
@@ -54,7 +98,7 @@ export function ChildDetail({ childId }: { childId: string }) {
       <section className="card flex flex-wrap items-end justify-between gap-6 p-6">
         <div>
           <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
-            {t.child.totalToday}
+            {selected === today() ? t.child.totalToday : t.child.selectedHeading}
           </p>
           <p className="font-display tabular text-5xl leading-none">
             {formatDuration(screenTime, t)}
@@ -78,7 +122,7 @@ export function ChildDetail({ childId }: { childId: string }) {
 
       {screenTime === 0 && (
         <section className="card p-5">
-          <p className="font-medium">{t.child.noDataToday}</p>
+          <p className="font-medium">{selected === today() ? t.child.noDataToday : t.child.noDataDay}</p>
           <p className="mt-1 max-w-prose text-sm" style={{ color: 'var(--ink-muted)' }}>
             {t.child.noDataHint}
           </p>

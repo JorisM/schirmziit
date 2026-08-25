@@ -2,6 +2,7 @@ use crate::AppState;
 use crate::auth::Parent;
 use crate::db::scope;
 use crate::error::ApiError;
+use crate::routes::enroll::Device;
 use axum::extract::{Path, Query, State};
 use axum::{Json, Router, routing::get};
 use chrono::{DateTime, Duration, NaiveDate, TimeZone, Utc};
@@ -12,10 +13,34 @@ use uuid::Uuid;
 /// Three missed 30-minute syncs.
 const STALE_AFTER_MINUTES: i64 = 90;
 
+/// Generous: a child may open the app repeatedly, and this is one indexed
+/// read. It exists to stop a loop, not to ration a family.
+const MAX_READS_PER_HOUR: u32 = 240;
+
 pub fn router() -> Router<AppState> {
     Router::new()
         .route("/v1/children/{id}/usage", get(usage))
         .route("/v1/children/{id}/summary", get(summary))
+        // Same `/v1/me` prefix as `auth::routes`' `/v1/me` (the parent
+        // session), but a different identity: this one is `my_usage`, read by
+        // the calling *device* over its bearer token. Do not let a future
+        // `/v1/me/*` route inherit whichever extractor the copy-paste source
+        // happened to use — check which identity that route actually needs.
+        .route("/v1/me/usage", get(my_usage))
+}
+
+fn check_read_limit(state: &AppState, device_id: Uuid) -> Result<(), ApiError> {
+    let mut limits = state.read_limits.lock().expect("read limiter mutex");
+    let now = Utc::now();
+    let entry = limits.entry(device_id).or_insert((now, 0));
+    if now - entry.0 > Duration::hours(1) {
+        *entry = (now, 0);
+    }
+    entry.1 += 1;
+    if entry.1 > MAX_READS_PER_HOUR {
+        return Err(ApiError::RateLimited);
+    }
+    Ok(())
 }
 
 #[derive(serde::Serialize, utoipa::ToSchema)]
@@ -43,6 +68,9 @@ pub struct Series {
 
 #[derive(serde::Serialize, utoipa::ToSchema)]
 pub struct DeviceTotal {
+    /// RFC3339 instant for hourly buckets, `YYYY-MM-DD` for daily ones — same
+    /// dual format as `Point.start`, and the exact field a wrong `bucket` on
+    /// the client side answers wrong for (`crates/core/src/selfusage.rs`).
     pub start: String,
     pub screen_on_ms: i64,
     pub unlock_count: i32,
@@ -151,6 +179,43 @@ pub async fn usage(
     Query(q): Query<UsageQuery>,
 ) -> Result<Json<UsageResponse>, ApiError> {
     let child_id = scope::child_of_family(&state.pool, parent.family_id, id).await?;
+    Ok(Json(usage_for_child(&state.pool, child_id, &q).await?))
+}
+
+#[utoipa::path(
+    get, path = "/v1/me/usage",
+    params(UsageQuery),
+    responses(
+        (status = 200, description = "This device's own child, for the requested local dates", body = UsageResponse),
+        (status = 401, description = "Unknown or revoked device token"),
+        (status = 422, description = "Unknown timezone"),
+        (status = 429, description = "Device read limit"),
+    ),
+    security(("device_token" = [])),
+    tag = "usage"
+)]
+/// The one read a device token buys, and it takes no id: a device sees the child
+/// it was enrolled for and has no way to name another. `/v1/children` and every
+/// other parent route still refuse a device token — there is a test for it.
+pub async fn my_usage(
+    device: Device,
+    State(state): State<AppState>,
+    Query(q): Query<UsageQuery>,
+) -> Result<Json<UsageResponse>, ApiError> {
+    check_read_limit(&state, device.id)?;
+    Ok(Json(
+        usage_for_child(&state.pool, device.child_id, &q).await?,
+    ))
+}
+
+/// The one place usage is read. A parent and a child must never see different
+/// numbers for the same day, and one query path is the cheapest way to promise
+/// that.
+pub(crate) async fn usage_for_child(
+    pool: &sqlx::PgPool,
+    child_id: Uuid,
+    q: &UsageQuery,
+) -> Result<UsageResponse, ApiError> {
     let tz = zone(&q.tz)?;
     let (start, end) = bounds(q.from, q.to, tz)?;
 
@@ -162,7 +227,7 @@ pub async fn usage(
          WHERE child_id = $1 AND revoked_at IS NULL ORDER BY created_at",
         child_id
     )
-    .fetch_all(&state.pool)
+    .fetch_all(pool)
     .await?;
 
     let now = Utc::now();
@@ -193,7 +258,7 @@ pub async fn usage(
             end,
             q.tz
         )
-        .fetch_all(&state.pool)
+        .fetch_all(pool)
         .await?;
 
         for r in rows {
@@ -224,7 +289,7 @@ pub async fn usage(
             start,
             end
         )
-        .fetch_all(&state.pool)
+        .fetch_all(pool)
         .await?;
 
         for r in rows {
@@ -240,27 +305,61 @@ pub async fn usage(
         }
     }
 
-    let totals = sqlx::query!(
-        r#"SELECT h.hour_start,
-                  SUM(h.screen_on_ms)::bigint AS "screen_on_ms!",
-                  SUM(h.unlock_count)::int    AS "unlock_count!"
-           FROM device_hours h
-           JOIN devices d ON d.id = h.device_id
-           WHERE d.child_id = $1 AND h.hour_start >= $2 AND h.hour_start < $3
-           GROUP BY h.hour_start ORDER BY h.hour_start"#,
-        child_id,
-        start,
-        end
-    )
-    .fetch_all(&state.pool)
-    .await?;
+    // Daily totals must actually be daily: grouping by hour_start regardless
+    // of bucket would hand a 14-day view 336 rows nobody asked for.
+    let device_totals = if q.bucket == "day" {
+        let rows = sqlx::query!(
+            r#"SELECT (h.hour_start AT TIME ZONE $4)::date AS "day!",
+                      SUM(h.screen_on_ms)::bigint AS "screen_on_ms!",
+                      SUM(h.unlock_count)::int    AS "unlock_count!"
+               FROM device_hours h
+               JOIN devices d ON d.id = h.device_id
+               WHERE d.child_id = $1 AND h.hour_start >= $2 AND h.hour_start < $3
+               GROUP BY 1 ORDER BY 1"#,
+            child_id,
+            start,
+            end,
+            q.tz
+        )
+        .fetch_all(pool)
+        .await?;
+        rows.iter()
+            .map(|t| DeviceTotal {
+                start: t.day.to_string(),
+                screen_on_ms: t.screen_on_ms,
+                unlock_count: t.unlock_count,
+            })
+            .collect()
+    } else {
+        let rows = sqlx::query!(
+            r#"SELECT h.hour_start,
+                      SUM(h.screen_on_ms)::bigint AS "screen_on_ms!",
+                      SUM(h.unlock_count)::int    AS "unlock_count!"
+               FROM device_hours h
+               JOIN devices d ON d.id = h.device_id
+               WHERE d.child_id = $1 AND h.hour_start >= $2 AND h.hour_start < $3
+               GROUP BY h.hour_start ORDER BY h.hour_start"#,
+            child_id,
+            start,
+            end
+        )
+        .fetch_all(pool)
+        .await?;
+        rows.iter()
+            .map(|t| DeviceTotal {
+                start: t.hour_start.with_timezone(&tz).to_rfc3339(),
+                screen_on_ms: t.screen_on_ms,
+                unlock_count: t.unlock_count,
+            })
+            .collect()
+    };
 
-    Ok(Json(UsageResponse {
+    Ok(UsageResponse {
         child_id,
         from: q.from,
         to: q.to,
-        bucket: q.bucket,
-        tz: q.tz,
+        bucket: q.bucket.clone(),
+        tz: q.tz.clone(),
         devices: devices_json,
         series: series
             .into_iter()
@@ -270,15 +369,8 @@ pub async fn usage(
                 points,
             })
             .collect(),
-        device_totals: totals
-            .iter()
-            .map(|t| DeviceTotal {
-                start: t.hour_start.with_timezone(&tz).to_rfc3339(),
-                screen_on_ms: t.screen_on_ms,
-                unlock_count: t.unlock_count,
-            })
-            .collect(),
-    }))
+        device_totals,
+    })
 }
 
 #[derive(serde::Deserialize, utoipa::IntoParams)]

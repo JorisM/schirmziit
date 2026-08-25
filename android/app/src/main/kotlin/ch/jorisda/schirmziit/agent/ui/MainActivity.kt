@@ -20,6 +20,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import ch.jorisda.schirmziit.agent.R
+import ch.jorisda.schirmziit.agent.core.CoreBridge
+import ch.jorisda.schirmziit.agent.mytime.MyTime
+import ch.jorisda.schirmziit.agent.mytime.MyTimeRepository
+import ch.jorisda.schirmziit.agent.mytime.mergeMyTimeResult
+import ch.jorisda.schirmziit.agent.mytime.myTimeLoadArgs
 import ch.jorisda.schirmziit.agent.notify.OngoingNotice
 import ch.jorisda.schirmziit.agent.pair.EnrollPayloadParser
 import ch.jorisda.schirmziit.agent.pair.PairingScreen
@@ -27,12 +32,14 @@ import ch.jorisda.schirmziit.agent.power.AndroidPowerStatus
 import ch.jorisda.schirmziit.agent.store.AgentDatabase
 import ch.jorisda.schirmziit.agent.store.AgentSettings
 import ch.jorisda.schirmziit.agent.store.AgentStore
+import ch.jorisda.schirmziit.agent.sync.SchirmziitClient
 import ch.jorisda.schirmziit.agent.sync.SyncWorker
 import ch.jorisda.schirmziit.agent.ui.theme.SchirmziitTheme
 import ch.jorisda.schirmziit.agent.usage.AndroidUsageSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
 
 class MainActivity : ComponentActivity() {
 
@@ -41,6 +48,10 @@ class MainActivity : ComponentActivity() {
         val source = AndroidUsageSource(this)
         val power = AndroidPowerStatus(this)
         val settings: AgentSettings? = runCatching { AgentStore(this) }.getOrNull()
+        // Hoisted rather than built per load: this screen is designed around
+        // repeated tapping (one day, then another), and a fresh OkHttpClient
+        // per call would each own its own connection pool and thread pool.
+        val httpClient = OkHttpClient()
 
         val link = intent?.data?.toString()
         val deepLink = link?.let(EnrollPayloadParser::parse)
@@ -87,6 +98,74 @@ class MainActivity : ComponentActivity() {
                     // resume is what makes the prompt disappear once it is done.
                     OnResume(::refresh)
 
+                    var showMyTime by remember { mutableStateOf(false) }
+                    var myTime by remember { mutableStateOf<MyTime?>(null) }
+                    // The day the child last tapped. Compared against on
+                    // completion so a slow response for a day the child has
+                    // since tapped away from can't overwrite a faster, newer
+                    // one — the highlighted day and the numbers underneath it
+                    // must always agree.
+                    var pendingDay by remember { mutableStateOf<String?>(null) }
+                    // True only while the day currently pending has not yet
+                    // landed. Kept apart from `myTime` on purpose: an earlier
+                    // version faked an empty `MyTime` while loading, which
+                    // `MyTimeScreen` then rendered as "nothing recorded" —
+                    // exactly the silent-zero lie the failed-state guard
+                    // exists to prevent, just arriving through latency instead
+                    // of a dropped connection.
+                    var myTimeLoading by remember { mutableStateOf(false) }
+                    // True only while the most recent load failed. Kept apart
+                    // from `myTime` for the same reason as iOS: a failure must
+                    // add an error line beside the previous numbers, never
+                    // replace them — `mergeMyTimeResult` is what enforces that.
+                    var myTimeError by remember { mutableStateOf(false) }
+
+                    fun loadMyTime(selected: String) {
+                        val token = settings.deviceToken ?: return
+                        val baseUrl = settings.baseUrl ?: return
+                        pendingDay = selected
+                        myTimeLoading = true
+                        // Fixed [today-13, today] window (anchored to today, never to
+                        // whichever day was tapped — the earlier bug let the window
+                        // slide with every tap) and the strip already on screen reused
+                        // rather than re-fetched: picking a day is the one request that
+                        // tap is allowed to cost. Read here, on the composition thread,
+                        // not inside the IO block below.
+                        val args = myTimeLoadArgs(java.time.LocalDate.now(), myTime?.days)
+                        scope.launch {
+                            // The client does network work and Room forbids
+                            // main-thread access; both belong off-thread, and
+                            // the repository never throws, so this is safe even
+                            // offline — it comes back with failed = true.
+                            val result = withContext(Dispatchers.IO) {
+                                val client = SchirmziitClient(baseUrl, httpClient)
+                                val bridge = CoreBridge()
+                                MyTimeRepository(
+                                    fetch = { from, to, bucket, tz ->
+                                        client.myUsage(token, from, to, bucket, tz)
+                                    },
+                                    parseStrip = bridge::dayStrip,
+                                    parseDetail = bridge::dayDetail,
+                                ).load(
+                                    selected,
+                                    from = args.from,
+                                    days = args.days,
+                                    tz = java.util.TimeZone.getDefault().id,
+                                )
+                            }
+                            // A tap for a different day may have landed while
+                            // this one was in flight; only the response for
+                            // the day still pending is allowed to win, and
+                            // only it may clear the loading flag.
+                            if (pendingDay == selected) {
+                                val merged = mergeMyTimeResult(myTime, result)
+                                myTime = merged.myTime
+                                myTimeError = merged.error
+                                myTimeLoading = false
+                            }
+                        }
+                    }
+
                     when {
                         !state.hasPermission -> PermissionScreen(onGranted = ::refresh)
 
@@ -94,6 +173,23 @@ class MainActivity : ComponentActivity() {
                             OngoingNotice.update(this@MainActivity, settings)
                             refresh()
                         }
+
+                        showMyTime -> MyTimeScreen(
+                            state = myTime ?: MyTime(
+                                emptyList(),
+                                null,
+                                java.time.LocalDate.now().toString(),
+                                failed = false,
+                            ),
+                            error = myTimeError,
+                            loading = myTimeLoading,
+                            onSelectDay = ::loadMyTime,
+                            // Re-issues the load for the day that was pending when
+                            // it failed — the same day whose numbers, if any, are
+                            // still on screen underneath the error line.
+                            onRetry = { pendingDay?.let(::loadMyTime) },
+                            onBack = { showMyTime = false },
+                        )
 
                         else -> StatusScreen(
                             settings = settings,
@@ -105,6 +201,10 @@ class MainActivity : ComponentActivity() {
                                 refresh()
                             },
                             onAllowBackground = { power.requestExemption(this@MainActivity) },
+                            onOpenMyTime = {
+                                showMyTime = true
+                                loadMyTime(java.time.LocalDate.now().toString())
+                            },
                         )
                     }
                 }

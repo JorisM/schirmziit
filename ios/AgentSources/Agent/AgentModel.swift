@@ -22,6 +22,21 @@ public final class AgentModel {
     /// as setup finishes.
     public private(set) var setupChildren: [SetupChild] = []
 
+    public private(set) var myDays: [DayTotalFfi] = []
+    public private(set) var myDay: DayDetailFfi?
+    public private(set) var mySelectedDay: String = ISO8601DateFormatter.dayOnly.string(from: Date())
+    /// Nil while it has never been loaded; set to a sentence the child can act
+    /// on when a load failed. Never a silent zero — "you used nothing today" is
+    /// the wrong thing to tell someone because the wifi was off.
+    public private(set) var myTimeError: String?
+    /// Guards `loadMyTimeStrip`/`selectMyDay` against overlapping calls — a
+    /// double-tap on retry, or two bars tapped in quick succession. Both
+    /// functions write the shared `myTimeError`, so letting two runs overlap
+    /// can interleave their completions: one fails and sets the error, the
+    /// other then succeeds and clears it while never having touched `myDay`
+    /// — a spinner with nothing behind it and no error to explain why.
+    public private(set) var myTimeBusy = false
+
     private let store: HourStore
     private let inbox: SnapshotInbox
     private let credentials: CredentialStore
@@ -156,6 +171,62 @@ public final class AgentModel {
             lastError = String(localized: "agent.status.sync.failed")
         }
         refresh()
+    }
+
+    /// The fourteen-day strip for this phone's own child, over this phone's
+    /// own device token. Called once when the screen appears — the strip is
+    /// fourteen days of rows and must not be refetched every time a day is
+    /// picked, same shape as the web dashboard and the iOS parent view.
+    public func loadMyTimeStrip() async {
+        guard !myTimeBusy else { return }
+        myTimeBusy = true
+        defer { myTimeBusy = false }
+        guard let credentials = credentials.load() else { return }
+        let client = AgentClient(baseURL: credentials.baseURL, transport: transport)
+        let zone = TimeZone.current.identifier
+        let from = ISO8601DateFormatter.dayOnly.string(
+            from: Calendar.current.date(byAdding: .day, value: -13, to: Date()) ?? Date()
+        )
+        let today = ISO8601DateFormatter.dayOnly.string(from: Date())
+
+        do {
+            let stripBody = try await client.myUsage(
+                token: credentials.token, from: from, to: today, bucket: "day", tz: zone
+            )
+            // Through the core: a captcha page throws here rather than becoming
+            // an empty fortnight that tells a child they used nothing.
+            myDays = try parseDayStrip(json: stripBody)
+            myTimeError = nil
+        } catch {
+            // The previous numbers stay on screen; only the error line is new.
+            myTimeError = S("agent.mytime.error")
+        }
+    }
+
+    /// The ribbon and app list for one day — the one request a tap on the
+    /// strip is allowed to cost. Never re-fetches the strip: a child's phone
+    /// is the most likely of the three surfaces to be on a metered connection.
+    public func selectMyDay(_ day: String) async {
+        guard !myTimeBusy else { return }
+        myTimeBusy = true
+        defer { myTimeBusy = false }
+        guard let credentials = credentials.load() else { return }
+        let client = AgentClient(baseURL: credentials.baseURL, transport: transport)
+        let zone = TimeZone.current.identifier
+
+        do {
+            let dayBody = try await client.myUsage(
+                token: credentials.token, from: day, to: day, bucket: "hour", tz: zone
+            )
+            // Through the core: a captcha page throws here rather than becoming
+            // an empty day that tells a child they used nothing.
+            myDay = try parseDayDetail(json: dayBody)
+            mySelectedDay = day
+            myTimeError = nil
+        } catch {
+            // The previous numbers stay on screen; only the error line is new.
+            myTimeError = S("agent.mytime.error")
+        }
     }
 
     public func unpair() {

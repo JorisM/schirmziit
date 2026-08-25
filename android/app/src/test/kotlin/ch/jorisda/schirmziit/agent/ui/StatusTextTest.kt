@@ -44,4 +44,55 @@ class StatusTextTest {
         assertEquals("3 minutes ago", StatusText.lastSync(context, now, now - 3 * minute))
         assertEquals("2 hours ago", StatusText.lastSync(context, now, now - 120 * minute))
     }
+
+    @Test
+    fun `durations under an hour show only minutes`() {
+        assertEquals("18 min", StatusText.duration(18 * minute))
+    }
+
+    @Test
+    fun `an exact number of hours drops the minutes`() {
+        assertEquals("1 h", StatusText.duration(60 * minute))
+    }
+
+    @Test
+    fun `hours and minutes both show, never a decimal hour`() {
+        assertEquals("2 h 14 min", StatusText.duration(134 * minute))
+    }
+
+    @Test
+    fun `zero is a duration too, not blank`() {
+        assertEquals("0 min", StatusText.duration(0L))
+    }
+
+    @Test
+    fun `a sub-minute remainder rounds rather than truncating to zero`() {
+        // 15 seconds short of 3 minutes: truncation would read "2 min", which
+        // under-reports every single value by up to 59 seconds.
+        assertEquals("3 min", StatusText.duration(2 * minute + 45_000))
+    }
+
+    @Test
+    fun `renders seconds below a minute`() {
+        assertEquals("20 s", StatusText.duration(20_000))
+        assertEquals("45 s", StatusText.duration(45_400))
+    }
+
+    @Test
+    fun `keeps zero as zero minutes`() {
+        assertEquals("0 min", StatusText.duration(0))
+    }
+
+    @Test
+    fun `never renders sixty seconds`() {
+        assertEquals("1 min", StatusText.duration(59_500))
+        assertEquals("1 min", StatusText.duration(60_000))
+    }
+
+    @Test
+    fun `leaves longer spans alone`() {
+        assertEquals("2 min", StatusText.duration(90_000))
+        assertEquals("1 h", StatusText.duration(3_600_000))
+        assertEquals("2 h 14 min", StatusText.duration(8_040_000))
+    }
 }

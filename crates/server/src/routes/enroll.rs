@@ -76,8 +76,10 @@ pub async fn enroll(
     ))
 }
 
-/// A device identity. Write-only by construction: no parent route accepts this
-/// extractor, so a leaked device token cannot read a family's data.
+/// A device identity. This extractor authorizes exactly one read, `GET
+/// /v1/me/usage`, which takes no path id and can therefore only ever return
+/// the caller's own `child_id`; every other route stays write-only, and no
+/// parent route accepts this extractor at all.
 #[derive(Debug, Clone)]
 pub struct Device {
     pub id: Uuid,

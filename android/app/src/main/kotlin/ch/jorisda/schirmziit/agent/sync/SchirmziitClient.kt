@@ -1,5 +1,6 @@
 package ch.jorisda.schirmziit.agent.sync
 
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -125,6 +126,31 @@ class SchirmziitClient(baseUrl: String, private val client: OkHttpClient) {
             .post("".toRequestBody(json))
             .build()
         runCatching { client.newCall(request).execute().close() }
+    }
+
+    /**
+     * The one read a device token buys: this phone's own child, no id in the
+     * path. Returns the raw body — the core parses it, not us, so both agents
+     * agree on what a day means.
+     */
+    fun myUsage(token: String, from: String, to: String, bucket: String, tz: String): String {
+        val url = "$base/v1/me/usage".toHttpUrl().newBuilder()
+            .addQueryParameter("from", from)
+            .addQueryParameter("to", to)
+            .addQueryParameter("bucket", bucket)
+            .addQueryParameter("tz", tz)
+            .build()
+
+        val request = Request.Builder()
+            .url(url)
+            .header("authorization", "Bearer $token")
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            val payload = response.body?.string().orEmpty()
+            if (!response.isSuccessful) throw IngestFailure(response.code)
+            return payload
+        }
     }
 
     /** Returns the raw response body; the core parses it, not us. */

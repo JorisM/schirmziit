@@ -1,11 +1,16 @@
 package ch.jorisda.schirmziit.agent.screenshot
 
 import androidx.compose.runtime.Composable
+import ch.jorisda.schirmziit.agent.mytime.MyTime
 import ch.jorisda.schirmziit.agent.pair.PairingScreen
 import ch.jorisda.schirmziit.agent.power.BatteryHint
 import ch.jorisda.schirmziit.agent.store.FakeAgentSettings
+import ch.jorisda.schirmziit.agent.ui.MyTimeScreen
 import ch.jorisda.schirmziit.agent.ui.StatusScreen
 import ch.jorisda.schirmziit.agent.ui.theme.SchirmziitTheme
+import ch.jorisda.schirmziit.core.AppTotalFfi
+import ch.jorisda.schirmziit.core.DayDetailFfi
+import ch.jorisda.schirmziit.core.DayTotalFfi
 import com.github.takahirom.roborazzi.captureRoboImage
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -87,7 +92,7 @@ class ScreenshotTest {
     ) {
         StatusScreen(
             settings = FakeAgentSettings(
-                baseUrl = "https://schirmziit.jorisda.ch",
+                baseUrl = "https://api.schirmziit.ch",
                 deviceToken = "tok",
                 lastSyncMillis = 1_787_997_600_000,
             ),
@@ -96,6 +101,84 @@ class ScreenshotTest {
             batteryHint = batteryHint,
             onSendNow = {},
             onAllowBackground = {},
+            onOpenMyTime = {},
         )
+    }
+
+    @Test
+    @Config(qualifiers = LIGHT_DE)
+    fun `my time screen in german`() {
+        shoot("mytime-de-light") { MyTimeScreen(state = sampleMyTime(), onSelectDay = {}, onRetry = {}, onBack = {}) }
+    }
+
+    @Test
+    @Config(qualifiers = DARK_DE)
+    fun `my time screen in german dark`() {
+        shoot("mytime-de-dark") { MyTimeScreen(state = sampleMyTime(), onSelectDay = {}, onRetry = {}, onBack = {}) }
+    }
+
+    @Test
+    @Config(qualifiers = LIGHT_EN)
+    fun `my time screen could not load`() {
+        // Real days and a real detail alongside the error, not an already-empty
+        // MyTime: the point of this image is proving a failed retry adds the
+        // error line without wiping the previous numbers out from under it —
+        // a `MyTime(emptyList(), ...)` input couldn't show that, since there'd
+        // be nothing left on screen either way.
+        shoot("mytime-failed-en-light") {
+            MyTimeScreen(state = sampleMyTime(), error = true, onSelectDay = {}, onRetry = {}, onBack = {})
+        }
+    }
+
+    /** A fortnight of varied totals, including one zero day, and one day's detail. */
+    private fun sampleMyTime(): MyTime {
+        val days = listOf(
+            "2026-08-07" to 5_400_000L,
+            "2026-08-08" to 7_200_000L,
+            "2026-08-09" to 3_000_000L,
+            "2026-08-10" to 0L,
+            "2026-08-11" to 9_600_000L,
+            "2026-08-12" to 4_200_000L,
+            "2026-08-13" to 6_000_000L,
+            "2026-08-14" to 8_100_000L,
+            "2026-08-15" to 2_400_000L,
+            "2026-08-16" to 5_700_000L,
+            "2026-08-17" to 6_900_000L,
+            "2026-08-18" to 3_600_000L,
+            "2026-08-19" to 7_800_000L,
+            "2026-08-20" to 6_300_000L,
+        ).map { (day, ms) -> DayTotalFfi(day, ms) }
+
+        val hours = List(24) { hour ->
+            when {
+                hour in 7..8 -> 900_000L
+                hour in 12..13 -> 600_000L
+                hour in 16..21 -> 1_200_000L
+                else -> 0L
+            }
+        }
+
+        val apps = listOf(
+            AppTotalFfi("ch.jorisda.videoapp", "VideoApp", 2_400_000L),
+            AppTotalFfi("ch.jorisda.chat", "ChatApp", 1_800_000L),
+            AppTotalFfi("ch.jorisda.browser", "Browser", 900_000L),
+            AppTotalFfi("ch.jorisda.game1", "Game One", 600_000L),
+            AppTotalFfi("ch.jorisda.game2", "Game Two", 300_000L),
+            AppTotalFfi("ch.jorisda.music", "Music", 180_000L),
+            AppTotalFfi("ch.jorisda.notes", "Notes", 90_000L),
+            AppTotalFfi("ch.jorisda.mail", "Mail", 30_000L),
+            AppTotalFfi("ch.jorisda.weather", "Weather", 10_000L),
+            // Rounds to 0 s and must not appear anywhere, folded or not.
+            AppTotalFfi("ch.jorisda.blink", "Blink", 300L),
+        )
+
+        val detail = DayDetailFfi(
+            totalMs = 6_300_000L,
+            unlockCount = 42,
+            hours = hours,
+            apps = apps,
+        )
+
+        return MyTime(days = days, detail = detail, selected = "2026-08-20", failed = false)
     }
 }

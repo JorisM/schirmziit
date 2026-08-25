@@ -38,8 +38,11 @@ codes remain for when the parent is not there to sign in.
    ingest JSON in Kotlin or Swift; that is how two agents drift.
 2. **Tenancy is proved by the type system.** Parent routes take the `Parent` extractor and
    scope through `db::scope::*`; another family's id must return 404, not 403. Device
-   tokens are write-only — a device must never read family data (`/v1/children` with a
-   bearer token is 401 and there is a test for it).
+   tokens are write-only apart from one deliberate exception — `GET /v1/me/usage`, own
+   child only, no id in the path — and a device must never read anything else
+   (`/v1/children` with a bearer token is 401 and there is a test for it). Every other
+   parent route still returns 401 for a device token, and `crates/server/tests/tenancy.rs`
+   proves it.
 3. **Nothing that can lose a day.** The queue only drops an hour the server accepted or
    permanently rejected; an unparseable response (captcha, proxy page) must throw, never
    read as "all accepted". A recomputed hour never replaces a fuller one — that bug

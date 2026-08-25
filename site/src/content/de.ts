@@ -42,7 +42,7 @@ export const de: Site = {
 
     childSeesTitle: 'Das Kind sieht dieselben Zahlen',
     childSeesBody:
-      'Die App auf dem Kinderhandy ist sichtbar und zeigt dieselben Werte wie deine Übersicht: wie lange, welche App, wie oft entsperrt. So bleibt es eine gemeinsame Grundlage statt einer Kontrolle im Hintergrund.',
+      'Deine Übersicht zeigt die letzten 14 Tage auf einen Blick; du kannst jeden Tag antippen und siehst ihn Stunde für Stunde. Die App auf dem Kinderhandy zeigt genau dasselbe — dieselben 14 Tage, denselben Tag im Detail, dieselben Zahlen. So bleibt es eine gemeinsame Grundlage statt einer Kontrolle im Hintergrund.',
 
     platformsTitle: 'Geräte',
     platformsBody: 'Was heute geht — und was nicht.',
@@ -51,7 +51,7 @@ export const de: Site = {
       'Vollständig: Nutzungszeit pro App und Stunde, Entsperrungen, Tagesverlauf. Ab Android 8.',
     iosLabel: 'iPhone',
     iosBody:
-      'Vorerst nur als Übersicht für Eltern. Bildschirmzeit auf einem iPhone auszulesen braucht eine Apple-Bewilligung, die wir noch nicht haben — wir sagen es hier, sobald sich das ändert.',
+      'Beide Rollen funktionieren jetzt auf dem iPhone — eine Übersicht für Eltern, und neu auch eine Ansicht fürs Kind selbst. Bildschirmzeit direkt auf einem iPhone zu messen braucht weiterhin eine Apple-Bewilligung, die wir noch nicht haben — vorerst kann nur ein Android-Handy gemessen werden. Wir sagen es hier, sobald sich das ändert.',
 
     openTitle: 'Frei und überprüfbar',
     openBody:

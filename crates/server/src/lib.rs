@@ -7,6 +7,7 @@ pub mod retention;
 pub mod routes;
 pub mod static_files;
 
+use axum::http::{HeaderValue, Method, header};
 use axum::{Json, Router, routing::get};
 use chrono::{DateTime, Utc};
 use sqlx::PgPool;
@@ -15,6 +16,7 @@ use std::sync::{Arc, Mutex};
 use tower_governor::GovernorLayer;
 use tower_governor::governor::GovernorConfigBuilder;
 use tower_governor::key_extractor::SmartIpKeyExtractor;
+use tower_http::cors::{AllowOrigin, CorsLayer};
 use uuid::Uuid;
 
 /// Per-device ingest counters, kept in memory. A restart forgets them, which is
@@ -26,6 +28,9 @@ pub struct AppState {
     pub pool: PgPool,
     pub config: config::Config,
     pub ingest_limits: IngestLimits,
+    /// Same shape, separate budget: a child's screen refreshing on foreground
+    /// must not eat into the ingest allowance, or a busy day stops reporting.
+    pub read_limits: IngestLimits,
 }
 
 impl AppState {
@@ -34,6 +39,7 @@ impl AppState {
             pool,
             config,
             ingest_limits: Default::default(),
+            read_limits: Default::default(),
         }
     }
 }
@@ -93,7 +99,29 @@ fn build(state: AppState, rate_limit: bool) -> Router {
         .merge(routes::usage::router())
         .merge(routes::purge::router())
         .fallback(static_files::handler)
+        .layer(cors_layer(&state.config.dashboard_origins))
         .with_state(state)
+}
+
+/// The cross-origin grant for the hosted `app.` / `api.` split.
+///
+/// With no configured origins this is a permissive-to-nobody layer: it adds no
+/// `Access-Control-Allow-Origin`, which is exactly right for a same-origin
+/// self-hosted instance. `allow_credentials` is what makes the session cookie
+/// travel, and it is also why the origin list can never be `Any` — the browser
+/// rejects that pairing, and a wildcard here would let any page on the internet
+/// read a signed-in parent's family data.
+fn cors_layer(origins: &[String]) -> CorsLayer {
+    let allowed: Vec<HeaderValue> = origins
+        .iter()
+        .filter_map(|o| HeaderValue::from_str(o).ok())
+        .collect();
+
+    CorsLayer::new()
+        .allow_origin(AllowOrigin::list(allowed))
+        .allow_credentials(true)
+        .allow_methods([Method::GET, Method::POST, Method::DELETE, Method::OPTIONS])
+        .allow_headers([header::CONTENT_TYPE, header::AUTHORIZATION])
 }
 
 async fn healthz() -> Json<serde_json::Value> {

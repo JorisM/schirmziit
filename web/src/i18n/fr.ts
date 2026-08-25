@@ -33,12 +33,12 @@ export const fr: Strings = {
   },
 
   child: {
-    todayHeading: 'Aujourd’hui',
     totalToday: 'Temps d’écran aujourd’hui',
     unlocks: 'déverrouillages',
     firstActivity: 'Première utilisation',
     lastActivity: 'Dernière utilisation',
     noDataToday: 'Rien de signalé aujourd’hui.',
+    noDataDay: 'Rien n’a été signalé pour ce jour.',
     noDataHint:
       'Cela peut vouloir dire que le téléphone n’a pas été utilisé — ou qu’il n’a pas encore envoyé ses données. Ci-dessous, tu vois quand il l’a fait pour la dernière fois.',
     ribbonTitle: 'La forme de la journée',
@@ -54,7 +54,13 @@ export const fr: Strings = {
     timeColumn: 'Temps',
     openCountColumn: 'Ouvertures',
     otherApps: 'Autres applications',
+    briefApps: 'Applis de moins d’une minute',
     tableView: 'En tableau',
+    historyTitle: 'Les 14 derniers jours',
+    historyHelp: 'Chaque barre est un jour. Touche une barre pour voir ce jour en détail.',
+    historyError: 'Impossible de charger les 14 derniers jours. Réessaie dans un instant.',
+    today: 'Aujourd’hui',
+    selectedHeading: 'Jour sélectionné',
   },
 
   devices: {
@@ -149,5 +155,5 @@ export const fr: Strings = {
     offline: 'Pas de connexion au serveur.',
   },
 
-  units: { hoursShort: 'h', minutesShort: 'min' },
+  units: { hoursShort: 'h', minutesShort: 'min', secondsShort: 's' },
 }

@@ -11,6 +11,16 @@ struct AgentStatusView: View {
         List {
             Section { stateCard.listRowInsets(.init(top: 16, leading: 16, bottom: 16, trailing: 16)) }
 
+            // Below the state card, never above it: the card answers "is this
+            // working", which comes first, and this answers "how much" second.
+            Section {
+                NavigationLink {
+                    AgentMyTimeView(model: model)
+                } label: {
+                    Label(title: { L("agent.mytime.title") }, icon: { Image(systemName: "chart.bar.xaxis") })
+                }
+            }
+
             if case .reporting(let pending, let lastSync) = model.status {
                 Section(header: L("agent.status.queue")) {
                     // Through L(), not String(localized:): the string-based

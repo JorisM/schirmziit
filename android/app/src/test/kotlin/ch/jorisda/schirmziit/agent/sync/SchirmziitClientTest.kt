@@ -5,6 +5,7 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -156,6 +157,43 @@ class SchirmziitClientTest {
         }
 
         assertEquals(500, failure.status)
+        server.shutdown()
+    }
+
+    @Test
+    fun `my usage sends the device token and returns the raw body`() {
+        val server = MockWebServer().apply {
+            enqueue(MockResponse().setBody("""{"from":"2026-08-07","to":"2026-08-20","series":[],"device_totals":[]}"""))
+            start()
+        }
+        val client = SchirmziitClient(server.url("/").toString(), OkHttpClient())
+
+        // from/to deliberately distinct: a transposed argument in myUsage must
+        // not sail past this test looking like a pass.
+        val body = client.myUsage("t0ken", "2026-08-07", "2026-08-20", "day", "Europe/Zurich")
+
+        assertTrue(body.contains("device_totals"))
+        val request = server.takeRequest()
+        assertEquals("Bearer t0ken", request.getHeader("authorization"))
+        assertTrue(request.path!!.startsWith("/v1/me/usage"))
+        val url = request.requestUrl!!
+        assertEquals("2026-08-07", url.queryParameter("from"))
+        assertEquals("2026-08-20", url.queryParameter("to"))
+        assertEquals("day", url.queryParameter("bucket"))
+        assertEquals("Europe/Zurich", url.queryParameter("tz"))
+        server.shutdown()
+    }
+
+    @Test
+    fun `my usage throws on an error status rather than returning an empty body`() {
+        val server = MockWebServer().apply {
+            enqueue(MockResponse().setResponseCode(401))
+            start()
+        }
+        val client = SchirmziitClient(server.url("/").toString(), OkHttpClient())
+        assertThrows(IngestFailure::class.java) {
+            client.myUsage("old", "2026-08-20", "2026-08-20", "day", "UTC")
+        }
         server.shutdown()
     }
 }

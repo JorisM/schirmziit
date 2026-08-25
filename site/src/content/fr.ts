@@ -41,7 +41,7 @@ export const fr: Site = {
 
     childSeesTitle: 'L’enfant voit les mêmes chiffres',
     childSeesBody:
-      'L’application sur le téléphone de l’enfant est visible et affiche exactement ce que montre ton tableau de bord : combien de temps, quelle application, combien de déverrouillages. Cela reste une base commune de discussion, pas un contrôle qui tourne en arrière-plan.',
+      'Ton tableau de bord montre les 14 derniers jours d’un coup d’œil ; touche un jour pour le voir heure par heure. L’application sur le téléphone de l’enfant montre exactement la même chose — les mêmes 14 jours, le même jour en détail, les mêmes chiffres. Cela reste une base commune de discussion, pas un contrôle qui tourne en arrière-plan.',
 
     platformsTitle: 'Appareils',
     platformsBody: 'Ce qui fonctionne aujourd’hui — et ce qui ne fonctionne pas.',
@@ -50,7 +50,7 @@ export const fr: Site = {
       'Complet : temps par application et par heure, déverrouillages, forme de la journée. À partir d’Android 8.',
     iosLabel: 'iPhone',
     iosBody:
-      'Pour l’instant uniquement comme vue pour les parents. Lire le temps d’écran sur un iPhone exige une autorisation d’Apple que nous n’avons pas encore — nous le dirons ici dès que cela change.',
+      'Les deux rôles fonctionnent maintenant sur iPhone — un tableau de bord pour les parents, et désormais une vue pour l’enfant aussi. Mesurer le temps d’écran directement sur un iPhone exige encore une autorisation d’Apple que nous n’avons pas — pour l’instant, seul un téléphone Android peut être mesuré. Nous le dirons ici dès que cela change.',
 
     openTitle: 'Libre et vérifiable',
     openBody:

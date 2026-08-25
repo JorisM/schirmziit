@@ -22,3 +22,10 @@ build/
 dist
 .astro
 node_modules
+
+# Isolated workspaces for plan execution.
+.worktrees
+.superpowers
+
+# tsc build cache — regenerated locally, dirty in every checkout
+web/tsconfig.tsbuildinfo

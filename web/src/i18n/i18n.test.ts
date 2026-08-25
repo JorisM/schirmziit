@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { detectLocale, formatDuration, localeOrder, locales } from './index'
+import { de } from './de'
 import { en } from './en'
 import type { Strings } from './types'
 
@@ -102,5 +103,29 @@ describe('formatDuration', () => {
     expect(formatDuration(600_000, en)).toBe('10 min')
     expect(formatDuration(3_600_000, en)).toBe('1 h')
     expect(formatDuration(8_040_000, en)).toBe('2 h 14 min')
+  })
+})
+
+describe('formatDuration below a minute', () => {
+  it('renders seconds instead of a useless zero', () => {
+    expect(formatDuration(20_000, de)).toBe('20 s')
+    expect(formatDuration(45_400, de)).toBe('45 s')
+  })
+
+  it('keeps zero as zero minutes', () => {
+    // A hero total reading "0 s" implies a precision that means nothing here.
+    expect(formatDuration(0, de)).toBe('0 min')
+  })
+
+  it('never renders sixty seconds', () => {
+    // 59.5s rounds to 60 — that has to read as a minute, not "60 s".
+    expect(formatDuration(59_500, de)).toBe('1 min')
+    expect(formatDuration(60_000, de)).toBe('1 min')
+  })
+
+  it('leaves everything above a minute alone', () => {
+    expect(formatDuration(90_000, de)).toBe('2 min')
+    expect(formatDuration(3_600_000, de)).toBe('1 h')
+    expect(formatDuration(8_040_000, de)).toBe('2 h 14 min')
   })
 })

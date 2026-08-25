@@ -22,10 +22,14 @@
 "child.nodata" = "Nothing reported today";
 "child.nodata.hint" = "That can mean the phone was not used — or that it has not reported yet. Check the devices below.";
 "child.apps" = "Apps";
+"child.apps.brief" = "Apps under a minute";
 "child.ribbon.title" = "The shape of the day";
 "child.ribbon.help" = "Each cell is one hour, midnight to midnight. Darker means the screen was on longer, so you see not just how much but when. Tap an hour for the detail.";
 "child.ribbon.quiet" = "quiet";
 "child.ribbon.busy" = "busy";
+"child.history.title" = "The last 14 days";
+"child.history.help" = "Each bar is one day. Tap a bar to look at that day.";
+"child.selected" = "Selected day";
 
 "devices.title" = "Devices";
 "devices.fresh" = "reporting";
@@ -62,6 +66,7 @@
 
 "unit.hour" = "h";
 "unit.minute" = "min";
+"unit.second" = "s";
 
 /* ── Child mode ───────────────────────────────────────────── */
 "agent.title" = "Schirmziit";
@@ -103,6 +108,12 @@
 "agent.status.sync.failed" = "Sending failed. The figures stay on this phone and are sent later.";
 "agent.status.unpair" = "Disconnect this phone";
 "agent.status.unpair.confirm" = "Stop reporting and forget the server?";
+
+"agent.mytime.title" = "Your time";
+"agent.mytime.help" = "These are the same numbers your parent sees.";
+"agent.mytime.error" = "Could not load your numbers. Try again in a moment.";
+"agent.mytime.empty" = "Nothing recorded for this day yet.";
+"agent.mytime.retry" = "Try again";
 
 "agent.help.title" = "How Schirmziit works";
 "agent.help.done" = "Done";

@@ -42,6 +42,18 @@
 
   --radius-card: 18px;
   --shadow-card: 0 1px 2px rgb(35 38 34 / 0.04), 0 8px 24px -16px rgb(35 38 34 / 0.18);
+
+  /*
+   * Motion vocabulary. Reduced motion is implemented by zeroing these below —
+   * a component gets the accessibility path by using the token, so it cannot
+   * be forgotten in one place and honoured in another.
+   */
+  --motion-fast: 120ms;
+  --motion-base: 240ms;
+  --motion-slow: 400ms;
+  --motion-hero: 600ms;
+  --motion-stagger: 40ms;
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
 }
 
 /*
@@ -233,4 +245,36 @@ h3 {
 .wave-idle {
   transform-origin: bottom;
   animation: wave-idle 8s ease-in-out infinite;
+}
+
+/*
+ * The first-class reduced-motion path. Durations AND delays go to zero, so a
+ * staggered list lands complete on frame one rather than dribbling in fast.
+ * Every hidden start state lives in a keyframe's `from`, never in an element's
+ * base style, so a zero-length animation resolves to the finished look.
+ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms;
+    --motion-base: 0ms;
+    --motion-slow: 0ms;
+    --motion-hero: 0ms;
+    --motion-stagger: 0ms;
+  }
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(6px); }
+}
+
+@keyframes grow-up {
+  from { opacity: 0; transform: scaleY(0.2); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+}
+
+@keyframes skeleton-pulse {
+  50% { opacity: 0.45; }
 }

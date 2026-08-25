@@ -1,6 +1,6 @@
 ---
 name: schirmziit
-description: Use when working on Schirmziit — the family screen-time product in ~/Projects/schirmziit (Rust core + axum server, React dashboard, Android and iOS apps, Astro site). Covers what the product is and is not, the invariants a feature must not break, the test gates, and the copy rules for its four languages.
+description: Use when working on Schirmziit — the family screen-time product in ~/Projects/schirmziit (Rust core + axum server, React dashboard, Android and iOS apps, Astro site). Covers what the product is and is not, the invariants a feature must not break, the test gates, the copy rules for its four languages, and the motion bar its screens meet.
 ---
 
 # Schirmziit
@@ -112,6 +112,51 @@ Plain language, short sentences, no marketing. Say what happens, in the reader's
   Zischtig) — the same list as the site, so both agree.
 - Errors say what happened and what to do; empty states invite an action.
 
+## Feel — the app is meant to be a pleasure to open
+
+A parent who enjoys opening the dashboard opens it again, and a parent who opens it
+thinks about their child's week. Motion is not decoration here, it is what makes the
+habit stick.
+
+**Every screen that shows data ships with all four:**
+
+1. **Entry motion on the data itself.** Charts draw in (the web charts are hand-rolled
+   divs — CSS keyframes on the `--motion-*` tokens, staggered with `--motion-stagger`;
+   recharts is a dependency nothing imports), stat numbers count up from zero, list rows
+   stagger ~40 ms apart. No data grid that simply appears.
+2. **A reaction to every touch.** Press and hover states, tooltips that track the cursor,
+   the hovered bar lifting, the tab underline sliding. Nothing flips state with no
+   transition.
+3. **One deliberate flourish per screen** — the day ribbon filling hour by hour, today's
+   column glowing, an arrow morphing up or down against last week, a counter racing to
+   this week's total. One. Two flourishes compete and both lose.
+4. **Skeletons shaped like the final content**, never a spinner over the layout; data
+   crossfades in over its own skeleton.
+
+**Budget:** 200–400 ms typical, 600 ms for a hero count-up. Motion never delays reading —
+a number is legible on the first frame even mid-animation, and nothing important waits
+for an animation to end. The Astro site meets the same bar with scroll-reveal, and every
+word still renders with JS off.
+
+**Gamify the parent's habit of looking, never the child.** Delight belongs to the
+interface: motion, colour, a warm empty state, an insight worth coming back for
+("evenings are up 40 min this week"). It never scores, ranks, rewards or shames the
+person the numbers describe — no confetti for a "good" day, no streak a child can lose,
+no badge on a child. The child's own view gets the same craft and the same absence of
+judgement.
+
+**Reduced motion is a first-class path, not a fallback:** `prefers-reduced-motion`
+(Tailwind `motion-reduce:`), `@Environment(\.accessibilityReduceMotion)` on iOS,
+`Settings.Global.ANIMATOR_DURATION_SCALE == 0f` on Android. It lands on the final state
+instantly — never a half-drawn chart.
+
+**Tests assert the settled state.** Roborazzi and the iOS snapshots capture after the
+animation, so drive the Compose test clock or take the shot post-settle; vitest asserts
+final values. Loosening an assertion to accommodate an animation is the wrong fix.
+
+**The Android child agent stays motion-free** — it is a background collector and battery
+is its budget.
+
 ## Definition of done
 
 - [ ] Tests written first, and the important ones proven to fail when the code is broken
@@ -120,6 +165,8 @@ Plain language, short sentences, no marketing. Say what happens, in the reader's
 - [ ] Screenshots re-recorded **deliberately** if a screen changed, and looked at
 - [ ] Every gate green, including the platforms you did not touch
 - [ ] Deployed and verified against the running instance, or explicitly left undeployed
+- [ ] New or changed data screens: entry motion, press feedback, one flourish,
+      reduced-motion path, snapshots re-recorded on the settled state
 - [ ] Docs updated where behaviour changed (`docs/`, the platform README, `CLAUDE.md` rows)
 
 ## Where things are

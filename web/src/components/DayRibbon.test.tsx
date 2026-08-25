@@ -6,8 +6,8 @@ import { LocaleProvider } from '../i18n'
 describe('hoursFromTotals', () => {
   it('places each total in its local hour', () => {
     const hours = hoursFromTotals([
-      { start: '2026-08-21T15:00:00+02:00', screen_on_ms: 600_000, unlock_count: 2 },
-      { start: '2026-08-21T23:00:00+02:00', screen_on_ms: 300_000, unlock_count: 1 },
+      { start: '2026-08-21T15:00:00+02:00', screen_on_ms: 600_000, unlock_count: 2, background_measured: false },
+      { start: '2026-08-21T23:00:00+02:00', screen_on_ms: 300_000, unlock_count: 1, background_measured: false },
     ])
     expect(hours[15]).toBe(600_000)
     expect(hours[23]).toBe(300_000)
@@ -16,14 +16,14 @@ describe('hoursFromTotals', () => {
 
   it('sums two devices in the same hour', () => {
     const hours = hoursFromTotals([
-      { start: '2026-08-21T08:00:00+02:00', screen_on_ms: 100, unlock_count: 0 },
-      { start: '2026-08-21T08:00:00+02:00', screen_on_ms: 200, unlock_count: 0 },
+      { start: '2026-08-21T08:00:00+02:00', screen_on_ms: 100, unlock_count: 0, background_measured: false },
+      { start: '2026-08-21T08:00:00+02:00', screen_on_ms: 200, unlock_count: 0, background_measured: false },
     ])
     expect(hours[8]).toBe(300)
   })
 
   it('ignores an unparseable timestamp instead of shifting the day', () => {
-    expect(hoursFromTotals([{ start: 'nonsense', screen_on_ms: 999, unlock_count: 0 }])
+    expect(hoursFromTotals([{ start: 'nonsense', screen_on_ms: 999, unlock_count: 0, background_measured: false }])
       .every((ms) => ms === 0)).toBe(true)
   })
 })
@@ -52,7 +52,7 @@ describe('DayRibbon', () => {
   it('renders 24 hour cells with readable titles', () => {
     render(
       <LocaleProvider>
-        <DayRibbon totals={[{ start: '2026-08-21T15:00:00+02:00', screen_on_ms: 1_800_000, unlock_count: 3 }]} />
+        <DayRibbon totals={[{ start: '2026-08-21T15:00:00+02:00', screen_on_ms: 1_800_000, unlock_count: 3, background_measured: false }]} />
       </LocaleProvider>,
     )
     expect(screen.getByTitle('15:00 — 30 min')).toBeInTheDocument()

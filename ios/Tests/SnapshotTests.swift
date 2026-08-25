@@ -155,7 +155,7 @@ final class SnapshotTests: XCTestCase {
         // Fixed figures, the same fortnight `testDayStrip` uses, so the strip
         // reads identically whether a parent or a child is looking at it.
         let stripBody = """
-        {"from":"2026-08-11","to":"2026-08-24","series":[
+        {"from":"2026-08-11","to":"2026-08-24","bucket":"day","series":[
             {"package":"com.games.puzzle","label":"Puzzle","points":[
                 {"start":"2026-08-11","foreground_ms":2400000,"launch_count":3},
                 {"start":"2026-08-12","foreground_ms":3300000,"launch_count":4},
@@ -175,7 +175,7 @@ final class SnapshotTests: XCTestCase {
         """
         // Fixed figures, the same shape `testDayRibbon` uses.
         let dayBody = """
-        {"from":"2026-08-24","to":"2026-08-24","series":[
+        {"from":"2026-08-24","to":"2026-08-24","bucket":"hour","series":[
             {"package":"com.games.puzzle","label":"Puzzle","points":[
                 {"start":"2026-08-24T13:00:00+02:00","foreground_ms":3000000,"launch_count":6}]},
             {"package":"com.chat.messenger","label":"Messenger","points":[
@@ -223,14 +223,14 @@ final class SnapshotTests: XCTestCase {
     /// must never be shown a different list.
     func testMyTimeFoldsTheSubMinuteApps() async {
         let stripBody = """
-        {"from":"2026-08-11","to":"2026-08-24","series":[
+        {"from":"2026-08-11","to":"2026-08-24","bucket":"day","series":[
             {"package":"com.games.puzzle","label":"Puzzle","points":[
                 {"start":"2026-08-24","foreground_ms":3000000,"launch_count":4}
             ]}
         ],"device_totals":[]}
         """
         let dayBody = """
-        {"from":"2026-08-24","to":"2026-08-24","series":[
+        {"from":"2026-08-24","to":"2026-08-24","bucket":"hour","series":[
             {"package":"com.games.puzzle","label":"Puzzle","points":[
                 {"start":"2026-08-24T13:00:00+02:00","foreground_ms":3000000,"launch_count":6}]},
             {"package":"com.utility.check","label":"QuickCheck","points":[

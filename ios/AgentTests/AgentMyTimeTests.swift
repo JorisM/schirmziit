@@ -27,11 +27,11 @@ final class AgentMyTimeTests: XCTestCase {
     }
 
     private func stripBody() -> String {
-        #"{"from":"2026-08-11","to":"2026-08-24","series":[],"device_totals":[]}"#
+        #"{"from":"2026-08-11","to":"2026-08-24","bucket":"day","series":[],"device_totals":[]}"#
     }
 
     private func dayBody() -> String {
-        #"{"from":"2026-08-20","to":"2026-08-20","series":[],"device_totals":[]}"#
+        #"{"from":"2026-08-20","to":"2026-08-20","bucket":"hour","series":[],"device_totals":[]}"#
     }
 
     func testSelectingADayIssuesExactlyOneMoreRequestAndItIsTheHourOne() async {
@@ -147,7 +147,7 @@ final class AgentMyTimeTests: XCTestCase {
                 index: 1,
                 result: .success(HttpResponse(
                     status: 200,
-                    body: Data(#"{"from":"2026-08-11","to":"2026-08-24","series":[],"device_totals":[]}"#.utf8)
+                    body: Data(#"{"from":"2026-08-11","to":"2026-08-24","bucket":"day","series":[],"device_totals":[]}"#.utf8)
                 ))
             )
         }

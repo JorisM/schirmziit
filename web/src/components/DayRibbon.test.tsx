@@ -62,3 +62,19 @@ describe('DayRibbon', () => {
     expect(screen.getByTitle('12:00 — 0 min')).toBeInTheDocument()
   })
 })
+
+describe('the ribbon and the wave share one screen', () => {
+  it('no longer owns the screen flourish', () => {
+    // One flourish per screen. The wave took it, so the ribbon enters plainly:
+    // two things performing at once and both lose.
+    render(
+      <LocaleProvider>
+        <DayRibbon totals={[{ start: '2026-08-21T15:00:00+02:00', screen_on_ms: 1_800_000, unlock_count: 3, background_measured: true }]} />
+      </LocaleProvider>,
+    )
+    const cells = [...document.querySelectorAll('[data-ribbon-cell]')]
+    expect(cells).toHaveLength(24)
+    expect(cells.every((cell) => !cell.className.includes('animate-'))).toBe(true)
+    expect(cells.every((cell) => !(cell as HTMLElement).style.animationDelay)).toBe(true)
+  })
+})

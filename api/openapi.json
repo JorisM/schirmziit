@@ -810,7 +810,8 @@
             "format": "int64"
           },
           "start": {
-            "type": "string"
+            "type": "string",
+            "description": "RFC3339 instant for hourly buckets, `YYYY-MM-DD` for daily ones — same\ndual format as `Point.start`, and the exact field a wrong `bucket` on\nthe client side answers wrong for (`crates/core/src/selfusage.rs`)."
           },
           "unlock_count": {
             "type": "integer",

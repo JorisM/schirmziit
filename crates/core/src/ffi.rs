@@ -158,7 +158,7 @@ pub fn bucket_sessions(
         .collect();
     let unlocks: Vec<DateTime<Utc>> = unlock_millis.into_iter().map(to_utc).collect();
 
-    let buckets = bucket_hours(&mapped, &unlocks, &tz)?;
+    let buckets = bucket_hours(&mapped, &[], &unlocks, &tz)?;
 
     // One PendingHourFfi per hour: join the per-app rows with the device row.
     let mut out: Vec<PendingHourFfi> = Vec::new();

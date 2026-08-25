@@ -10,6 +10,9 @@ pub struct AppBucket {
     pub hour_start: DateTime<Utc>,
     pub foreground_ms: i64,
     pub launch_count: i32,
+    /// Media playing with the screen off. A separate measure: never summed
+    /// into `foreground_ms`, and never into `DeviceBucket::screen_on_ms`.
+    pub background_ms: i64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
@@ -57,8 +60,28 @@ fn next_local_hour(from: DateTime<Utc>, tz: Tz) -> DateTime<Utc> {
     }
 }
 
+/// Walk a session hour by local hour. Shared by foreground and background so
+/// the two can never drift on DST or half-hour zones.
+fn slice_hours(session: &Session, zone: Tz, mut on_slice: impl FnMut(DateTime<Utc>, i64, bool)) {
+    let mut cursor = session.start;
+    let mut first_slice = true;
+    while cursor < session.end {
+        let hour_start = local_hour_start(cursor, zone);
+        let hour_end = next_local_hour(hour_start, zone);
+        let slice_end = session.end.min(hour_end);
+        on_slice(
+            hour_start,
+            (slice_end - cursor).num_milliseconds(),
+            first_slice,
+        );
+        first_slice = false;
+        cursor = slice_end;
+    }
+}
+
 pub fn bucket_hours(
     sessions: &[Session],
+    background: &[Session],
     unlocks: &[DateTime<Utc>],
     tz: &str,
 ) -> Result<Buckets, CoreError> {
@@ -70,15 +93,7 @@ pub fn bucket_hours(
     let mut device: BTreeMap<DateTime<Utc>, DeviceBucket> = BTreeMap::new();
 
     for session in sessions {
-        let mut cursor = session.start;
-        let mut first_slice = true;
-
-        while cursor < session.end {
-            let hour_start = local_hour_start(cursor, zone);
-            let hour_end = next_local_hour(hour_start, zone);
-            let slice_end = session.end.min(hour_end);
-            let ms = (slice_end - cursor).num_milliseconds();
-
+        slice_hours(session, zone, |hour_start, ms, first_slice| {
             let entry = apps
                 .entry((hour_start, session.package.clone()))
                 .or_insert_with(|| AppBucket {
@@ -86,11 +101,11 @@ pub fn bucket_hours(
                     hour_start,
                     foreground_ms: 0,
                     launch_count: 0,
+                    background_ms: 0,
                 });
             entry.foreground_ms += ms;
             if first_slice {
                 entry.launch_count += 1;
-                first_slice = false;
             }
 
             device
@@ -101,9 +116,30 @@ pub fn bucket_hours(
                     unlock_count: 0,
                 })
                 .screen_on_ms += ms;
+        });
+    }
 
-            cursor = slice_end;
-        }
+    for session in background {
+        slice_hours(session, zone, |hour_start, ms, _first_slice| {
+            apps.entry((hour_start, session.package.clone()))
+                .or_insert_with(|| AppBucket {
+                    package: session.package.clone(),
+                    hour_start,
+                    foreground_ms: 0,
+                    launch_count: 0,
+                    background_ms: 0,
+                })
+                .background_ms += ms;
+
+            // The hour has to exist even with nothing else in it: bucket_sessions
+            // builds one pending hour per device row, so without this a night of
+            // listening is never sent at all.
+            device.entry(hour_start).or_insert_with(|| DeviceBucket {
+                hour_start,
+                screen_on_ms: 0,
+                unlock_count: 0,
+            });
+        });
     }
 
     for unlock in unlocks {
@@ -144,13 +180,84 @@ mod tests {
     }
 
     #[test]
+    fn background_time_is_bucketed_separately_from_foreground() {
+        let fg = [session(
+            "com.a",
+            utc(2026, 8, 21, 21, 0),
+            utc(2026, 8, 21, 21, 10),
+        )];
+        let bg = [session(
+            "com.abs",
+            utc(2026, 8, 21, 21, 20),
+            utc(2026, 8, 21, 21, 50),
+        )];
+        let b = bucket_hours(&fg, &bg, &[], "Europe/Zurich").unwrap();
+
+        let a = b.apps.iter().find(|a| a.package == "com.a").unwrap();
+        assert_eq!(a.foreground_ms, 10 * 60 * 1000);
+        assert_eq!(a.background_ms, 0);
+
+        let abs = b.apps.iter().find(|a| a.package == "com.abs").unwrap();
+        assert_eq!(abs.background_ms, 30 * 60 * 1000);
+        assert_eq!(
+            abs.foreground_ms, 0,
+            "background time is never foreground time"
+        );
+        assert_eq!(abs.launch_count, 0, "a background stretch is not a launch");
+    }
+
+    #[test]
+    fn background_time_never_reaches_screen_on_ms() {
+        let bg = [session(
+            "com.abs",
+            utc(2026, 8, 21, 22, 0),
+            utc(2026, 8, 21, 22, 30),
+        )];
+        let b = bucket_hours(&[], &bg, &[], "Europe/Zurich").unwrap();
+        assert_eq!(b.device.len(), 1);
+        assert_eq!(b.device[0].screen_on_ms, 0);
+        assert_eq!(b.device[0].unlock_count, 0);
+    }
+
+    #[test]
+    fn a_background_only_hour_still_produces_a_device_row() {
+        // Otherwise the whole hour is dropped: bucket_sessions builds one
+        // pending hour per device row, and a sleeping child has no other
+        // events at all.
+        let bg = [session(
+            "com.abs",
+            utc(2026, 8, 21, 23, 10),
+            utc(2026, 8, 21, 23, 40),
+        )];
+        let b = bucket_hours(&[], &bg, &[], "Europe/Zurich").unwrap();
+        assert_eq!(b.device.len(), 1, "the hour must exist to be sent at all");
+        assert_eq!(b.apps.len(), 1);
+    }
+
+    #[test]
+    fn a_background_stretch_spanning_hours_splits_on_the_local_hour() {
+        let bg = [session(
+            "com.abs",
+            utc(2026, 8, 21, 20, 50),
+            utc(2026, 8, 21, 22, 10),
+        )];
+        let b = bucket_hours(&[], &bg, &[], "Europe/Zurich").unwrap();
+        assert_eq!(b.apps.len(), 3);
+        assert_eq!(b.apps[0].background_ms, 10 * 60 * 1000);
+        assert_eq!(b.apps[1].background_ms, 60 * 60 * 1000);
+        assert_eq!(b.apps[2].background_ms, 10 * 60 * 1000);
+        let launches: i32 = b.apps.iter().map(|a| a.launch_count).sum();
+        assert_eq!(launches, 0);
+    }
+
+    #[test]
     fn one_session_inside_one_hour() {
         let s = [session(
             "com.a",
             utc(2026, 8, 21, 12, 10),
             utc(2026, 8, 21, 12, 25),
         )];
-        let b = bucket_hours(&s, &[], "Europe/Zurich").unwrap();
+        let b = bucket_hours(&s, &[], &[], "Europe/Zurich").unwrap();
         assert_eq!(b.apps.len(), 1);
         assert_eq!(b.apps[0].hour_start, utc(2026, 8, 21, 12, 0));
         assert_eq!(b.apps[0].foreground_ms, 15 * 60 * 1000);
@@ -164,7 +271,7 @@ mod tests {
             utc(2026, 8, 21, 12, 50),
             utc(2026, 8, 21, 14, 10),
         )];
-        let b = bucket_hours(&s, &[], "Europe/Zurich").unwrap();
+        let b = bucket_hours(&s, &[], &[], "Europe/Zurich").unwrap();
         assert_eq!(b.apps.len(), 3);
         assert_eq!(b.apps[0].foreground_ms, 10 * 60 * 1000);
         assert_eq!(b.apps[1].foreground_ms, 60 * 60 * 1000);
@@ -185,7 +292,7 @@ mod tests {
             utc(2026, 8, 21, 12, 40),
             utc(2026, 8, 21, 12, 50),
         )];
-        let b = bucket_hours(&s, &[], "Asia/Kolkata").unwrap();
+        let b = bucket_hours(&s, &[], &[], "Asia/Kolkata").unwrap();
         assert_eq!(b.apps[0].hour_start, utc(2026, 8, 21, 12, 30));
     }
 
@@ -198,7 +305,7 @@ mod tests {
             utc(2026, 3, 29, 0, 50),
             utc(2026, 3, 29, 1, 10),
         )];
-        let b = bucket_hours(&s, &[], "Europe/Zurich").unwrap();
+        let b = bucket_hours(&s, &[], &[], "Europe/Zurich").unwrap();
         let total: i64 = b.apps.iter().map(|a| a.foreground_ms).sum();
         assert_eq!(
             total,
@@ -211,6 +318,7 @@ mod tests {
     #[test]
     fn unlocks_land_in_their_local_hour() {
         let b = bucket_hours(
+            &[],
             &[],
             &[utc(2026, 8, 21, 12, 5), utc(2026, 8, 21, 12, 40)],
             "Europe/Zurich",
@@ -226,7 +334,7 @@ mod tests {
             session("com.a", utc(2026, 8, 21, 12, 0), utc(2026, 8, 21, 12, 10)),
             session("com.b", utc(2026, 8, 21, 12, 10), utc(2026, 8, 21, 12, 15)),
         ];
-        let b = bucket_hours(&s, &[], "Europe/Zurich").unwrap();
+        let b = bucket_hours(&s, &[], &[], "Europe/Zurich").unwrap();
         assert_eq!(b.device[0].screen_on_ms, 15 * 60 * 1000);
     }
 
@@ -236,7 +344,7 @@ mod tests {
             session("com.a", utc(2026, 8, 21, 12, 0), utc(2026, 8, 21, 12, 5)),
             session("com.a", utc(2026, 8, 21, 12, 30), utc(2026, 8, 21, 12, 35)),
         ];
-        let b = bucket_hours(&s, &[], "Europe/Zurich").unwrap();
+        let b = bucket_hours(&s, &[], &[], "Europe/Zurich").unwrap();
         assert_eq!(b.apps.len(), 1);
         assert_eq!(b.apps[0].foreground_ms, 10 * 60 * 1000);
         assert_eq!(b.apps[0].launch_count, 2);
@@ -245,7 +353,7 @@ mod tests {
     #[test]
     fn unknown_timezone_is_an_error_not_a_silent_utc_fallback() {
         assert_eq!(
-            bucket_hours(&[], &[], "Mars/Olympus").unwrap_err(),
+            bucket_hours(&[], &[], &[], "Mars/Olympus").unwrap_err(),
             CoreError::UnknownTimezone("Mars/Olympus".into())
         );
     }

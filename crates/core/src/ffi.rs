@@ -199,6 +199,7 @@ fn to_wire(hour: &PendingHourFfi) -> IngestHour {
         computed_at: to_utc(hour.computed_at_millis),
         screen_on_ms: hour.screen_on_ms,
         unlock_count: hour.unlock_count,
+        background_measured: false,
         apps: hour
             .apps
             .iter()
@@ -207,6 +208,7 @@ fn to_wire(hour: &PendingHourFfi) -> IngestHour {
                 label: a.label.clone(),
                 foreground_ms: a.foreground_ms,
                 launch_count: a.launch_count,
+                background_ms: 0,
             })
             .collect(),
     }

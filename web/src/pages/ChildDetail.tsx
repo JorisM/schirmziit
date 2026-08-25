@@ -8,6 +8,7 @@ import { BackgroundWave } from '../components/BackgroundWave'
 import { DayRibbon } from '../components/DayRibbon'
 import { DayStrip } from '../components/DayStrip'
 import { DeviceStatus } from '../components/DeviceStatus'
+import { RibbonSkeleton, RowsSkeleton, StripSkeleton } from '../components/Skeleton'
 import { formatDuration, useI18n } from '../i18n'
 
 type UsageResponse = components['schemas']['UsageResponse']
@@ -50,24 +51,24 @@ export function ChildDetail({ childId }: { childId: string }) {
       </p>
     )
   }
-  if (!data) return <p style={{ color: 'var(--ink-faint)' }}>…</p>
-
-  const screenTime = data.series.reduce(
-    (sum, entry) => sum + entry.points.reduce((inner, point) => inner + point.foreground_ms, 0),
-    0,
-  )
-  const unlocks = data.device_totals.reduce((sum, total) => sum + total.unlock_count, 0)
+  const screenTime =
+    data?.series.reduce(
+      (sum, entry) => sum + entry.points.reduce((inner, point) => inner + point.foreground_ms, 0),
+      0,
+    ) ?? 0
+  const unlocks = data?.device_totals.reduce((sum, total) => sum + total.unlock_count, 0) ?? 0
   // Deliberately not part of `screenTime`: media playing with the screen off
   // is a separate measure, and adding it would inflate every screen-time
   // number the parent reads.
-  const backgroundTime = data.series.reduce(
-    (sum, entry) => sum + entry.points.reduce((inner, point) => inner + point.background_ms, 0),
-    0,
-  )
+  const backgroundTime =
+    data?.series.reduce(
+      (sum, entry) => sum + entry.points.reduce((inner, point) => inner + point.background_ms, 0),
+      0,
+    ) ?? 0
   // Not "no background time" — "no device reporting this day could observe
   // it". An iPhone, or an Android phone whose family declined the grant.
-  const backgroundMeasured = data.device_totals.some((total) => total.background_measured)
-  const stamps = data.series.flatMap((entry) => entry.points.map((point) => point.start)).sort()
+  const backgroundMeasured = data?.device_totals.some((total) => total.background_measured) ?? false
+  const stamps = (data?.series ?? []).flatMap((entry) => entry.points.map((p) => p.start)).sort()
   const clock = (iso: string | undefined) =>
     iso ? new Date(iso).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }) : '—'
 
@@ -99,7 +100,7 @@ export function ChildDetail({ childId }: { childId: string }) {
         ) : strip ? (
           <DayStrip series={strip.series} from={from} to={today()} selected={selected} onSelect={setSelected} />
         ) : (
-          <p style={{ color: 'var(--ink-faint)' }}>…</p>
+          <StripSkeleton />
         )}
       </section>
 
@@ -107,39 +108,45 @@ export function ChildDetail({ childId }: { childId: string }) {
           qualify it right beneath — a big number alone invites the wrong
           conclusion when a phone has stopped reporting. */}
       <section className="card flex flex-wrap items-end justify-between gap-6 p-6">
-        <div>
-          <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
-            {selected === today() ? t.child.totalToday : t.child.selectedHeading}
-          </p>
-          <p className="font-display tabular text-5xl leading-none">
-            {formatDuration(screenTime, t)}
-          </p>
-        </div>
-        <dl className="flex gap-8 text-sm">
-          <div>
-            <dt style={{ color: 'var(--ink-faint)' }}>{t.child.unlocks}</dt>
-            <dd className="tabular text-lg">{unlocks}</dd>
-          </div>
-          {backgroundMeasured && (
+        {data ? (
+          <>
             <div>
-              <dt style={{ color: 'var(--ink-faint)' }}>{t.child.backgroundTotal}</dt>
-              <dd className="tabular text-lg" style={{ color: 'var(--background-wave)' }}>
-                {formatDuration(backgroundTime, t)}
-              </dd>
+              <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+                {selected === today() ? t.child.totalToday : t.child.selectedHeading}
+              </p>
+              <p className="font-display tabular text-5xl leading-none">
+                {formatDuration(screenTime, t)}
+              </p>
             </div>
-          )}
-          <div>
-            <dt style={{ color: 'var(--ink-faint)' }}>{t.child.firstActivity}</dt>
-            <dd className="tabular text-lg">{clock(stamps[0])}</dd>
-          </div>
-          <div>
-            <dt style={{ color: 'var(--ink-faint)' }}>{t.child.lastActivity}</dt>
-            <dd className="tabular text-lg">{clock(stamps[stamps.length - 1])}</dd>
-          </div>
-        </dl>
+            <dl className="flex gap-8 text-sm">
+              <div>
+                <dt style={{ color: 'var(--ink-faint)' }}>{t.child.unlocks}</dt>
+                <dd className="tabular text-lg">{unlocks}</dd>
+              </div>
+              {backgroundMeasured && (
+                <div>
+                  <dt style={{ color: 'var(--ink-faint)' }}>{t.child.backgroundTotal}</dt>
+                  <dd className="tabular text-lg" style={{ color: 'var(--background-wave)' }}>
+                    {formatDuration(backgroundTime, t)}
+                  </dd>
+                </div>
+              )}
+              <div>
+                <dt style={{ color: 'var(--ink-faint)' }}>{t.child.firstActivity}</dt>
+                <dd className="tabular text-lg">{clock(stamps[0])}</dd>
+              </div>
+              <div>
+                <dt style={{ color: 'var(--ink-faint)' }}>{t.child.lastActivity}</dt>
+                <dd className="tabular text-lg">{clock(stamps[stamps.length - 1])}</dd>
+              </div>
+            </dl>
+          </>
+        ) : (
+          <RowsSkeleton />
+        )}
       </section>
 
-      {screenTime === 0 && (
+      {data && screenTime === 0 && (
         <section className="card p-5">
           <p className="font-medium">{selected === today() ? t.child.noDataToday : t.child.noDataDay}</p>
           <p className="mt-1 max-w-prose text-sm" style={{ color: 'var(--ink-muted)' }}>
@@ -149,16 +156,22 @@ export function ChildDetail({ childId }: { childId: string }) {
       )}
 
       <section className="card p-6">
-        <DayRibbon totals={data.device_totals} />
-        <BackgroundWave series={data.series} measured={backgroundMeasured} />
+        {data ? (
+          <>
+            <DayRibbon totals={data.device_totals} />
+            <BackgroundWave series={data.series} measured={backgroundMeasured} />
+          </>
+        ) : (
+          <RibbonSkeleton />
+        )}
       </section>
 
       <section className="card p-6">
-        <AppBars series={data.series} />
+        {data ? <AppBars series={data.series} /> : <RowsSkeleton />}
       </section>
 
       <section className="card p-6">
-        <DeviceStatus devices={data.devices} />
+        {data ? <DeviceStatus devices={data.devices} /> : <RowsSkeleton />}
       </section>
     </div>
   )

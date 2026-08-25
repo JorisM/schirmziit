@@ -321,6 +321,11 @@ export interface components {
         DeviceTotal: {
             /** Format: int64 */
             screen_on_ms: number;
+            /**
+             * @description RFC3339 instant for hourly buckets, `YYYY-MM-DD` for daily ones — same
+             *     dual format as `Point.start`, and the exact field a wrong `bucket` on
+             *     the client side answers wrong for (`crates/core/src/selfusage.rs`).
+             */
             start: string;
             /** Format: int32 */
             unlock_count: number;

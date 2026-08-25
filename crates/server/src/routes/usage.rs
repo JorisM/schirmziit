@@ -21,6 +21,11 @@ pub fn router() -> Router<AppState> {
     Router::new()
         .route("/v1/children/{id}/usage", get(usage))
         .route("/v1/children/{id}/summary", get(summary))
+        // Same `/v1/me` prefix as `auth::routes`' `/v1/me` (the parent
+        // session), but a different identity: this one is `my_usage`, read by
+        // the calling *device* over its bearer token. Do not let a future
+        // `/v1/me/*` route inherit whichever extractor the copy-paste source
+        // happened to use — check which identity that route actually needs.
         .route("/v1/me/usage", get(my_usage))
 }
 
@@ -63,6 +68,9 @@ pub struct Series {
 
 #[derive(serde::Serialize, utoipa::ToSchema)]
 pub struct DeviceTotal {
+    /// RFC3339 instant for hourly buckets, `YYYY-MM-DD` for daily ones — same
+    /// dual format as `Point.start`, and the exact field a wrong `bucket` on
+    /// the client side answers wrong for (`crates/core/src/selfusage.rs`).
     pub start: String,
     pub screen_on_ms: i64,
     pub unlock_count: i32,

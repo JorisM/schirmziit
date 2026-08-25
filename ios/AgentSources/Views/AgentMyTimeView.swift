@@ -80,21 +80,22 @@ struct AgentMyTimeView: View {
                 }
 
                 if !day.apps.isEmpty {
-                    let split = appSplit(day.apps)
+                    // `Formatting.visibleApps` is the tested seam: the cap
+                    // applies to `shown` alone, after the split, so a brief
+                    // app already folded behind the disclosure can never be
+                    // the thing the cap pushes out.
+                    let visible = Formatting.visibleApps(appSplit(day.apps), cap: Self.appRowCap)
                     Section(header: L("child.apps")) {
-                        // The fold runs before the cap: a brief app is already
-                        // folded and costs one row for all of them, so it must
-                        // never be the thing the cap pushes out.
-                        ForEach(Array(split.shown.prefix(Self.appRowCap).enumerated()), id: \.offset) { index, entry in
+                        ForEach(Array(visible.shown.enumerated()), id: \.offset) { index, entry in
                             appRow(entry, index: index)
                         }
-                        if !split.brief.isEmpty {
+                        if !visible.brief.isEmpty {
                             DisclosureGroup {
-                                ForEach(Array(split.brief.enumerated()), id: \.offset) { index, entry in
-                                    appRow(entry, index: split.shown.count + index)
+                                ForEach(Array(visible.brief.enumerated()), id: \.offset) { index, entry in
+                                    appRow(entry, index: visible.shown.count + index)
                                 }
                             } label: {
-                                Text(verbatim: "\(S("child.apps.brief")) (\(split.brief.count))")
+                                Text(verbatim: "\(S("child.apps.brief")) (\(visible.brief.count))")
                             }
                         }
                     }

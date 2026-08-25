@@ -35,4 +35,18 @@ class AppSplitTest {
         assertTrue(split.shown.isEmpty())
         assertEquals(3, split.brief.size)
     }
+
+    @Test
+    fun `folded apps survive the cap that ranked rows do not`() {
+        // The central claim of the fold: a brief app is already folded and
+        // must never be the thing an eight-row cap crowds out. Nine ranked
+        // apps (one more than the cap) plus two glances proves the cap only
+        // ever eats into shown — capping shown+brief together would instead
+        // lose a brief app.
+        val ranked = (1..9).map { app("Ranked$it", 60_000L + it) }
+        val glances = listOf(app("Brief1", 30_000), app("Brief2", 20_000))
+        val visible = visibleApps(splitApps(ranked + glances), cap = 8)
+        assertEquals(8, visible.shown.size)
+        assertEquals(listOf("Brief1", "Brief2"), visible.brief.map { it.label })
+    }
 }

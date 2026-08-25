@@ -103,4 +103,18 @@ final class FormattingTests: XCTestCase {
         let (_, brief) = Formatting.splitApps([(label: "Blink", ms: 900)])
         XCTAssertEqual(brief.map(\.label), ["Blink"])
     }
+
+    /// The central claim of the fold: a brief app is already folded and must
+    /// never be the thing an eight-row cap crowds out. Nine ranked apps (one
+    /// more than the cap) plus two glances proves the cap only ever eats into
+    /// `shown` — if the cap were applied to `shown + brief` together instead,
+    /// this would fail by losing a brief app rather than a ranked one.
+    func testVisibleAppsCapsShownRowsButNeverTheFoldedGlances() {
+        let ranked = (1...9).map { (label: "Ranked\($0)", ms: 60_000 + $0) }
+        let brief = [(label: "Brief1", ms: 30_000), (label: "Brief2", ms: 20_000)]
+        let split = Formatting.splitApps(ranked + brief)
+        let visible = Formatting.visibleApps(split, cap: 8)
+        XCTAssertEqual(visible.shown.count, 8)
+        XCTAssertEqual(visible.brief.map(\.label), ["Brief1", "Brief2"])
+    }
 }

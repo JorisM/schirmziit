@@ -5,6 +5,9 @@ pub enum EventKind {
     Resumed { package: String },
     Paused { package: String },
     ScreenOff,
+    /// The screen became interactive. Foreground sessions ignore this — a
+    /// RESUMED always follows — but a background listening stretch ends here.
+    ScreenOn,
     Unlock,
 }
 

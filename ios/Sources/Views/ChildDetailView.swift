@@ -28,26 +28,29 @@ struct ChildDetailView: View {
                 }
             }
 
-            if let usage {
-                Section {
-                    if let stripError {
-                        // Never zero-fill in place of a failed fetch: fourteen quiet bars
-                        // read as a genuinely quiet fortnight, which is exactly the "lost
-                        // day" this app promises never to show.
-                        Label(stripError, systemImage: "exclamationmark.triangle")
-                            .foregroundStyle(Palette.urgent)
-                    } else if let strip {
-                        DayStripView(
-                            days: Formatting.dailyTotals(strip.series, from: from, to: today),
-                            selected: selected,
-                            onSelect: { selected = $0 }
-                        )
-                        .padding(.vertical, 4)
-                    } else {
-                        StripSkeleton()
-                    }
+            // Independent of `usage`: it depends only on `strip`/`stripError`, never
+            // on the selected day's data, so it must stay on screen — selection
+            // outline included — while a newly picked day's own sections skeleton.
+            Section {
+                if let stripError {
+                    // Never zero-fill in place of a failed fetch: fourteen quiet bars
+                    // read as a genuinely quiet fortnight, which is exactly the "lost
+                    // day" this app promises never to show.
+                    Label(stripError, systemImage: "exclamationmark.triangle")
+                        .foregroundStyle(Palette.urgent)
+                } else if let strip {
+                    DayStripView(
+                        days: Formatting.dailyTotals(strip.series, from: from, to: today),
+                        selected: selected,
+                        onSelect: { selected = $0 }
+                    )
+                    .padding(.vertical, 4)
+                } else {
+                    StripSkeleton()
                 }
+            }
 
+            if let usage {
                 Section {
                     VStack(alignment: .leading, spacing: 4) {
                         L(selected == today ? "child.total" : "child.selected")

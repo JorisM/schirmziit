@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import ch.jorisda.schirmziit.agent.R
 import ch.jorisda.schirmziit.agent.mytime.MyTime
 import ch.jorisda.schirmziit.agent.mytime.splitApps
+import ch.jorisda.schirmziit.agent.mytime.visibleApps
 import ch.jorisda.schirmziit.core.AppTotalFfi
 
 /**
@@ -176,16 +177,16 @@ fun MyTimeScreen(
         }
 
         if (detail.apps.isNotEmpty()) {
-            // Already ranked by the core (parse_day_detail). The fold runs
-            // before the take(8) below: a folded glance must never be pushed
-            // out by the cap, since all of them together already cost one row.
-            val split = remember(detail.apps) { splitApps(detail.apps) }
+            // `visibleApps` is the tested seam: the cap lands on `shown`
+            // alone, after the split, so a folded glance can never be the
+            // thing an eight-row cap crowds out.
+            val visible = remember(detail.apps) { visibleApps(splitApps(detail.apps), cap = 8) }
             var briefExpanded by remember(detail.apps) { mutableStateOf(false) }
             Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(stringResource(R.string.mytime_apps), style = MaterialTheme.typography.titleMedium)
-                    split.shown.take(8).forEach { app -> AppRow(app) }
-                    if (split.brief.isNotEmpty()) {
+                    visible.shown.forEach { app -> AppRow(app) }
+                    if (visible.brief.isNotEmpty()) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -203,7 +204,7 @@ fun MyTimeScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                         ) {
                             Text(
-                                "${stringResource(R.string.mytime_brief_apps)} (${split.brief.size})",
+                                "${stringResource(R.string.mytime_brief_apps)} (${visible.brief.size})",
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
@@ -211,7 +212,7 @@ fun MyTimeScreen(
                         // battery-budgeted background collector, so the fold
                         // is a plain state toggle rather than motion.
                         if (briefExpanded) {
-                            split.brief.forEach { app -> AppRow(app) }
+                            visible.brief.forEach { app -> AppRow(app) }
                         }
                     }
                 }

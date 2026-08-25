@@ -42,6 +42,21 @@ enum Formatting {
         return (shown, brief)
     }
 
+    /// What a screen actually shows: the ranked rows capped, and the folded
+    /// glances left untouched by that cap.
+    ///
+    /// Deliberately a seam of its own rather than inlined at each call site:
+    /// a brief app already costs one row for all of them together, so it must
+    /// never be the thing an eight-row cap crowds out — that only holds if the
+    /// cap is applied to `shown` alone, after the split, which is exactly what
+    /// this function does and nothing else does implicitly.
+    static func visibleApps(
+        _ split: (shown: [(label: String, ms: Int)], brief: [(label: String, ms: Int)]),
+        cap: Int
+    ) -> (shown: [(label: String, ms: Int)], brief: [(label: String, ms: Int)]) {
+        (Array(split.shown.prefix(cap)), split.brief)
+    }
+
     /// Screen-on milliseconds per local hour, 0..23.
     ///
     /// The server already applied the caller's timezone, so the local hour is the

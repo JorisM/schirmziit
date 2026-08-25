@@ -22,3 +22,15 @@ fun splitApps(apps: List<AppTotalFfi>): AppSplit {
     }
     return AppSplit(shown, brief)
 }
+
+/**
+ * What the screen actually shows: the ranked rows capped, and the folded
+ * glances left untouched by that cap.
+ *
+ * A seam of its own rather than inlined at each call site: a brief app
+ * already costs one row for all of them together, so it must never be the
+ * thing an eight-row cap crowds out — that only holds if the cap lands on
+ * `shown` alone, after the split, which is exactly what this does and
+ * nothing else does implicitly.
+ */
+fun visibleApps(split: AppSplit, cap: Int): AppSplit = AppSplit(split.shown.take(cap), split.brief)

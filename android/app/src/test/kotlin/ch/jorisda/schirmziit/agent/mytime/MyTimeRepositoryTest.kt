@@ -37,7 +37,11 @@ class MyTimeRepositoryTest {
 
         val result = repo.load("2026-08-20")
 
-        assertTrue("the screen must say it could not load", result.failed)
+        // The screen never sees this shape directly — `mergeMyTimeResult`
+        // (MyTimeUiStateTest) keeps whatever was already on screen and reads
+        // only `failed` from here — but the repository must still tell its
+        // caller plainly that there is nothing usable in this result.
+        assertTrue("the caller must be told the load failed", result.failed)
         assertTrue(result.days.isEmpty())
         assertEquals(null, result.detail)
     }
@@ -51,6 +55,30 @@ class MyTimeRepositoryTest {
         )
 
         assertTrue(repo.load("2026-08-20").failed)
+    }
+
+    /// The finding this test exists for: picking a day used to always fetch
+    /// both the strip and the detail, costing a tap two requests instead of
+    /// one — expensive on a child's phone, the surface of the three most
+    /// likely to be metered.
+    @Test
+    fun `days already on screen are reused instead of re-fetching the strip`() {
+        var fetchCalls = 0
+        val repo = MyTimeRepository(
+            fetch = { _, _, bucket, _ ->
+                fetchCalls++
+                if (bucket == "day") error("must not fetch the strip when the caller already has one")
+                "DETAIL"
+            },
+            parseStrip = { error("must not parse a strip that was never fetched") },
+            parseDetail = { detail },
+        )
+
+        val result = repo.load("2026-08-20", days = strip)
+
+        assertEquals("picking a day must cost exactly one request", 1, fetchCalls)
+        assertEquals(strip, result.days)
+        assertEquals(detail, result.detail)
     }
 
     @Test

@@ -83,6 +83,7 @@
     <string name="mytime_apps">Apps</string>
     <string name="mytime_brief_apps">Apps unter einer Minute</string>
     <string name="mytime_error">Deine Zahlen konnten nicht geladen werden. Probier es gleich nochmals.</string>
+    <string name="mytime_retry">Nochmals versuchen</string>
     <string name="mytime_empty">Für diesen Tag ist noch nichts aufgezeichnet.</string>
 
     <string name="notification_channel">Bildschirmzeit-Übermittlung</string>

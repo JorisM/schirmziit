@@ -46,12 +46,17 @@ import ch.jorisda.schirmziit.core.AppTotalFfi
 fun MyTimeScreen(
     state: MyTime,
     onSelectDay: (String) -> Unit,
+    onRetry: () -> Unit,
     onBack: () -> Unit,
     // Independent of `state`: a first load in flight is passed a placeholder
     // `MyTime` (there is nothing real to show yet), and this flag is what
     // stops that placeholder's empty `detail` from being read as a genuinely
     // empty day below.
     loading: Boolean = false,
+    // Independent of `state.failed` on purpose: the caller keeps the previous
+    // successful `state` on screen when a load fails, so `state` itself never
+    // carries `failed = true` here — this is what says a load just failed.
+    error: Boolean = false,
 ) {
     Column(
         modifier = Modifier.safeDrawingPadding().verticalScroll(rememberScrollState()).padding(20.dp),
@@ -68,15 +73,18 @@ fun MyTimeScreen(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
-        // A failed load says so and shows nothing else. Zeros would read as
-        // "you used nothing today", which is a lie told by a dropped wifi.
-        if (state.failed) {
-            Text(
-                stringResource(R.string.mytime_error),
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            return@Column
+        // The error sits above whatever is already on screen rather than
+        // replacing it: a child who taps a bar on a flaky connection should
+        // not have the screen emptied — only iOS got this right first.
+        if (error) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    stringResource(R.string.mytime_error),
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                TextButton(onClick = onRetry) { Text(stringResource(R.string.mytime_retry)) }
+            }
         }
 
         val busiest = state.days.maxOfOrNull { it.foregroundMs } ?: 0L
@@ -116,12 +124,11 @@ fun MyTimeScreen(
 
         val detail = state.detail
         if (detail == null) {
-            // `detail == null` while `loading` means "not known yet", not
-            // "nothing recorded" — showing mytime_empty here would be the
-            // same silent-zero lie the failed-state guard above exists to
-            // prevent, just told by network latency instead of a dropped
-            // connection. Say nothing rather than say something false.
-            if (!loading) {
+            // `detail == null` while `loading` means "not known yet", and while
+            // `error` means "the error line above already explains why" — in
+            // neither case is it "nothing recorded", which is what
+            // mytime_empty says. Say nothing rather than say something false.
+            if (!loading && !error) {
                 Text(stringResource(R.string.mytime_empty), style = MaterialTheme.typography.bodyMedium)
             }
             return@Column

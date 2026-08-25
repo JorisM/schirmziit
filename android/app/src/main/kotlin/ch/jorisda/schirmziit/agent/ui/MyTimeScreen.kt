@@ -20,12 +20,21 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.collapse
+import androidx.compose.ui.semantics.expand
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import ch.jorisda.schirmziit.agent.R
 import ch.jorisda.schirmziit.agent.mytime.MyTime
+import ch.jorisda.schirmziit.agent.mytime.splitApps
+import ch.jorisda.schirmziit.core.AppTotalFfi
 
 /**
  * What the child sees about themselves. Deliberately the same numbers the parent
@@ -167,22 +176,54 @@ fun MyTimeScreen(
         }
 
         if (detail.apps.isNotEmpty()) {
+            // Already ranked by the core (parse_day_detail). The fold runs
+            // before the take(8) below: a folded glance must never be pushed
+            // out by the cap, since all of them together already cost one row.
+            val split = remember(detail.apps) { splitApps(detail.apps) }
+            var briefExpanded by remember(detail.apps) { mutableStateOf(false) }
             Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(stringResource(R.string.mytime_apps), style = MaterialTheme.typography.titleMedium)
-                    // Already ranked by the core (parse_day_detail); take(8)
-                    // keeps the ranking rather than re-sorting a subset of it.
-                    detail.apps.take(8).forEach { app ->
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text(app.label)
+                    split.shown.take(8).forEach { app -> AppRow(app) }
+                    if (split.brief.isNotEmpty()) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { briefExpanded = !briefExpanded }
+                                // A bare clickable says nothing to TalkBack about
+                                // what tapping it does; the expand/collapse
+                                // actions are what make it announce the state.
+                                .semantics(mergeDescendants = true) {
+                                    if (briefExpanded) {
+                                        collapse { briefExpanded = false; true }
+                                    } else {
+                                        expand { briefExpanded = true; true }
+                                    }
+                                },
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
                             Text(
-                                StatusText.duration(app.foregroundMs),
+                                "${stringResource(R.string.mytime_brief_apps)} (${split.brief.size})",
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
+                        }
+                        // No AnimatedVisibility: this screen runs in the
+                        // battery-budgeted background collector, so the fold
+                        // is a plain state toggle rather than motion.
+                        if (briefExpanded) {
+                            split.brief.forEach { app -> AppRow(app) }
                         }
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun AppRow(app: AppTotalFfi) {
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Text(app.label)
+        Text(StatusText.duration(app.foregroundMs), color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

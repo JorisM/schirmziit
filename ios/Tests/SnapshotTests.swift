@@ -212,6 +212,38 @@ final class SnapshotTests: XCTestCase {
         assert(AgentMyTimeView(model: model), named: "my-time")
     }
 
+    /// The child's own list folds sub-minute glances exactly as the parent's
+    /// `AppRowsView` does: two glances behind the disclosure, and one that
+    /// rounds to 0 s dropped from the image entirely — a child and a parent
+    /// must never be shown a different list.
+    func testMyTimeFoldsTheSubMinuteApps() async {
+        let stripBody = """
+        {"from":"2026-08-11","to":"2026-08-24","series":[
+            {"package":"com.games.puzzle","label":"Puzzle","points":[
+                {"start":"2026-08-24","foreground_ms":3000000,"launch_count":4}
+            ]}
+        ],"device_totals":[]}
+        """
+        let dayBody = """
+        {"from":"2026-08-24","to":"2026-08-24","series":[
+            {"package":"com.games.puzzle","label":"Puzzle","points":[
+                {"start":"2026-08-24T13:00:00+02:00","foreground_ms":3000000,"launch_count":6}]},
+            {"package":"com.utility.check","label":"QuickCheck","points":[
+                {"start":"2026-08-24T14:00:00+02:00","foreground_ms":45000,"launch_count":1}]},
+            {"package":"com.weather","label":"Weather","points":[
+                {"start":"2026-08-24T15:00:00+02:00","foreground_ms":20000,"launch_count":1}]},
+            {"package":"com.system.blink","label":"Blink","points":[
+                {"start":"2026-08-24T16:00:00+02:00","foreground_ms":300,"launch_count":1}]}
+        ],"device_totals":[
+            {"start":"2026-08-24T13:00:00+02:00","screen_on_ms":3000000,"unlock_count":3}
+        ]}
+        """
+        let model = agent(credentials: paired, transport: MyTimeStub(stripBody: stripBody, dayBody: dayBody))
+        await model.loadMyTimeStrip()
+        await model.selectMyDay(model.mySelectedDay)
+        assert(AgentMyTimeView(model: model), named: "my-time-folded")
+    }
+
     // MARK: - Parent mode
 
     func testSignIn() {

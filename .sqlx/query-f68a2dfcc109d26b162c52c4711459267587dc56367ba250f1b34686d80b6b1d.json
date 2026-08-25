@@ -1,0 +1,47 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT (h.hour_start AT TIME ZONE $4)::date AS \"day!\",\n                      SUM(h.screen_on_ms)::bigint AS \"screen_on_ms!\",\n                      SUM(h.unlock_count)::int    AS \"unlock_count!\",\n                      bool_or(h.background_measured) AS \"background_measured!\"\n               FROM device_hours h\n               JOIN devices d ON d.id = h.device_id\n               WHERE d.child_id = $1 AND h.hour_start >= $2 AND h.hour_start < $3\n               GROUP BY 1 ORDER BY 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "day!",
+        "type_info": "Date",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "screen_on_ms!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "unlock_count!",
+        "type_info": "Int4",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
+        "name": "background_measured!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz",
+        "Timestamptz",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "f68a2dfcc109d26b162c52c4711459267587dc56367ba250f1b34686d80b6b1d"
+}

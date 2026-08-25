@@ -272,3 +272,152 @@ async fn a_parent_session_is_not_a_device(pool: PgPool) {
         .await;
     assert_eq!(response.status, StatusCode::UNAUTHORIZED);
 }
+
+/// One hour of pure background listening: screen off, nothing in front.
+async fn seed_background(pool: &PgPool, device_id: &str, hour: u32, package: &str, ms: i64) {
+    let hour_start = Utc.with_ymd_and_hms(2026, 8, 20, hour, 0, 0).unwrap();
+    let id: uuid::Uuid = device_id.parse().unwrap();
+    sqlx::query(
+        "INSERT INTO usage_hours
+           (device_id, package, hour_start, tz, foreground_ms, launch_count, computed_at,
+            background_ms)
+         VALUES ($1, $2, $3, 'Europe/Zurich', 0, 0, now(), $4)",
+    )
+    .bind(id)
+    .bind(package)
+    .bind(hour_start)
+    .bind(ms)
+    .execute(pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO device_hours
+           (device_id, hour_start, tz, screen_on_ms, unlock_count, computed_at,
+            background_measured)
+         VALUES ($1, $2, 'Europe/Zurich', 0, 0, now(), true)
+         ON CONFLICT (device_id, hour_start) DO NOTHING",
+    )
+    .bind(id)
+    .bind(hour_start)
+    .execute(pool)
+    .await
+    .unwrap();
+}
+
+#[sqlx::test]
+async fn usage_returns_background_ms_per_hour_and_the_measured_flag(pool: PgPool) {
+    let (app, child_id, device_id) = setup(pool.clone()).await;
+    // 20:00 UTC is 22:00 local. 22:00 UTC would be 00:00 the next local day and
+    // fall outside the range this request asks for.
+    seed_background(&pool, &device_id, 20, "com.abs", 1_800_000).await;
+
+    let response = app
+        .get(&format!(
+            "/v1/children/{child_id}/usage?from=2026-08-20&to=2026-08-20&bucket=hour&tz=Europe/Zurich"
+        ))
+        .await;
+
+    assert_eq!(response.status, StatusCode::OK, "{}", response.json);
+    let point = &response.json["series"][0]["points"][0];
+    assert_eq!(point["background_ms"], 1_800_000);
+    assert_eq!(point["foreground_ms"], 0);
+    let total = &response.json["device_totals"][0];
+    assert_eq!(total["background_measured"], true);
+    assert_eq!(
+        total["screen_on_ms"], 0,
+        "background time must never reach screen_on_ms"
+    );
+}
+
+#[sqlx::test]
+async fn the_day_bucket_sums_background_ms_too(pool: PgPool) {
+    let (app, child_id, device_id) = setup(pool.clone()).await;
+    seed_background(&pool, &device_id, 22, "com.abs", 1_800_000).await;
+    seed_background(&pool, &device_id, 23, "com.abs", 600_000).await;
+
+    let response = app
+        .get(&format!(
+            "/v1/children/{child_id}/usage?from=2026-08-20&to=2026-08-21&bucket=day&tz=Europe/Zurich"
+        ))
+        .await;
+
+    let total: i64 = response.json["series"][0]["points"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|p| p["background_ms"].as_i64().unwrap())
+        .sum();
+    assert_eq!(total, 2_400_000);
+    assert_eq!(
+        response.json["device_totals"][0]["background_measured"],
+        true
+    );
+}
+
+#[sqlx::test]
+async fn a_device_that_cannot_measure_reports_false_not_zero(pool: PgPool) {
+    // An iPhone, or an Android phone whose family declined the grant: the flag
+    // is what lets the dashboard say "not measured" instead of "nothing played".
+    let (app, child_id, device_id) = setup(pool.clone()).await;
+    seed(&pool, &device_id, 10, "com.a", 60_000).await;
+
+    let response = app
+        .get(&format!(
+            "/v1/children/{child_id}/usage?from=2026-08-20&to=2026-08-20&bucket=hour&tz=Europe/Zurich"
+        ))
+        .await;
+
+    assert_eq!(
+        response.json["device_totals"][0]["background_measured"],
+        false
+    );
+    assert_eq!(response.json["series"][0]["points"][0]["background_ms"], 0);
+}
+
+#[sqlx::test]
+async fn one_measuring_device_makes_the_hour_measured(pool: PgPool) {
+    // A child with an Android phone and an iPad. bool_or, not bool_and: the
+    // phone's answer is the one that carries information.
+    let app = TestApp::registered(pool.clone()).await;
+    let child_id = app.create_child("Kid").await;
+    let (android, _) = app.enroll_device(&child_id).await;
+    let (ipad, _) = app.enroll_device(&child_id).await;
+    seed_background(&pool, &android, 20, "com.abs", 600_000).await;
+    seed(&pool, &ipad, 20, "com.ipad", 60_000).await;
+
+    let response = app
+        .get(&format!(
+            "/v1/children/{child_id}/usage?from=2026-08-20&to=2026-08-20&bucket=hour&tz=Europe/Zurich"
+        ))
+        .await;
+
+    assert_eq!(
+        response.json["device_totals"][0]["background_measured"],
+        true
+    );
+}
+
+#[sqlx::test]
+async fn me_usage_shows_the_child_the_same_background_numbers(pool: PgPool) {
+    // The child sees what the parent sees. One query path is the promise.
+    let app = TestApp::registered(pool.clone()).await;
+    let child_id = app.create_child("Kid").await;
+    let (device_id, token) = app.enroll_device(&child_id).await;
+    seed_background(&pool, &device_id, 20, "com.abs", 1_800_000).await;
+
+    let response = app
+        .get_as_device(
+            "/v1/me/usage?from=2026-08-20&to=2026-08-20&bucket=hour&tz=Europe/Zurich",
+            &token,
+        )
+        .await;
+
+    assert_eq!(
+        response.json["series"][0]["points"][0]["background_ms"],
+        1_800_000
+    );
+    assert_eq!(
+        response.json["device_totals"][0]["background_measured"],
+        true
+    );
+}

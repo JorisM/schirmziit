@@ -334,6 +334,7 @@ pub fn apply_ingest_result(
 pub struct DayTotalFfi {
     pub day: String,
     pub foreground_ms: i64,
+    pub background_ms: i64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
@@ -341,6 +342,7 @@ pub struct AppTotalFfi {
     pub package: String,
     pub label: String,
     pub foreground_ms: i64,
+    pub background_ms: i64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
@@ -349,6 +351,11 @@ pub struct DayDetailFfi {
     pub unlock_count: i32,
     pub hours: Vec<i64>,
     pub apps: Vec<AppTotalFfi>,
+    pub background_ms: i64,
+    pub background_hours: Vec<i64>,
+    /// False means no device reporting this day could observe background
+    /// playback. Render it as "not measured", never as a zero.
+    pub background_measured: bool,
 }
 
 #[uniffi::export]
@@ -358,6 +365,7 @@ pub fn parse_day_strip(json: String) -> Result<Vec<DayTotalFfi>, FfiError> {
         .map(|d| DayTotalFfi {
             day: d.day,
             foreground_ms: d.foreground_ms,
+            background_ms: d.background_ms,
         })
         .collect())
 }
@@ -369,6 +377,9 @@ pub fn parse_day_detail(json: String) -> Result<DayDetailFfi, FfiError> {
         total_ms: detail.total_ms,
         unlock_count: detail.unlock_count,
         hours: detail.hours,
+        background_ms: detail.background_ms,
+        background_hours: detail.background_hours,
+        background_measured: detail.background_measured,
         apps: detail
             .apps
             .into_iter()
@@ -376,6 +387,7 @@ pub fn parse_day_detail(json: String) -> Result<DayDetailFfi, FfiError> {
                 package: a.package,
                 label: a.label,
                 foreground_ms: a.foreground_ms,
+                background_ms: a.background_ms,
             })
             .collect(),
     })

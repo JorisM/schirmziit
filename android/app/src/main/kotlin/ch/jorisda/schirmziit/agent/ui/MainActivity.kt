@@ -23,6 +23,8 @@ import ch.jorisda.schirmziit.agent.R
 import ch.jorisda.schirmziit.agent.core.CoreBridge
 import ch.jorisda.schirmziit.agent.mytime.MyTime
 import ch.jorisda.schirmziit.agent.mytime.MyTimeRepository
+import ch.jorisda.schirmziit.agent.mytime.mergeMyTimeResult
+import ch.jorisda.schirmziit.agent.mytime.myTimeLoadArgs
 import ch.jorisda.schirmziit.agent.notify.OngoingNotice
 import ch.jorisda.schirmziit.agent.pair.EnrollPayloadParser
 import ch.jorisda.schirmziit.agent.pair.PairingScreen
@@ -112,12 +114,24 @@ class MainActivity : ComponentActivity() {
                     // exists to prevent, just arriving through latency instead
                     // of a dropped connection.
                     var myTimeLoading by remember { mutableStateOf(false) }
+                    // True only while the most recent load failed. Kept apart
+                    // from `myTime` for the same reason as iOS: a failure must
+                    // add an error line beside the previous numbers, never
+                    // replace them — `mergeMyTimeResult` is what enforces that.
+                    var myTimeError by remember { mutableStateOf(false) }
 
                     fun loadMyTime(selected: String) {
                         val token = settings.deviceToken ?: return
                         val baseUrl = settings.baseUrl ?: return
                         pendingDay = selected
                         myTimeLoading = true
+                        // Fixed [today-13, today] window (anchored to today, never to
+                        // whichever day was tapped — the earlier bug let the window
+                        // slide with every tap) and the strip already on screen reused
+                        // rather than re-fetched: picking a day is the one request that
+                        // tap is allowed to cost. Read here, on the composition thread,
+                        // not inside the IO block below.
+                        val args = myTimeLoadArgs(java.time.LocalDate.now(), myTime?.days)
                         scope.launch {
                             // The client does network work and Room forbids
                             // main-thread access; both belong off-thread, and
@@ -132,14 +146,21 @@ class MainActivity : ComponentActivity() {
                                     },
                                     parseStrip = bridge::dayStrip,
                                     parseDetail = bridge::dayDetail,
-                                ).load(selected, tz = java.util.TimeZone.getDefault().id)
+                                ).load(
+                                    selected,
+                                    from = args.from,
+                                    days = args.days,
+                                    tz = java.util.TimeZone.getDefault().id,
+                                )
                             }
                             // A tap for a different day may have landed while
                             // this one was in flight; only the response for
                             // the day still pending is allowed to win, and
                             // only it may clear the loading flag.
                             if (pendingDay == selected) {
-                                myTime = result
+                                val merged = mergeMyTimeResult(myTime, result)
+                                myTime = merged.myTime
+                                myTimeError = merged.error
                                 myTimeLoading = false
                             }
                         }
@@ -160,8 +181,13 @@ class MainActivity : ComponentActivity() {
                                 java.time.LocalDate.now().toString(),
                                 failed = false,
                             ),
+                            error = myTimeError,
                             loading = myTimeLoading,
                             onSelectDay = ::loadMyTime,
+                            // Re-issues the load for the day that was pending when
+                            // it failed — the same day whose numbers, if any, are
+                            // still on screen underneath the error line.
+                            onRetry = { pendingDay?.let(::loadMyTime) },
                             onBack = { showMyTime = false },
                         )
 

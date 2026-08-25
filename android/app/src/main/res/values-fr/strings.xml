@@ -82,6 +82,7 @@
     <string name="mytime_apps">Applis</string>
     <string name="mytime_brief_apps">Applis de moins d\'une minute</string>
     <string name="mytime_error">Tes chiffres n\'ont pas pu être chargés. Réessaie dans un instant.</string>
+    <string name="mytime_retry">Réessayer</string>
     <string name="mytime_empty">Rien n\'est encore enregistré pour ce jour.</string>
 
     <string name="notification_channel">Transmission du temps d’écran</string>

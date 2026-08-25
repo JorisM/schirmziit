@@ -7,9 +7,10 @@ data class MyTime(
     val days: List<DayTotalFfi>,
     val detail: DayDetailFfi?,
     val selected: String,
-    /// True when anything went wrong. The screen says so rather than drawing
-    /// zeros: "you used nothing today" is the wrong thing to tell a child
-    /// because the wifi was off.
+    /// True when anything went wrong — never drawn as zeros: "you used
+    /// nothing today" is the wrong thing to tell a child because the wifi was
+    /// off. `mergeMyTimeResult` is what turns this into what the screen shows:
+    /// the numbers already on screen, plus an error line.
     val failed: Boolean,
 )
 
@@ -28,11 +29,21 @@ class MyTimeRepository(
     // method's try/catch runs, so a malformed `selected` would throw past the
     // guarantee this repository exists to give — resolve it inside the try
     // instead, where every parse failure lands on `failed = true`.
-    fun load(selected: String, from: String? = null, tz: String = "UTC"): MyTime = try {
-        val resolvedFrom = from ?: minus13(selected)
-        val days = parseStrip(fetch(resolvedFrom, selected, "day", tz))
+    //
+    // `days`: the strip already on screen, if the caller has one. Picking a
+    // day is the one request that tap is allowed to cost — a child's phone is
+    // the surface of the three (web, iOS parent, iOS child) most likely to be
+    // metered, and re-fetching thirteen days nobody asked about is the
+    // expensive half of the screen doing the least work.
+    fun load(
+        selected: String,
+        from: String? = null,
+        days: List<DayTotalFfi>? = null,
+        tz: String = "UTC",
+    ): MyTime = try {
+        val resolvedDays = days ?: parseStrip(fetch(from ?: minus13(selected), selected, "day", tz))
         val detail = parseDetail(fetch(selected, selected, "hour", tz))
-        MyTime(days, detail, selected, failed = false)
+        MyTime(resolvedDays, detail, selected, failed = false)
     } catch (error: Exception) {
         MyTime(emptyList(), null, selected, failed = true)
     }

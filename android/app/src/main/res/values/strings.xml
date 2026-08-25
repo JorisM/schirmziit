@@ -87,6 +87,7 @@
     <string name="mytime_apps">Apps</string>
     <string name="mytime_brief_apps">Apps under a minute</string>
     <string name="mytime_error">Could not load your numbers. Try again in a moment.</string>
+    <string name="mytime_retry">Try again</string>
     <string name="mytime_empty">Nothing recorded for this day yet.</string>
 
     <string name="notification_channel">Screen-time reporting</string>

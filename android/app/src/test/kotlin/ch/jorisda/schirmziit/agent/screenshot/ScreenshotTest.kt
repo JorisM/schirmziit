@@ -108,25 +108,25 @@ class ScreenshotTest {
     @Test
     @Config(qualifiers = LIGHT_DE)
     fun `my time screen in german`() {
-        shoot("mytime-de-light") { MyTimeScreen(state = sampleMyTime(), onSelectDay = {}, onBack = {}) }
+        shoot("mytime-de-light") { MyTimeScreen(state = sampleMyTime(), onSelectDay = {}, onRetry = {}, onBack = {}) }
     }
 
     @Test
     @Config(qualifiers = DARK_DE)
     fun `my time screen in german dark`() {
-        shoot("mytime-de-dark") { MyTimeScreen(state = sampleMyTime(), onSelectDay = {}, onBack = {}) }
+        shoot("mytime-de-dark") { MyTimeScreen(state = sampleMyTime(), onSelectDay = {}, onRetry = {}, onBack = {}) }
     }
 
     @Test
     @Config(qualifiers = LIGHT_EN)
     fun `my time screen could not load`() {
-        // Real days and a real detail underneath the failure, not an already-
-        // empty MyTime: the point of this image is proving the failed-state
-        // guard *suppresses* that data, which a `MyTime(emptyList(), ...)`
-        // input can't demonstrate — there'd be nothing to suppress, so the
-        // image would look identical whether the guard fired or not.
+        // Real days and a real detail alongside the error, not an already-empty
+        // MyTime: the point of this image is proving a failed retry adds the
+        // error line without wiping the previous numbers out from under it —
+        // a `MyTime(emptyList(), ...)` input couldn't show that, since there'd
+        // be nothing left on screen either way.
         shoot("mytime-failed-en-light") {
-            MyTimeScreen(state = sampleMyTime().copy(failed = true), onSelectDay = {}, onBack = {})
+            MyTimeScreen(state = sampleMyTime(), error = true, onSelectDay = {}, onRetry = {}, onBack = {})
         }
     }
 

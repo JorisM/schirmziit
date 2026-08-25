@@ -318,6 +318,42 @@ final class SnapshotTests: XCTestCase {
         )
     }
 
+    /// The strip's `Section` sits outside `if let usage` in `ChildDetailView`, so
+    /// a day switch — which clears `usage` while the new day's request is in
+    /// flight — must never touch it: the parent's finger is still on the bar
+    /// they just tapped, and only the sections below (hero, ribbon, apps,
+    /// devices) fall back to a skeleton. `usage` and `strip` are non-private
+    /// `@State` precisely so this in-between state can be constructed directly
+    /// here, since `ChildDetailView` has no `@Observable` model a stub transport
+    /// could drive asynchronously (see `ChildDetailViewTests`).
+    func testChildDetailDaySwitching() {
+        // Same fixed fortnight shape as `testDayStrip`, but keyed to the real
+        // last-fourteen-days window `ChildDetailView` computes from `Date()` —
+        // fixed calendar dates would drift out of that window and silently
+        // render an all-zero strip the day after this test was written.
+        let minutes = [40, 55, 0, 12, 90, 65, 30, 45, 20, 100, 15, 60, 35, 50]
+        let start = Calendar.current.date(byAdding: .day, value: -13, to: Date()) ?? Date()
+        let points = minutes.enumerated().map { offset, value -> UsagePoint in
+            let day = Calendar.current.date(byAdding: .day, value: offset, to: start) ?? start
+            return UsagePoint(
+                start: ISO8601DateFormatter.dayOnly.string(from: day),
+                foregroundMs: value * 60_000,
+                launchCount: value > 0 ? 1 : 0
+            )
+        }
+        let strip = UsageResponse(
+            childId: "kid", from: "irrelevant", to: "irrelevant", bucket: "day", tz: "Europe/Zurich",
+            devices: [], series: [UsageSeries(package: "com.games.puzzle", label: "Puzzle", points: points)],
+            deviceTotals: []
+        )
+        let view = ChildDetailView(
+            child: ChildResponse(id: "kid", displayName: "Mira", todayMs: 0),
+            client: ApiClient(),
+            strip: strip
+        )
+        assert(view, named: "child-detail-day-switching")
+    }
+
     // MARK: - The four languages, where the text is longest
 
     func testHelpInEveryLanguage() {

@@ -116,8 +116,10 @@ enum Formatting {
         }
         for entry in series {
             for point in entry.points where totals[point.start] != nil {
-                // Only days the response claimed: a stray point must not land
-                // on day one and invent a busy Monday.
+                // A stray point is already excluded from the result either way —
+                // `order.map` below only ever reads the valid day keys — so this
+                // guard's actual job is just keeping `totals` itself from
+                // growing a bogus entry via `default: 0`.
                 totals[point.start, default: 0] += point.foregroundMs
             }
         }

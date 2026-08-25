@@ -55,6 +55,7 @@ struct TotalWire {
 struct UsageWire {
     from: NaiveDate,
     to: NaiveDate,
+    bucket: String,
     series: Vec<SeriesWire>,
     device_totals: Vec<TotalWire>,
 }
@@ -66,6 +67,17 @@ fn parse(json: &str) -> Result<UsageWire, CoreError> {
 /// Day totals for every day in the response's own range, zero-filled.
 pub fn day_strip(json: &str) -> Result<Vec<DayTotal>, CoreError> {
     let wire = parse(json)?;
+    // A `bucket=hour` body zero-fills fine (the loop below never inspects a
+    // point unless its `start` matches a day key) and would return an
+    // all-zero fortnight with `Ok` — this module exists so that becomes an
+    // error instead, since a wrong bucket is exactly the kind of typo it is
+    // meant to catch.
+    if wire.bucket != "day" {
+        return Err(CoreError::BadJson(format!(
+            "day_strip needs a bucket=day body, got bucket={}",
+            wire.bucket
+        )));
+    }
 
     let mut totals: BTreeMap<String, i64> = BTreeMap::new();
     let mut day = wire.from;
@@ -93,6 +105,16 @@ pub fn day_strip(json: &str) -> Result<Vec<DayTotal>, CoreError> {
 /// One local day: the hour ribbon, the ranked apps, the unlocks.
 pub fn day_detail(json: &str) -> Result<DayDetail, CoreError> {
     let wire = parse(json)?;
+    // A `bucket=day` body is the worse of the two wrong-bucket cases:
+    // `local_hour` rejects every date-only stamp so the ribbon comes back
+    // flat, and `total_ms` quietly presents a whole fortnight's total as one
+    // day's. Reject it here instead.
+    if wire.bucket != "hour" {
+        return Err(CoreError::BadJson(format!(
+            "day_detail needs a bucket=hour body, got bucket={}",
+            wire.bucket
+        )));
+    }
 
     let mut hours = vec![0i64; 24];
     let mut unlock_count = 0;
@@ -196,6 +218,31 @@ mod tests {
         assert_eq!(
             days[0].foreground_ms, 0,
             "an out-of-range day must not land on day one"
+        );
+    }
+
+    #[test]
+    fn day_strip_rejects_an_hour_bucket_body() {
+        // Same shape day_response() decodes fine on, just the wrong bucket — a
+        // one-character typo in either agent's `bucket` argument must not put
+        // "you used nothing" on a child's screen with no exception anywhere.
+        let json = day_response().replace("\"bucket\": \"day\"", "\"bucket\": \"hour\"");
+        let err = day_strip(&json);
+        assert!(
+            err.is_err(),
+            "a bucket=hour body must not silently zero-fill as a day strip"
+        );
+    }
+
+    #[test]
+    fn day_detail_rejects_a_day_bucket_body() {
+        // day_response() is already bucket=day, with date-only `start` stamps —
+        // exactly the body day_detail must refuse rather than read as a flat
+        // ribbon and a fortnight's total presented as one day's.
+        let err = day_detail(day_response());
+        assert!(
+            err.is_err(),
+            "a bucket=day body must not silently present a fortnight as one day"
         );
     }
 

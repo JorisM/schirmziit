@@ -19,7 +19,7 @@ function toTotals(series: UsageResponse['series']): AppTotal[] {
 }
 
 /** Totals, biggest first, with everything past `keep` folded into one row. */
-function foldTail(totals: AppTotal[], keep = 6): AppTotal[] {
+export function foldTail(totals: AppTotal[], keep = 6): AppTotal[] {
   if (totals.length <= keep) return totals
 
   const rest = totals.slice(keep - 1)
@@ -32,11 +32,6 @@ function foldTail(totals: AppTotal[], keep = 6): AppTotal[] {
       launches: rest.reduce((sum, app) => sum + app.launches, 0),
     },
   ]
-}
-
-/** Per-app totals, biggest first, with everything past `keep` folded into one row. */
-export function foldApps(series: UsageResponse['series'], keep = 6): AppTotal[] {
-  return foldTail(toTotals(series), keep)
 }
 
 /**
@@ -66,7 +61,7 @@ export function AppBars({ series }: { series: UsageResponse['series'] }) {
   const { t } = useI18n()
   const [briefOpen, setBriefOpen] = useState(false)
 
-  // The sub-minute split runs first, on the raw totals — foldApps then folds
+  // The sub-minute split runs first, on the raw totals — foldTail then folds
   // only the `shown` tail, so a sub-minute app can never land inside both
   // its own brief row and the __other__ row's sum.
   const { shown, brief } = splitApps(toTotals(series))

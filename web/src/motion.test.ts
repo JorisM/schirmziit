@@ -21,10 +21,17 @@ describe('useCountUp', () => {
 
   it('renders the final value on the FIRST frame under reduced motion', () => {
     setReducedMotion(true)
-    const { result } = renderHook(() => useCountUp(4_200))
-    // Not "after an effect settles": an animation that starts and is then
-    // cancelled is still motion, and the rule is that it never starts.
-    expect(result.current).toBe(4_200)
+    const seen: number[] = []
+    renderHook(() => {
+      const value = useCountUp(4_200)
+      seen.push(value)
+      return value
+    })
+    // seen[0] is what the first render committed, before any effect ran.
+    // `result.current` cannot prove this: React flushes the effect before the
+    // assertion, so a hook that starts at 0 and corrects itself in an effect
+    // passes while still painting one frame of motion the setting forbids.
+    expect(seen[0]).toBe(4_200)
   })
 
   it('starts below the target and lands exactly on it', async () => {

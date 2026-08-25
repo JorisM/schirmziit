@@ -802,9 +802,14 @@
         "required": [
           "start",
           "screen_on_ms",
-          "unlock_count"
+          "unlock_count",
+          "background_measured"
         ],
         "properties": {
+          "background_measured": {
+            "type": "boolean",
+            "description": "False means none of the devices reporting this bucket could observe\nbackground playback — not that nothing played. Rendering the two alike\nis the silent zero this product exists not to tell."
+          },
           "screen_on_ms": {
             "type": "integer",
             "format": "int64"
@@ -888,6 +893,11 @@
           "launch_count"
         ],
         "properties": {
+          "background_ms": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Media playing with the screen off. Separate from `foreground_ms` in\nevery consumer; never add the two together."
+          },
           "foreground_ms": {
             "type": "integer",
             "format": "int64"
@@ -920,6 +930,10 @@
             "items": {
               "$ref": "#/components/schemas/IngestApp"
             }
+          },
+          "background_measured": {
+            "type": "boolean",
+            "description": "Whether this device could observe background playback at all for this\nhour. `false` is NOT \"nothing played\" — it is \"we do not know\": an\niPhone, or an Android phone whose family declined the grant."
           },
           "computed_at": {
             "type": "string",
@@ -1026,9 +1040,15 @@
         "required": [
           "start",
           "foreground_ms",
-          "launch_count"
+          "launch_count",
+          "background_ms"
         ],
         "properties": {
+          "background_ms": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Media playing with the screen off. A separate measure: never add it to\n`foreground_ms`, on any surface."
+          },
           "foreground_ms": {
             "type": "integer",
             "format": "int64"

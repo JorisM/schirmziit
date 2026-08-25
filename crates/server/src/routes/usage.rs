@@ -57,6 +57,9 @@ pub struct Point {
     pub start: String,
     pub foreground_ms: i64,
     pub launch_count: i32,
+    /// Media playing with the screen off. A separate measure: never add it to
+    /// `foreground_ms`, on any surface.
+    pub background_ms: i64,
 }
 
 #[derive(serde::Serialize, utoipa::ToSchema)]
@@ -74,6 +77,10 @@ pub struct DeviceTotal {
     pub start: String,
     pub screen_on_ms: i64,
     pub unlock_count: i32,
+    /// False means none of the devices reporting this bucket could observe
+    /// background playback — not that nothing played. Rendering the two alike
+    /// is the silent zero this product exists not to tell.
+    pub background_measured: bool,
 }
 
 #[derive(serde::Serialize, utoipa::ToSchema)]
@@ -246,7 +253,8 @@ pub(crate) async fn usage_for_child(
                       COALESCE(p.label, u.package) AS "label!",
                       (u.hour_start AT TIME ZONE $4)::date AS "day!",
                       SUM(u.foreground_ms)::bigint AS "ms!",
-                      SUM(u.launch_count)::int      AS "launches!"
+                      SUM(u.launch_count)::int      AS "launches!",
+                      SUM(u.background_ms)::bigint  AS "background_ms!"
                FROM usage_hours u
                JOIN devices d ON d.id = u.device_id
                LEFT JOIN packages p ON p.family_id = d.family_id AND p.package = u.package
@@ -270,6 +278,7 @@ pub(crate) async fn usage_for_child(
                     start: r.day.to_string(),
                     foreground_ms: r.ms,
                     launch_count: r.launches,
+                    background_ms: r.background_ms,
                 });
         }
     } else {
@@ -278,7 +287,8 @@ pub(crate) async fn usage_for_child(
                       COALESCE(p.label, u.package) AS "label!",
                       u.hour_start,
                       SUM(u.foreground_ms)::bigint AS "ms!",
-                      SUM(u.launch_count)::int      AS "launches!"
+                      SUM(u.launch_count)::int      AS "launches!",
+                      SUM(u.background_ms)::bigint  AS "background_ms!"
                FROM usage_hours u
                JOIN devices d ON d.id = u.device_id
                LEFT JOIN packages p ON p.family_id = d.family_id AND p.package = u.package
@@ -301,6 +311,7 @@ pub(crate) async fn usage_for_child(
                     start: r.hour_start.with_timezone(&tz).to_rfc3339(),
                     foreground_ms: r.ms,
                     launch_count: r.launches,
+                    background_ms: r.background_ms,
                 });
         }
     }
@@ -311,7 +322,8 @@ pub(crate) async fn usage_for_child(
         let rows = sqlx::query!(
             r#"SELECT (h.hour_start AT TIME ZONE $4)::date AS "day!",
                       SUM(h.screen_on_ms)::bigint AS "screen_on_ms!",
-                      SUM(h.unlock_count)::int    AS "unlock_count!"
+                      SUM(h.unlock_count)::int    AS "unlock_count!",
+                      bool_or(h.background_measured) AS "background_measured!"
                FROM device_hours h
                JOIN devices d ON d.id = h.device_id
                WHERE d.child_id = $1 AND h.hour_start >= $2 AND h.hour_start < $3
@@ -328,13 +340,17 @@ pub(crate) async fn usage_for_child(
                 start: t.day.to_string(),
                 screen_on_ms: t.screen_on_ms,
                 unlock_count: t.unlock_count,
+                // bool_or, not bool_and: one Android phone alongside an iPad
+                // still makes the day observable.
+                background_measured: t.background_measured,
             })
             .collect()
     } else {
         let rows = sqlx::query!(
             r#"SELECT h.hour_start,
                       SUM(h.screen_on_ms)::bigint AS "screen_on_ms!",
-                      SUM(h.unlock_count)::int    AS "unlock_count!"
+                      SUM(h.unlock_count)::int    AS "unlock_count!",
+                      bool_or(h.background_measured) AS "background_measured!"
                FROM device_hours h
                JOIN devices d ON d.id = h.device_id
                WHERE d.child_id = $1 AND h.hour_start >= $2 AND h.hour_start < $3
@@ -350,6 +366,7 @@ pub(crate) async fn usage_for_child(
                 start: t.hour_start.with_timezone(&tz).to_rfc3339(),
                 screen_on_ms: t.screen_on_ms,
                 unlock_count: t.unlock_count,
+                background_measured: t.background_measured,
             })
             .collect()
     };

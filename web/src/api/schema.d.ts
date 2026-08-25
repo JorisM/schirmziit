@@ -319,6 +319,12 @@ export interface components {
             stale: boolean;
         };
         DeviceTotal: {
+            /**
+             * @description False means none of the devices reporting this bucket could observe
+             *     background playback — not that nothing played. Rendering the two alike
+             *     is the silent zero this product exists not to tell.
+             */
+            background_measured: boolean;
             /** Format: int64 */
             screen_on_ms: number;
             /**
@@ -349,6 +355,12 @@ export interface components {
             qr_payload: string;
         };
         IngestApp: {
+            /**
+             * Format: int64
+             * @description Media playing with the screen off. Separate from `foreground_ms` in
+             *     every consumer; never add the two together.
+             */
+            background_ms?: number;
             /** Format: int64 */
             foreground_ms: number;
             label: string;
@@ -358,6 +370,12 @@ export interface components {
         };
         IngestHour: {
             apps: components["schemas"]["IngestApp"][];
+            /**
+             * @description Whether this device could observe background playback at all for this
+             *     hour. `false` is NOT "nothing played" — it is "we do not know": an
+             *     iPhone, or an Android phone whose family declined the grant.
+             */
+            background_measured?: boolean;
             /** Format: date-time */
             computed_at: string;
             /** Format: date-time */
@@ -390,6 +408,12 @@ export interface components {
             display_name: string;
         };
         Point: {
+            /**
+             * Format: int64
+             * @description Media playing with the screen off. A separate measure: never add it to
+             *     `foreground_ms`, on any surface.
+             */
+            background_ms: number;
             /** Format: int64 */
             foreground_ms: number;
             /** Format: int32 */

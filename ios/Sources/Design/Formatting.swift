@@ -42,6 +42,13 @@ enum Formatting {
         return (shown, brief)
     }
 
+    /// Ranked rows shown on their own, past which the rest is still reachable
+    /// but not worth a full screen of rows. The one cap `AppRowsView` (parent)
+    /// and `AgentMyTimeView` (child) both apply — a shared constant, not each
+    /// carrying its own "same cap" comment that a future edit to one side
+    /// could silently stop being true of the other.
+    static let appRowCap = 8
+
     /// What a screen actually shows: the ranked rows capped, and the folded
     /// glances left untouched by that cap.
     ///

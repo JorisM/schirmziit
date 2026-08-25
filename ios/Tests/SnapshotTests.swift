@@ -208,7 +208,12 @@ final class SnapshotTests: XCTestCase {
         // inside the settle wait, and a view that mounts twice (light, dark)
         // must show the real numbers both times, not a spinner half of the time.
         await model.loadMyTimeStrip()
-        await model.selectMyDay(model.mySelectedDay)
+        // An explicit day, not model.mySelectedDay (today's real date):
+        // the fixture above is dated 2026-08-24, and comparing against the
+        // wall clock meant no bar drew its selection outline from 2026-08-25
+        // on — the diff stayed under tolerance and the test stopped proving
+        // the selection renders at all.
+        await model.selectMyDay("2026-08-24")
         assert(AgentMyTimeView(model: model), named: "my-time")
     }
 
@@ -240,7 +245,12 @@ final class SnapshotTests: XCTestCase {
         """
         let model = agent(credentials: paired, transport: MyTimeStub(stripBody: stripBody, dayBody: dayBody))
         await model.loadMyTimeStrip()
-        await model.selectMyDay(model.mySelectedDay)
+        // An explicit day, not model.mySelectedDay (today's real date):
+        // the fixture above is dated 2026-08-24, and comparing against the
+        // wall clock meant no bar drew its selection outline from 2026-08-25
+        // on — the diff stayed under tolerance and the test stopped proving
+        // the selection renders at all.
+        await model.selectMyDay("2026-08-24")
         assert(AgentMyTimeView(model: model), named: "my-time-folded")
     }
 

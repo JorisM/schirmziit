@@ -36,7 +36,6 @@ export type Strings = {
   }
 
   child: {
-    todayHeading: string
     totalToday: string
     unlocks: string
     firstActivity: string
@@ -59,6 +58,7 @@ export type Strings = {
     tableView: string
     historyTitle: string
     historyHelp: string
+    historyError: string
     today: string
     selectedHeading: string
   }

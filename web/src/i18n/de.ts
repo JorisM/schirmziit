@@ -34,7 +34,6 @@ export const de: Strings = {
   },
 
   child: {
-    todayHeading: 'Heute',
     totalToday: 'Bildschirmzeit heute',
     unlocks: 'Mal entsperrt',
     firstActivity: 'Zuerst benutzt',
@@ -59,6 +58,7 @@ export const de: Strings = {
     tableView: 'Als Tabelle',
     historyTitle: 'Die letzten 14 Tage',
     historyHelp: 'Jeder Balken ist ein Tag. Tippe einen an, um ihn genauer anzuschauen.',
+    historyError: 'Die letzten 14 Tage konnten nicht geladen werden. Versuch es gleich nochmal.',
     today: 'Heute',
     selectedHeading: 'Ausgewählter Tag',
   },

@@ -13,7 +13,12 @@ type UsageResponse = components['schemas']['UsageResponse']
 
 const STRIP_DAYS = 14
 
-const today = () => new Date().toISOString().slice(0, 10)
+// `toISOString` reports the UTC date, which is still "yesterday" for the first
+// couple of hours after local midnight in Zurich (UTC+1/+2) — exactly the
+// window a teenager is most likely checking. `en-CA` formats as YYYY-MM-DD in
+// the viewer's own zone, matching the `tz=` this page already sends the server.
+export const localToday = (now: Date = new Date()) => now.toLocaleDateString('en-CA')
+const today = () => localToday()
 const daysAgo = (n: number) => {
   const date = new Date(`${today()}T00:00:00Z`)
   date.setUTCDate(date.getUTCDate() - n)
@@ -26,7 +31,7 @@ export function ChildDetail({ childId }: { childId: string }) {
   const [selected, setSelected] = useState(today())
   const from = daysAgo(STRIP_DAYS - 1)
 
-  const { data: strip } = useSWR<UsageResponse>(
+  const { data: strip, error: stripError } = useSWR<UsageResponse>(
     `/v1/children/${childId}/usage?from=${from}&to=${today()}&bucket=day&tz=${localZone()}`,
     api.get,
     { refreshInterval: 60_000, shouldRetryOnError: false },
@@ -73,13 +78,18 @@ export function ChildDetail({ childId }: { childId: string }) {
       </header>
 
       <section className="card p-6">
-        <DayStrip
-          series={strip?.series ?? []}
-          from={from}
-          to={today()}
-          selected={selected}
-          onSelect={setSelected}
-        />
+        {stripError ? (
+          // Never zero-fill in place of a failed fetch: fourteen grey bars read as a
+          // genuinely quiet fortnight, which is exactly the "lost day" this app promises
+          // never to show.
+          <p role="alert" style={{ color: 'var(--urgent)' }}>
+            {t.child.historyError}
+          </p>
+        ) : strip ? (
+          <DayStrip series={strip.series} from={from} to={today()} selected={selected} onSelect={setSelected} />
+        ) : (
+          <p style={{ color: 'var(--ink-faint)' }}>…</p>
+        )}
       </section>
 
       {/* The hero is the day's total in the display face, with the numbers that

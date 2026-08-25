@@ -29,7 +29,6 @@
 "child.ribbon.busy" = "viel";
 "child.history.title" = "Die letzten 14 Tage";
 "child.history.help" = "Jeder Balken ist ein Tag. Tippe einen an, um ihn genauer anzuschauen.";
-"child.today" = "Heute";
 "child.selected" = "Ausgewählter Tag";
 
 "devices.title" = "Geräte";

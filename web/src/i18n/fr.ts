@@ -33,7 +33,6 @@ export const fr: Strings = {
   },
 
   child: {
-    todayHeading: 'Aujourd’hui',
     totalToday: 'Temps d’écran aujourd’hui',
     unlocks: 'déverrouillages',
     firstActivity: 'Première utilisation',
@@ -59,7 +58,8 @@ export const fr: Strings = {
     tableView: 'En tableau',
     historyTitle: 'Les 14 derniers jours',
     historyHelp: 'Chaque barre est un jour. Touche une barre pour voir ce jour en détail.',
-    today: "Aujourd'hui",
+    historyError: 'Impossible de charger les 14 derniers jours. Réessaie dans un instant.',
+    today: 'Aujourd’hui',
     selectedHeading: 'Jour sélectionné',
   },
 

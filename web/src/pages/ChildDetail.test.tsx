@@ -3,9 +3,9 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { SWRConfig } from 'swr'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { ChildDetail } from './ChildDetail'
+import { ChildDetail, localToday } from './ChildDetail'
 import { LocaleProvider, locales } from '../i18n'
-import { api } from '../api/client'
+import { ApiError, api } from '../api/client'
 
 const usage = (bucket: string, from: string, to: string) => ({
   child_id: 'kid', from, to, bucket, tz: 'Europe/Zurich',
@@ -29,6 +29,21 @@ const renderPage = () =>
   )
 
 afterEach(() => vi.restoreAllMocks())
+
+describe('localToday', () => {
+  afterEach(() => vi.unstubAllEnvs())
+
+  it('answers the local calendar date, not UTC, just after Zurich midnight', () => {
+    vi.stubEnv('TZ', 'Europe/Zurich')
+    // 2026-08-24T22:30:00Z is 2026-08-25T00:30 in Zurich (CEST, UTC+2) — local
+    // midnight has passed, but the UTC date has not rolled over yet.
+    const now = new Date('2026-08-24T22:30:00Z')
+    expect(localToday(now)).toBe('2026-08-25')
+    // The bug this guards against, made explicit: the UTC answer for the same
+    // instant is still "yesterday".
+    expect(now.toISOString().slice(0, 10)).toBe('2026-08-24')
+  })
+})
 
 describe('ChildDetail', () => {
   it('asks for fourteen days of totals and one day of hours', async () => {
@@ -94,5 +109,22 @@ describe('ChildDetail', () => {
 
     await waitFor(() => expect(screen.getByText(locales.en.child.noDataDay)).toBeInTheDocument())
     expect(screen.queryByText(locales.en.child.noDataToday)).not.toBeInTheDocument()
+  })
+
+  it('shows an error instead of a fortnight of zero bars when the strip request fails', async () => {
+    vi.spyOn(api, 'get').mockImplementation(async (path: string) => {
+      const url = new URL(path, 'http://x')
+      const bucket = url.searchParams.get('bucket')!
+      if (bucket === 'day')
+        throw new ApiError({ type: 'about:blank', title: 'error', status: 502, detail: 'bad gateway' })
+      return usage(bucket, url.searchParams.get('from')!, url.searchParams.get('to')!) as never
+    })
+
+    renderPage()
+
+    await waitFor(() => expect(screen.getByText(locales.en.child.historyError)).toBeInTheDocument())
+    // A fortnight of zero-height bars must never render in place of the error —
+    // that is indistinguishable from a genuinely quiet fortnight.
+    expect(screen.queryByText(locales.en.child.historyTitle)).not.toBeInTheDocument()
   })
 })

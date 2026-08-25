@@ -29,7 +29,6 @@
 "child.ribbon.busy" = "intenso";
 "child.history.title" = "Gli ultimi 14 giorni";
 "child.history.help" = "Ogni barra è un giorno. Tocca una barra per vedere quel giorno nel dettaglio.";
-"child.today" = "Oggi";
 "child.selected" = "Giorno selezionato";
 
 "devices.title" = "Dispositivi";

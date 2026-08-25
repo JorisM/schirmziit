@@ -55,7 +55,7 @@ struct AgentMyTimeView: View {
                 // and looked like a broken button, not a busy one.
                 .disabled(model.myTimeBusy)
                 if model.myTimeBusy {
-                    ProgressView().padding(.vertical, 4)
+                    StripSkeleton().padding(.vertical, 4)
                 }
             }
 
@@ -114,7 +114,8 @@ struct AgentMyTimeView: View {
                     }
                 }
             } else if model.myTimeError == nil {
-                Section { ProgressView() }
+                Section { RowsSkeleton() }
+                Section { RibbonSkeleton() }
             }
 
             Section {

@@ -44,7 +44,7 @@ struct ChildDetailView: View {
                         )
                         .padding(.vertical, 4)
                     } else {
-                        ProgressView()
+                        StripSkeleton()
                     }
                 }
 
@@ -114,7 +114,8 @@ struct ChildDetailView: View {
                     }
                 }
             } else if errorText == nil {
-                Section { ProgressView() }
+                Section { RowsSkeleton() }
+                Section { RibbonSkeleton() }
             }
         }
         .navigationTitle(child.displayName)
@@ -131,6 +132,10 @@ struct ChildDetailView: View {
     // methods assign into `@State`, which SwiftUI expects touched from there.
     @MainActor
     func load() async {
+        // The previous day's numbers must not sit under a new day's heading while
+        // the request is in flight: tapping Tuesday and reading Monday's total is
+        // a wrong number on screen, not merely a slow one.
+        usage = nil
         switch await Self.fetchUsage(client: client, childId: child.id, from: selected, to: selected, bucket: "hour") {
         case .success(let response):
             usage = response

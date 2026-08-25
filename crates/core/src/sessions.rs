@@ -54,6 +54,7 @@ pub fn stitch(
                 }
             }
             EventKind::ScreenOff => close(&mut out, event.at),
+            EventKind::ScreenOn => {}
             EventKind::Unlock => out.unlocks.push(event.at),
         }
     }
@@ -188,6 +189,32 @@ mod tests {
             }]
         );
         assert_eq!(r.open, None);
+    }
+
+    #[test]
+    fn screen_on_does_not_change_foreground_totals_or_unlocks() {
+        // ScreenOn exists for background listening only. If it ever closes a
+        // foreground session, every screen-time number in the product shifts.
+        let without = stitch(
+            None,
+            &[resumed(10, 0, "com.a"), paused(10, 5, "com.a")],
+            t(11, 0),
+        );
+        let with_on = stitch(
+            None,
+            &[
+                resumed(10, 0, "com.a"),
+                RawEvent {
+                    at: t(10, 2),
+                    kind: EventKind::ScreenOn,
+                },
+                paused(10, 5, "com.a"),
+            ],
+            t(11, 0),
+        );
+        assert_eq!(with_on.sessions, without.sessions);
+        assert_eq!(with_on.open, without.open);
+        assert_eq!(with_on.unlocks, without.unlocks);
     }
 
     #[test]

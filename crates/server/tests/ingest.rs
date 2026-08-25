@@ -255,3 +255,104 @@ async fn a_device_hits_its_own_rate_limit(pool: PgPool) {
         "expected a 429 within 130 requests"
     );
 }
+
+/// One hour that is nothing but background listening: screen off, audiobook on.
+fn background_payload(hour: u32, background_ms: i64, measured: bool) -> serde_json::Value {
+    let hour_start = Utc.with_ymd_and_hms(2026, 8, 20, hour, 0, 0).unwrap();
+    serde_json::json!({
+        "schema": 1,
+        "device_time": Utc::now(),
+        "hours": [{
+            "hour_start": hour_start,
+            "tz": "Europe/Zurich",
+            "computed_at": hour_start + Duration::minutes(60),
+            "screen_on_ms": 0,
+            "unlock_count": 0,
+            "background_measured": measured,
+            "apps": [{
+                "package": "com.audiobookshelf.app", "label": "Audiobookshelf",
+                "foreground_ms": 0, "launch_count": 0, "background_ms": background_ms
+            }]
+        }]
+    })
+}
+
+#[sqlx::test]
+async fn ingest_stores_background_ms_and_the_measured_flag(pool: PgPool) {
+    let e = enrolled(pool.clone()).await;
+    let response = e
+        .app
+        .post_as_device(
+            "/v1/ingest",
+            &e.token,
+            background_payload(22, 1_800_000, true),
+        )
+        .await;
+    assert_eq!(response.status, StatusCode::OK);
+
+    let ms: i64 = sqlx::query_scalar("SELECT background_ms FROM usage_hours")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(ms, 1_800_000);
+
+    let screen_on: i64 = sqlx::query_scalar("SELECT screen_on_ms FROM device_hours")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(screen_on, 0, "background time must never reach screen time");
+
+    let measured: bool = sqlx::query_scalar("SELECT background_measured FROM device_hours")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert!(measured);
+}
+
+#[sqlx::test]
+async fn an_older_agent_without_the_fields_is_still_accepted(pool: PgPool) {
+    // Agents in the field predate these fields. Their hours must keep arriving,
+    // and must land as "not measured" rather than as a measured zero.
+    let e = enrolled(pool.clone()).await;
+    let response = e
+        .app
+        .post_as_device("/v1/ingest", &e.token, payload(10, 60_000, 60))
+        .await;
+    assert_eq!(response.status, StatusCode::OK);
+
+    let measured: bool = sqlx::query_scalar("SELECT background_measured FROM device_hours")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert!(!measured, "absent must mean unknown, never a measured zero");
+
+    let ms: i64 = sqlx::query_scalar("SELECT background_ms FROM usage_hours")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(ms, 0);
+}
+
+#[sqlx::test]
+async fn a_newer_recomputation_replaces_background_ms_too(pool: PgPool) {
+    // The upsert is replace-if-newer. A column left out of the SET clause keeps
+    // a stale value forever while its neighbours update.
+    let e = enrolled(pool.clone()).await;
+    e.app
+        .post_as_device(
+            "/v1/ingest",
+            &e.token,
+            background_payload(22, 600_000, true),
+        )
+        .await;
+    let hour_start = Utc.with_ymd_and_hms(2026, 8, 20, 22, 0, 0).unwrap();
+    let mut later = background_payload(22, 1_800_000, true);
+    later["hours"][0]["computed_at"] = serde_json::json!(hour_start + Duration::minutes(120));
+    e.app.post_as_device("/v1/ingest", &e.token, later).await;
+
+    let ms: i64 = sqlx::query_scalar("SELECT background_ms FROM usage_hours")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(ms, 1_800_000);
+}

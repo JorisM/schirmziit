@@ -21,16 +21,18 @@ pub async fn run_once(
     // The day comes from each row's own tz: a day means what the child
     // experienced, even if they were travelling.
     let folded = sqlx::query!(
-        r#"INSERT INTO usage_days (child_id, package, day, foreground_ms, launch_count)
+        r#"INSERT INTO usage_days
+             (child_id, package, day, foreground_ms, launch_count, background_ms)
            SELECT d.child_id, u.package, (u.hour_start AT TIME ZONE u.tz)::date,
-                  SUM(u.foreground_ms), SUM(u.launch_count)
+                  SUM(u.foreground_ms), SUM(u.launch_count), SUM(u.background_ms)
            FROM usage_hours u
            JOIN devices d ON d.id = u.device_id
            WHERE u.hour_start < $1
            GROUP BY d.child_id, u.package, 3
            ON CONFLICT (child_id, package, day) DO UPDATE
              SET foreground_ms = usage_days.foreground_ms + EXCLUDED.foreground_ms,
-                 launch_count  = usage_days.launch_count  + EXCLUDED.launch_count"#,
+                 launch_count  = usage_days.launch_count  + EXCLUDED.launch_count,
+                 background_ms = usage_days.background_ms + EXCLUDED.background_ms"#,
         cutoff
     )
     .execute(&mut *tx)

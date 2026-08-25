@@ -83,7 +83,7 @@
     <string name="mytime_brief_apps">App sotto un minuto</string>
     <string name="mytime_error">Non è stato possibile caricare i tuoi numeri. Riprova tra un momento.</string>
     <string name="mytime_retry">Riprova</string>
-    <string name="mytime_empty">Per questo giorno non c\'è ancora nulla.</string>
+    <string name="mytime_empty">Per questo giorno non c’è ancora nulla.</string>
 
     <string name="notification_channel">Trasmissione del tempo di schermo</string>
     <string name="notification_channel_description">Mostra che questo telefono trasmette il tempo di schermo a un genitore.</string>

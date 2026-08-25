@@ -10,6 +10,9 @@ use std::collections::BTreeMap;
 pub struct DayTotal {
     pub day: String,
     pub foreground_ms: i64,
+    /// Media playing with the screen off. A separate measure; adding it to
+    /// `foreground_ms` would inflate every screen-time number in the app.
+    pub background_ms: i64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -17,6 +20,7 @@ pub struct AppTotal {
     pub package: String,
     pub label: String,
     pub foreground_ms: i64,
+    pub background_ms: i64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -27,6 +31,12 @@ pub struct DayDetail {
     pub hours: Vec<i64>,
     /// Ranked, longest first.
     pub apps: Vec<AppTotal>,
+    pub background_ms: i64,
+    /// 24 entries, background-listening milliseconds by local hour.
+    pub background_hours: Vec<i64>,
+    /// False means no device reporting this day could observe background
+    /// playback — not that nothing played. The two must never render alike.
+    pub background_measured: bool,
 }
 
 // Unknown fields are ignored on purpose: the server may grow a field before an
@@ -35,6 +45,8 @@ pub struct DayDetail {
 struct PointWire {
     start: String,
     foreground_ms: i64,
+    #[serde(default)]
+    background_ms: i64,
 }
 
 #[derive(serde::Deserialize)]
@@ -49,6 +61,10 @@ struct TotalWire {
     start: String,
     screen_on_ms: i64,
     unlock_count: i32,
+    /// Absent on a server older than this field — which is "we do not know",
+    /// the same as a device that cannot measure it.
+    #[serde(default)]
+    background_measured: bool,
 }
 
 #[derive(serde::Deserialize)]
@@ -79,10 +95,10 @@ pub fn day_strip(json: &str) -> Result<Vec<DayTotal>, CoreError> {
         )));
     }
 
-    let mut totals: BTreeMap<String, i64> = BTreeMap::new();
+    let mut totals: BTreeMap<String, (i64, i64)> = BTreeMap::new();
     let mut day = wire.from;
     while day <= wire.to {
-        totals.insert(day.to_string(), 0);
+        totals.insert(day.to_string(), (0, 0));
         day += Duration::days(1);
     }
 
@@ -91,14 +107,19 @@ pub fn day_strip(json: &str) -> Result<Vec<DayTotal>, CoreError> {
             // Only days the response claimed. A stray point must not land on
             // day one, which would read as a busy Monday that never happened.
             if let Some(slot) = totals.get_mut(&point.start) {
-                *slot += point.foreground_ms;
+                slot.0 += point.foreground_ms;
+                slot.1 += point.background_ms;
             }
         }
     }
 
     Ok(totals
         .into_iter()
-        .map(|(day, foreground_ms)| DayTotal { day, foreground_ms })
+        .map(|(day, (foreground_ms, background_ms))| DayTotal {
+            day,
+            foreground_ms,
+            background_ms,
+        })
         .collect())
 }
 
@@ -118,12 +139,25 @@ pub fn day_detail(json: &str) -> Result<DayDetail, CoreError> {
 
     let mut hours = vec![0i64; 24];
     let mut unlock_count = 0;
+    // A child can carry an Android phone and an iPad. If any device could
+    // observe background playback, the day is measured.
+    let mut background_measured = false;
     for total in &wire.device_totals {
         unlock_count += total.unlock_count;
+        background_measured |= total.background_measured;
         // Parsed strictly. Slicing blindly turns an unparseable value into hour
         // 0 and paints midnight usage that never happened.
         if let Some(hour) = local_hour(&total.start) {
             hours[hour] += total.screen_on_ms;
+        }
+    }
+
+    let mut background_hours = vec![0i64; 24];
+    for series in &wire.series {
+        for point in &series.points {
+            if let Some(hour) = local_hour(&point.start) {
+                background_hours[hour] += point.background_ms;
+            }
         }
     }
 
@@ -134,6 +168,7 @@ pub fn day_detail(json: &str) -> Result<DayDetail, CoreError> {
             package: s.package.clone(),
             label: s.label.clone(),
             foreground_ms: s.points.iter().map(|p| p.foreground_ms).sum(),
+            background_ms: s.points.iter().map(|p| p.background_ms).sum(),
         })
         .collect();
     apps.sort_by(|a, b| {
@@ -143,9 +178,14 @@ pub fn day_detail(json: &str) -> Result<DayDetail, CoreError> {
     });
 
     Ok(DayDetail {
+        // Foreground only. Background listening is reported next to this
+        // number, never inside it.
         total_ms: apps.iter().map(|a| a.foreground_ms).sum(),
         unlock_count,
         hours,
+        background_ms: apps.iter().map(|a| a.background_ms).sum(),
+        background_hours,
+        background_measured,
         apps,
     })
 }
@@ -188,21 +228,24 @@ mod tests {
             days[0],
             DayTotal {
                 day: "2026-08-18".into(),
-                foreground_ms: 60_000
+                foreground_ms: 60_000,
+                background_ms: 0,
             }
         );
         assert_eq!(
             days[1],
             DayTotal {
                 day: "2026-08-19".into(),
-                foreground_ms: 0
+                foreground_ms: 0,
+                background_ms: 0,
             }
         );
         assert_eq!(
             days[2],
             DayTotal {
                 day: "2026-08-20".into(),
-                foreground_ms: 30_000
+                foreground_ms: 30_000,
+                background_ms: 0,
             }
         );
     }
@@ -296,5 +339,58 @@ mod tests {
             detail.hours[0], 0,
             "phantom midnight usage is the bug the ribbon exists to reveal"
         );
+    }
+
+    #[test]
+    fn day_detail_reads_background_hours_and_the_measured_flag() {
+        let json = r#"{"child_id":"c","from":"2026-08-20","to":"2026-08-20","bucket":"hour",
+          "tz":"Europe/Zurich","devices":[],
+          "series":[{"package":"com.abs","label":"Audiobookshelf","points":[
+             {"start":"2026-08-20T22:00:00+02:00","foreground_ms":0,"launch_count":0,"background_ms":1800000}]}],
+          "device_totals":[
+             {"start":"2026-08-20T22:00:00+02:00","screen_on_ms":0,"unlock_count":0,"background_measured":true}]}"#;
+        let d = day_detail(json).unwrap();
+        assert_eq!(d.background_ms, 1_800_000);
+        assert_eq!(d.background_hours[22], 1_800_000);
+        assert_eq!(d.total_ms, 0, "background time is not screen time");
+        assert!(d.background_measured);
+        assert_eq!(d.apps[0].background_ms, 1_800_000);
+    }
+
+    #[test]
+    fn a_response_without_the_fields_reads_as_not_measured() {
+        // An agent talking to a server that predates the field must not show
+        // the child a measured zero.
+        let json = r#"{"child_id":"c","from":"2026-08-20","to":"2026-08-20","bucket":"hour",
+          "tz":"Europe/Zurich","devices":[],"series":[],
+          "device_totals":[{"start":"2026-08-20T22:00:00+02:00","screen_on_ms":0,"unlock_count":0}]}"#;
+        let d = day_detail(json).unwrap();
+        assert!(!d.background_measured);
+        assert_eq!(d.background_ms, 0);
+        assert_eq!(d.background_hours, vec![0i64; 24]);
+    }
+
+    #[test]
+    fn one_measuring_device_makes_the_day_measured() {
+        // Android phone plus iPad: the iPad cannot report it, the phone can.
+        let json = r#"{"child_id":"c","from":"2026-08-20","to":"2026-08-20","bucket":"hour",
+          "tz":"Europe/Zurich","devices":[],"series":[],
+          "device_totals":[
+            {"start":"2026-08-20T21:00:00+02:00","screen_on_ms":0,"unlock_count":0,"background_measured":false},
+            {"start":"2026-08-20T22:00:00+02:00","screen_on_ms":0,"unlock_count":0,"background_measured":true}]}"#;
+        assert!(day_detail(json).unwrap().background_measured);
+    }
+
+    #[test]
+    fn the_day_strip_sums_background_per_day() {
+        let json = r#"{"child_id":"c","from":"2026-08-19","to":"2026-08-20","bucket":"day",
+          "tz":"Europe/Zurich","devices":[],
+          "series":[{"package":"com.abs","label":"A","points":[
+             {"start":"2026-08-20","foreground_ms":0,"launch_count":0,"background_ms":900000}]}],
+          "device_totals":[]}"#;
+        let days = day_strip(json).unwrap();
+        assert_eq!(days[0].background_ms, 0);
+        assert_eq!(days[1].background_ms, 900_000);
+        assert_eq!(days[1].foreground_ms, 0);
     }
 }

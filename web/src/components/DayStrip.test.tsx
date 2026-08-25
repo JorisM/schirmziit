@@ -4,11 +4,11 @@ import { describe, expect, it, vi } from 'vitest'
 import { DayStrip, dailyTotals } from './DayStrip'
 import { LocaleProvider } from '../i18n'
 
-const series = (points: { start: string; foreground_ms: number }[]) => [
+const series = (points: { start: string; foreground_ms: number; background_ms?: number }[]) => [
   {
     package: 'com.a',
     label: 'A',
-    points: points.map((p) => ({ ...p, launch_count: 1 })),
+    points: points.map((p) => ({ background_ms: 0, ...p, launch_count: 1 })),
   },
 ]
 
@@ -37,7 +37,7 @@ describe('dailyTotals', () => {
   it('sums every app for the same day', () => {
     const two = [
       ...series([{ start: '2026-08-18', foreground_ms: 60_000 }]),
-      { package: 'com.b', label: 'B', points: [{ start: '2026-08-18', foreground_ms: 15_000, launch_count: 1 }] },
+      { package: 'com.b', label: 'B', points: [{ start: '2026-08-18', foreground_ms: 15_000, launch_count: 1, background_ms: 0 }] },
     ]
     expect(dailyTotals(two, '2026-08-18', '2026-08-18')).toEqual([{ day: '2026-08-18', ms: 75_000 }])
   })

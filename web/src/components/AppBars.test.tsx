@@ -8,6 +8,7 @@ const point = (ms: number, launches = 1) => ({
   start: '2026-08-21T15:00:00+02:00',
   foreground_ms: ms,
   launch_count: launches,
+  background_ms: 0,
 })
 
 const series = (count: number) =>

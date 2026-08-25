@@ -10,7 +10,7 @@ import { ApiError, api } from '../api/client'
 const usage = (bucket: string, from: string, to: string) => ({
   child_id: 'kid', from, to, bucket, tz: 'Europe/Zurich',
   devices: [], device_totals: [],
-  series: [{ package: 'com.a', label: 'A', points: [{ start: bucket === 'day' ? to : `${to}T10:00:00+02:00`, foreground_ms: 60_000, launch_count: 1 }] }],
+  series: [{ package: 'com.a', label: 'A', points: [{ start: bucket === 'day' ? to : `${to}T10:00:00+02:00`, foreground_ms: 60_000, launch_count: 1, background_ms: 0 }] }],
 })
 
 // SWR's default cache is a module-level singleton. Both tests build the same

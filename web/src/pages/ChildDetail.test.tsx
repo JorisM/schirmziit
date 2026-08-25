@@ -128,3 +128,74 @@ describe('ChildDetail', () => {
     expect(screen.queryByText(locales.en.child.historyTitle)).not.toBeInTheDocument()
   })
 })
+
+describe('background listening', () => {
+  const withBackground = (
+    background_ms: number,
+    background_measured: boolean,
+    foreground_ms = 0,
+  ) => {
+    const body = (bucket: string, from: string, to: string) => ({
+      child_id: 'kid',
+      from,
+      to,
+      bucket,
+      tz: 'Europe/Zurich',
+      devices: [],
+      device_totals: [
+        {
+          start: bucket === 'day' ? to : `${to}T22:00:00+02:00`,
+          screen_on_ms: foreground_ms,
+          unlock_count: 0,
+          background_measured,
+        },
+      ],
+      series: [
+        {
+          package: 'com.abs',
+          label: 'Audiobookshelf',
+          points: [
+            {
+              start: bucket === 'day' ? to : `${to}T22:00:00+02:00`,
+              foreground_ms,
+              launch_count: 0,
+              background_ms,
+            },
+          ],
+        },
+      ],
+    })
+    vi.spyOn(api, 'get').mockImplementation(async (path: string) => {
+      const url = new URL(path, 'http://x')
+      return body(
+        url.searchParams.get('bucket')!,
+        url.searchParams.get('from')!,
+        url.searchParams.get('to')!,
+      ) as never
+    })
+  }
+
+  it('shows background listening as its own total, never inside screen time', async () => {
+    // A full hour of audiobook with the screen off must not move the
+    // screen-time hero by a single minute.
+    withBackground(3_600_000, true)
+    renderPage()
+
+    await waitFor(() =>
+      expect(screen.getByText(locales.en.child.backgroundTotal)).toBeInTheDocument(),
+    )
+    expect(screen.getByText('0 min')).toBeInTheDocument()
+    expect(screen.getByText('1 h')).toBeInTheDocument()
+  })
+
+  it('reports not measured when no device could observe it', async () => {
+    withBackground(0, false, 60_000)
+    renderPage()
+
+    await waitFor(() =>
+      expect(screen.getByText(locales.en.child.backgroundNotMeasured)).toBeInTheDocument(),
+    )
+    // No total either: there is no number to report when nothing measured it.
+    expect(screen.queryByText(locales.en.child.backgroundTotal)).toBeNull()
+  })
+})

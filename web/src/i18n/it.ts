@@ -33,7 +33,6 @@ export const it: Strings = {
   },
 
   child: {
-    todayHeading: 'Oggi',
     totalToday: 'Tempo di schermo oggi',
     unlocks: 'sblocci',
     firstActivity: 'Primo utilizzo',
@@ -59,6 +58,7 @@ export const it: Strings = {
     tableView: 'Come tabella',
     historyTitle: 'Gli ultimi 14 giorni',
     historyHelp: 'Ogni barra è un giorno. Tocca una barra per vedere quel giorno nel dettaglio.',
+    historyError: 'Non è stato possibile caricare gli ultimi 14 giorni. Riprova tra poco.',
     today: 'Oggi',
     selectedHeading: 'Giorno selezionato',
   },

@@ -29,7 +29,6 @@
 "child.ribbon.busy" = "busy";
 "child.history.title" = "The last 14 days";
 "child.history.help" = "Each bar is one day. Tap a bar to look at that day.";
-"child.today" = "Today";
 "child.selected" = "Selected day";
 
 "devices.title" = "Devices";

@@ -10,9 +10,18 @@ import org.robolectric.RobolectricTestRunner
 class EnrollPayloadTest {
     @Test
     fun `parses the dashboard payload`() {
-        val parsed = EnrollPayloadParser.parse("schirmziit://enroll?url=https://schirmziit.jorisda.ch&code=9XWVQQKF")
-        assertEquals("https://schirmziit.jorisda.ch", parsed?.baseUrl)
+        val parsed = EnrollPayloadParser.parse("schirmziit://enroll?url=https://api.schirmziit.ch&code=9XWVQQKF")
+        assertEquals("https://api.schirmziit.ch", parsed?.baseUrl)
         assertEquals("9XWVQQKF", parsed?.code)
+    }
+
+    @Test
+    fun `the shipped default server is one this build would accept`() {
+        // The default is prefilled into the same field a scanned QR fills, so a
+        // default the parser rejects (plain http, a typo'd scheme) would ship an
+        // app that cannot pair until the parent retypes the URL by hand.
+        val parsed = EnrollPayloadParser.parse("schirmziit://enroll?url=$DEFAULT_SERVER&code=9XWVQQKF")
+        assertEquals(DEFAULT_SERVER, parsed?.baseUrl)
     }
 
     @Test
@@ -34,7 +43,7 @@ class EnrollPayloadTest {
 
     @Test
     fun `rejects a foreign scheme`() {
-        assertNull(EnrollPayloadParser.parse("https://schirmziit.jorisda.ch/?code=9XWVQQKF"))
+        assertNull(EnrollPayloadParser.parse("https://api.schirmziit.ch/?code=9XWVQQKF"))
     }
 
     @Test

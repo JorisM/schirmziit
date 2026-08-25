@@ -92,7 +92,7 @@ class ScreenshotTest {
     ) {
         StatusScreen(
             settings = FakeAgentSettings(
-                baseUrl = "https://schirmziit.jorisda.ch",
+                baseUrl = "https://api.schirmziit.ch",
                 deviceToken = "tok",
                 lastSyncMillis = 1_787_997_600_000,
             ),

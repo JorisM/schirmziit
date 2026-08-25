@@ -114,7 +114,7 @@ final class SnapshotTests: XCTestCase {
 
     private var paired: AgentCredentials {
         AgentCredentials(
-            baseURL: URL(string: "https://schirmziit.jorisda.ch")!,
+            baseURL: URL(string: "https://api.schirmziit.ch")!,
             deviceId: "dev-1",
             token: "tok-1",
             parentEmail: "anna@example.ch"

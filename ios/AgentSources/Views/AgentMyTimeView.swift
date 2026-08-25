@@ -9,6 +9,17 @@ struct AgentMyTimeView: View {
 
     private var today: String { ISO8601DateFormatter.dayOnly.string(from: Date()) }
 
+    /// Ranked rows shown on their own, past which the rest is still reachable
+    /// but not worth a full screen of rows. Same cap as `AppRowsView`.
+    private static let appRowCap = 8
+
+    /// `AppTotalFfi.foregroundMs` is an `Int64`; `Formatting.splitApps` takes
+    /// the same `(label, ms: Int)` tuple `AppRowsView` maps `UsageSeries`
+    /// into, so this is the one place the type gets narrowed for it.
+    private func appSplit(_ apps: [AppTotalFfi]) -> (shown: [(label: String, ms: Int)], brief: [(label: String, ms: Int)]) {
+        Formatting.splitApps(apps.map { (label: $0.label, ms: Int(truncatingIfNeeded: $0.foregroundMs)) })
+    }
+
     /// `DayDetailFfi.hours` is already the per-hour ribbon the core computed.
     /// Wrapping it as synthetic `DeviceTotal`s lets the existing ribbon view —
     /// which only knows how to bucket raw device totals — draw it, rather than
@@ -69,17 +80,21 @@ struct AgentMyTimeView: View {
                 }
 
                 if !day.apps.isEmpty {
+                    let split = appSplit(day.apps)
                     Section(header: L("child.apps")) {
-                        ForEach(Array(day.apps.prefix(8).enumerated()), id: \.element.package) { index, app in
-                            HStack {
-                                Circle()
-                                    .fill(Palette.series[index % Palette.series.count])
-                                    .frame(width: 10, height: 10)
-                                Text(verbatim: app.label)
-                                Spacer()
-                                Text(verbatim: Formatting.duration(Int(truncatingIfNeeded: app.foregroundMs)))
-                                    .monospacedDigit()
-                                    .foregroundStyle(Palette.inkMuted)
+                        // The fold runs before the cap: a brief app is already
+                        // folded and costs one row for all of them, so it must
+                        // never be the thing the cap pushes out.
+                        ForEach(Array(split.shown.prefix(Self.appRowCap).enumerated()), id: \.offset) { index, entry in
+                            appRow(entry, index: index)
+                        }
+                        if !split.brief.isEmpty {
+                            DisclosureGroup {
+                                ForEach(Array(split.brief.enumerated()), id: \.offset) { index, entry in
+                                    appRow(entry, index: split.shown.count + index)
+                                }
+                            } label: {
+                                Text(verbatim: "\(S("child.apps.brief")) (\(split.brief.count))")
                             }
                         }
                     }
@@ -106,5 +121,18 @@ struct AgentMyTimeView: View {
     private func load() async {
         await model.loadMyTimeStrip()
         await model.selectMyDay(model.mySelectedDay)
+    }
+
+    private func appRow(_ entry: (label: String, ms: Int), index: Int) -> some View {
+        HStack {
+            Circle()
+                .fill(Palette.series[index % Palette.series.count])
+                .frame(width: 10, height: 10)
+            Text(verbatim: entry.label)
+            Spacer()
+            Text(verbatim: Formatting.duration(entry.ms))
+                .monospacedDigit()
+                .foregroundStyle(Palette.inkMuted)
+        }
     }
 }

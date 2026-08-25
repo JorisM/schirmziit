@@ -80,6 +80,7 @@
     <string name="mytime_total">Total pour ce jour</string>
     <string name="mytime_unlocks">Déverrouillages</string>
     <string name="mytime_apps">Applis</string>
+    <string name="mytime_brief_apps">Applis de moins d\'une minute</string>
     <string name="mytime_error">Tes chiffres n\'ont pas pu être chargés. Réessaie dans un instant.</string>
     <string name="mytime_empty">Rien n\'est encore enregistré pour ce jour.</string>
 

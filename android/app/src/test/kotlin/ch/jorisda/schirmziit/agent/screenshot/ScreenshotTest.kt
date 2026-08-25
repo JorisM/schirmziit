@@ -168,6 +168,8 @@ class ScreenshotTest {
             AppTotalFfi("ch.jorisda.notes", "Notes", 90_000L),
             AppTotalFfi("ch.jorisda.mail", "Mail", 30_000L),
             AppTotalFfi("ch.jorisda.weather", "Weather", 10_000L),
+            // Rounds to 0 s and must not appear anywhere, folded or not.
+            AppTotalFfi("ch.jorisda.blink", "Blink", 300L),
         )
 
         val detail = DayDetailFfi(

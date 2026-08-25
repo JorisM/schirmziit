@@ -281,6 +281,12 @@ export interface components {
             display_name: string;
             /** Format: uuid */
             id: string;
+            /**
+             * Format: int64
+             * @description Foreground milliseconds so far in the caller's local today. Zero, never
+             *     null: a quiet day is a real number and an absent one renders as a hole.
+             */
+            today_ms: number;
         };
         ClaimDevice: {
             label: string;
@@ -591,7 +597,9 @@ export interface operations {
     };
     list: {
         parameters: {
-            query?: never;
+            query: {
+                tz: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -609,6 +617,13 @@ export interface operations {
             };
             /** @description Not authenticated */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown timezone */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

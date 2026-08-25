@@ -9,7 +9,10 @@ type ChildResponse = components['schemas']['ChildResponse']
 
 export function Children() {
   const { t } = useI18n()
-  const { data, error, mutate } = useSWR<ChildResponse[]>('/v1/children', api.get)
+  const { data, error, mutate } = useSWR<ChildResponse[]>(
+    `/v1/children?tz=${Intl.DateTimeFormat().resolvedOptions().timeZone}`,
+    api.get,
+  )
   const [name, setName] = useState('')
   const [busy, setBusy] = useState(false)
 

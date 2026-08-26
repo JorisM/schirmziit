@@ -87,6 +87,34 @@ impl TestApp {
         Response { status, json }
     }
 
+    /// The whole response, for tests that care about headers.
+    pub async fn get_raw(&self, uri: &str) -> axum::http::Response<Body> {
+        let request = self
+            .with_session(Request::builder().uri(uri))
+            .body(Body::empty())
+            .unwrap();
+        self.router.clone().oneshot(request).await.unwrap()
+    }
+
+    pub async fn get_with_headers(
+        &self,
+        uri: &str,
+    ) -> (StatusCode, serde_json::Value, axum::http::HeaderMap) {
+        let response = self.get_raw(uri).await;
+        let status = response.status();
+        let headers = response.headers().clone();
+        let bytes = response.into_body().collect().await.unwrap().to_bytes();
+        let json = serde_json::from_slice(&bytes).unwrap_or(serde_json::Value::Null);
+        (status, json, headers)
+    }
+
+    /// A request built by the caller, for the shapes the helpers above do not
+    /// cover: a wrong method, a body that is not JSON.
+    pub async fn send_raw(&self, request: Request<Body>) -> Response {
+        let (status, json, _) = self.send(request).await;
+        Response { status, json }
+    }
+
     pub async fn get_anonymous(&self, uri: &str) -> Response {
         let request = Request::builder().uri(uri).body(Body::empty()).unwrap();
         let (status, json, _) = self.send(request).await;

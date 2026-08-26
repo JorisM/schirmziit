@@ -376,6 +376,8 @@ export interface components {
             expires_at: string;
             qr_payload: string;
         };
+        /** @enum {string} */
+        ErrorCode: "SZ-E101" | "SZ-E102" | "SZ-E103" | "SZ-E104" | "SZ-E105" | "SZ-E106" | "SZ-E201" | "SZ-E202" | "SZ-E203" | "SZ-E204" | "SZ-E205" | "SZ-E301" | "SZ-E302" | "SZ-E303" | "SZ-E304" | "SZ-E501" | "SZ-E502" | "SZ-E503" | "SZ-E504" | "SZ-E505" | "SZ-E506" | "SZ-E601" | "SZ-E602" | "SZ-E603" | "SZ-E604" | "SZ-E605" | "SZ-E701" | "SZ-E702" | "SZ-E703" | "SZ-E704" | "SZ-E705" | "SZ-E706" | "SZ-E707" | "SZ-E901" | "SZ-E902";
         IngestApp: {
             /**
              * Format: int64
@@ -442,6 +444,26 @@ export interface components {
             launch_count: number;
             /** @description RFC3339 instant for hourly buckets, `YYYY-MM-DD` for daily ones. */
             start: string;
+        };
+        /**
+         * @description The body of every error response.
+         *
+         *     `detail` is for the log and the copy-details block a parent can send. It is
+         *     never rendered as the message a parent reads: it is English, and the app
+         *     speaks four languages. The client looks the copy up by `code`.
+         */
+        Problem: {
+            code: components["schemas"]["ErrorCode"];
+            detail: string;
+            /**
+             * @description Six hex characters, the head of the request id. Filled in by the
+             *     normalise layer, which is the only place with access to the request.
+             */
+            ref: string;
+            /** Format: int32 */
+            status: number;
+            title: string;
+            type: string;
         };
         /**
          * @description Deletes for real and reports what went, so "delete my child's data" is

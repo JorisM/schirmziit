@@ -26,6 +26,8 @@ use utoipa::OpenApi;
         crate::routes::waitlist::join,
     ),
     components(schemas(
+        crate::error::Problem,
+        schirmziit_core::codes::ErrorCode,
         crate::auth::routes::Credentials,
         crate::auth::routes::RegisteredResponse,
         crate::auth::routes::MeResponse,

@@ -15,6 +15,21 @@ one place where a wrong answer must change nothing.
 Pairing codes still exist for the case where the parent is not there to sign in;
 the parent-session path is what removes the typing for everyone else.
 
+**Parent mode manages the family, not just reads it.** The children list adds a
+child and removes one; a child's screen disconnects one of their phones. All
+three go through `static func`s (`ChildrenView.create`/`.remove`,
+`ChildDetailView.revokeDevice`) returning a `WriteOutcome`, for the same reason
+`fetchUsage` is one: these views own no `@Observable` model, and `@State` on a
+view SwiftUI has not installed silently loses writes, so the testable part stays
+out of the view lifecycle. Both destructive actions are a swipe with
+`allowsFullSwipe: false` followed by a named confirmation — the swipe opens the
+question, never answers it.
+
+Removing a child also revokes that child's devices, on the server, in one
+transaction. Without it the phone keeps uploading: the device token is
+authorized against `devices.revoked_at` alone, so a child hidden from every
+parent screen would still have a reporting phone.
+
 ## Structure
 
     Sources/Api        ApiClient, response models (parent side)

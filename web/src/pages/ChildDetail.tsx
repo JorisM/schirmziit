@@ -177,7 +177,20 @@ export function ChildDetail({ childId }: { childId: string }) {
       </section>
 
       <section className="card p-6">
-        {data ? <DeviceStatus devices={data.devices} /> : <RowsSkeleton />}
+        {data ? (
+          <DeviceStatus
+            devices={data.devices}
+            // A revoked device drops out of this response, so re-reading the
+            // day is what makes the row disappear — no local list to keep in
+            // step with the server.
+            onRevoke={async (deviceId) => {
+              await api.del(`/v1/devices/${deviceId}`)
+              await mutate()
+            }}
+          />
+        ) : (
+          <RowsSkeleton />
+        )}
       </section>
     </div>
   )

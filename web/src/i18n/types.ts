@@ -12,6 +12,7 @@ export type Strings = {
     help: string
     signOut: string
     language: string
+    cancel: string
   }
 
   login: {
@@ -31,6 +32,9 @@ export type Strings = {
     addPlaceholder: string
     todayTotal: string
     openChild: string
+    remove: string
+    removeBody: string
+    removeConfirm: string
   }
 
   child: {
@@ -74,6 +78,8 @@ export type Strings = {
     neverReported: string
     lastSeen: string
     revoke: string
+    revokeBody: string
+    revokeConfirm: string
     revoked: string
     addDevice: string
     pairTitle: string

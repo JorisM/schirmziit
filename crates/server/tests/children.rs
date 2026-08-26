@@ -274,3 +274,54 @@ async fn an_unknown_timezone_is_refused(pool: PgPool) {
     let listed = app.get("/v1/children?tz=Mars/Olympus").await;
     assert_eq!(listed.status, StatusCode::UNPROCESSABLE_ENTITY);
 }
+
+/// The hole a delete button in the two parent surfaces would otherwise open: a
+/// device token is authorized against `devices.revoked_at` alone, so a phone
+/// whose child is gone from every parent screen keeps uploading hours nobody
+/// can ever read back. A parent who removes a child means "and stop reporting",
+/// and the delete handler is the only place that can be made true.
+#[sqlx::test]
+async fn deleting_a_child_stops_its_phones_reporting(pool: PgPool) {
+    let app = TestApp::registered(pool).await;
+    let child_id = app.create_child("Kid").await;
+    let (device_id, token) = app.enroll_device(&child_id).await;
+
+    app.delete(&format!("/v1/children/{child_id}")).await;
+
+    let devices = app.get("/v1/devices").await;
+    assert_eq!(devices.json[0]["id"], device_id);
+    assert_eq!(
+        devices.json[0]["revoked"], true,
+        "a deleted child's device must be revoked, not merely orphaned"
+    );
+
+    let hour_start = Utc::now()
+        .duration_trunc(chrono::Duration::hours(1))
+        .unwrap();
+    let ingest = app
+        .post_as_device(
+            "/v1/ingest",
+            &token,
+            serde_json::json!({
+                "schema": 1,
+                "device_time": Utc::now(),
+                "hours": [{
+                    "hour_start": hour_start,
+                    "tz": "Europe/Zurich",
+                    "computed_at": hour_start,
+                    "screen_on_ms": 60_000,
+                    "unlock_count": 1,
+                    "apps": [{
+                        "package": "com.a", "label": "App A",
+                        "foreground_ms": 60_000, "launch_count": 1
+                    }]
+                }]
+            }),
+        )
+        .await;
+    assert_eq!(
+        ingest.status,
+        StatusCode::UNAUTHORIZED,
+        "the phone of a deleted child must not be able to keep uploading"
+    );
+}

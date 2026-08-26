@@ -168,6 +168,8 @@
         "tags": [
           "children"
         ],
+        "summary": "Hides the child and stops their phones, in one transaction.",
+        "description": "The row itself survives — historical usage stays attributable, and the\ndedicated `DELETE /v1/children/{id}/data` is what actually erases figures,\ndeliberately separate so \"delete my child's data\" is its own reported act.\n\nRevoking the devices is not tidying-up: `Device` authorizes on\n`devices.revoked_at` alone, so without this a phone whose child is gone from\nevery parent screen keeps uploading hours that nothing can read back. A\nparent removing a child means \"and stop reporting\".",
         "operationId": "soft_delete",
         "parameters": [
           {
@@ -183,7 +185,7 @@
         ],
         "responses": {
           "204": {
-            "description": "Soft deleted"
+            "description": "Hidden, and its devices revoked"
           },
           "404": {
             "description": "No such child in this family"

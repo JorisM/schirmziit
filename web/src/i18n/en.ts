@@ -9,6 +9,7 @@ export const en: Strings = {
     help: 'How does this work?',
     signOut: 'Sign out',
     language: 'Language',
+    cancel: 'Cancel',
   },
 
   login: {
@@ -28,6 +29,10 @@ export const en: Strings = {
     addPlaceholder: 'Name, e.g. Lena',
     todayTotal: 'today',
     openChild: 'See details',
+    remove: 'Remove',
+    removeBody:
+      'Their phone stops reporting straight away and their figures are no longer shown. You cannot undo this.',
+    removeConfirm: 'Yes, remove',
   },
 
   child: {
@@ -76,6 +81,9 @@ export const en: Strings = {
     neverReported: 'has never reported',
     lastSeen: 'Last reported',
     revoke: 'Disconnect',
+    revokeBody:
+      'This phone stops reporting straight away. The figures already collected stay.',
+    revokeConfirm: 'Yes, disconnect',
     revoked: 'disconnected',
     addDevice: 'Connect a phone',
     pairTitle: 'Connect a phone',

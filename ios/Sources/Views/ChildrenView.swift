@@ -4,10 +4,21 @@ struct ChildrenView: View {
     let client: ApiClient
     let onSignOut: () -> Void
 
-    @State private var children: [ChildResponse] = []
+    /// Non-private, like `ChildDetailView.usage`, so a snapshot test can build
+    /// the loaded list directly: this view fetches in `.task`, which the
+    /// off-screen snapshot host does not reliably run to completion inside the
+    /// settle wait, and a golden of a spinner proves nothing about the screen.
+    @State var children: [ChildResponse] = []
     @State private var errorText: String?
     @State private var showHelp = false
     @State private var path: [ChildResponse] = []
+    @State private var addingChild = false
+    @State private var newChildName = ""
+    /// The child a swipe has proposed removing. Optional rather than a bool
+    /// beside an id: the dialog names the child it is about, and a bool can go
+    /// true while the id it belongs to is stale.
+    @State private var pendingRemoval: ChildResponse?
+    @State private var busy = false
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -18,12 +29,37 @@ struct ChildrenView: View {
                 }
 
                 if children.isEmpty && errorText == nil {
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: 8) {
                         L("children.empty").font(.headline)
                         L("children.empty.hint")
                             .font(.footnote)
                             .foregroundStyle(Palette.inkMuted)
+                        // The empty state carries the action it is asking for.
+                        // The toolbar button is there too, but a parent reading
+                        // "add a child" should not have to go looking for where.
+                        //
+                        // `L(…)`, not `S(…)`: this label is on screen, and
+                        // `String(localized:)` follows the *process* locale —
+                        // which rendered "Add a child" inside the German
+                        // snapshot until this was changed.
+                        Button(action: { addingChild = true }) {
+                            Label {
+                                L("children.add")
+                            } icon: {
+                                Image(systemName: "plus")
+                            }
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(Palette.accent)
+                        // `schirmziitList()` sets `foregroundStyle(Palette.ink)`
+                        // for the whole list, which a prominent button inherits
+                        // — near-black on the teal fill, about 2.7:1 and under
+                        // AA. Card-on-accent is what the dashboard's own primary
+                        // button uses, and passes in both appearances.
+                        .foregroundStyle(Palette.card)
+                        .disabled(busy)
                     }
+                    .padding(.vertical, 4)
                 }
 
                 ForEach(children) { child in
@@ -34,9 +70,26 @@ struct ChildrenView: View {
                             CountingTotal(targetMs: child.todayMs)
                         }
                     }
+                    // `allowsFullSwipe: false` deliberately: a full swipe would
+                    // fire the destructive action from the gesture alone, and
+                    // this list is the screen a parent opens every day. The
+                    // swipe only ever opens the question.
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                        Button(role: .destructive) { pendingRemoval = child } label: {
+                            Label {
+                                L("children.remove")
+                            } icon: {
+                                Image(systemName: "trash")
+                            }
+                        }
+                    }
                 }
             }
             .schirmziitList()
+            // A child appearing or disappearing is the list's own change, so it
+            // moves rather than blinks. `Motion.animation` returns nil under
+            // reduced motion, which lands on the new list instantly.
+            .motion(Motion.base, value: children.count)
             .navigationTitle(L("children.title"))
             .navigationDestination(for: ChildResponse.self) { child in
                 ChildDetailView(child: child, client: client)
@@ -48,8 +101,42 @@ struct ChildrenView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("app.signout", systemImage: "rectangle.portrait.and.arrow.right", action: onSignOut)
                 }
+                // Where iOS puts Add. The bottom bar was tried and rejected: a
+                // lone glyph at the foot of a mostly empty list reads as
+                // decoration, and this list is mostly empty for most families.
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(action: { addingChild = true }) {
+                        Label {
+                            L("children.add")
+                        } icon: {
+                            Image(systemName: "plus")
+                        }
+                    }
+                    .disabled(busy)
+                }
             }
             .sheet(isPresented: $showHelp) { HelpView() }
+            .alert(S("children.add.title"), isPresented: $addingChild) {
+                TextField(S("children.add.placeholder"), text: $newChildName)
+                    .textInputAutocapitalization(.words)
+                Button(S("children.add.save")) { Task { await add() } }
+                Button(S("app.cancel"), role: .cancel) { newChildName = "" }
+            }
+            .confirmationDialog(
+                Text(verbatim: pendingRemoval?.displayName ?? ""),
+                isPresented: Binding(
+                    get: { pendingRemoval != nil },
+                    set: { if !$0 { pendingRemoval = nil } }
+                ),
+                titleVisibility: .visible
+            ) {
+                Button(S("children.remove.confirm"), role: .destructive) {
+                    if let child = pendingRemoval { Task { await remove(child) } }
+                }
+                Button(S("app.cancel"), role: .cancel) { pendingRemoval = nil }
+            } message: {
+                L("children.remove.body")
+            }
             .refreshable { await load() }
             .task {
                 await load()
@@ -62,6 +149,63 @@ struct ChildrenView: View {
                 }
 #endif
             }
+        }
+    }
+
+    /// The two writes this screen makes, as plain `static func`s for the reason
+    /// `ChildDetailViewTests` records: this view owns no `@Observable` model, and
+    /// `@State` on a view SwiftUI has not installed silently loses writes — so
+    /// the part worth testing is kept out of the view lifecycle entirely.
+    static func create(client: ApiClient, name: String) async -> WriteOutcome {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        // The Add button is disabled on a blank field; this is the second line
+        // of defence. It returns a failure rather than `.ok`, because a request
+        // that was never sent must never read as a child that was created.
+        guard !trimmed.isEmpty else { return .failed(S("children.add.empty")) }
+
+        return await WriteOutcome.of {
+            _ = try await client.post(
+                "v1/children",
+                body: ["display_name": trimmed],
+                as: ChildResponse.self
+            )
+        }
+    }
+
+    static func remove(client: ApiClient, childId: String) async -> WriteOutcome {
+        await WriteOutcome.of { try await client.delete("v1/children/\(childId)") }
+    }
+
+    @MainActor
+    private func add() async {
+        busy = true
+        defer { busy = false }
+        switch await Self.create(client: client, name: newChildName) {
+        case .ok:
+            newChildName = ""
+            errorText = nil
+            // Re-read rather than append the created child: the list carries
+            // today's total per child, and a locally-appended row would sit
+            // there at zero even for a child whose phone is already reporting.
+            await load()
+        case .failed(let message):
+            errorText = message
+        }
+    }
+
+    @MainActor
+    private func remove(_ child: ChildResponse) async {
+        busy = true
+        defer { busy = false }
+        pendingRemoval = nil
+        switch await Self.remove(client: client, childId: child.id) {
+        case .ok:
+            errorText = nil
+            await load()
+        case .failed(let message):
+            // The row stays: a delete that failed must not leave the parent
+            // looking at a list the server does not agree with.
+            errorText = message
         }
     }
 

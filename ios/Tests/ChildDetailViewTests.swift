@@ -1,30 +1,6 @@
 import XCTest
 @testable import SchirmziitKit
 
-/// Answers each request differently by URL, so the strip (`bucket=day`) and the
-/// detail (`bucket=hour`) can fail or succeed independently — exactly the shape
-/// the parent screen issues them in.
-private final class StubURLProtocol: URLProtocol {
-    static var handler: (@Sendable (URLRequest) -> (Int, Data))?
-
-    override class func canInit(with request: URLRequest) -> Bool { true }
-    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
-
-    override func startLoading() {
-        guard let handler = Self.handler, let url = request.url else {
-            client?.urlProtocol(self, didFailWithError: URLError(.badURL))
-            return
-        }
-        let (status, body) = handler(request)
-        let response = HTTPURLResponse(url: url, statusCode: status, httpVersion: nil, headerFields: nil)!
-        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
-        client?.urlProtocol(self, didLoad: body)
-        client?.urlProtocolDidFinishLoading(self)
-    }
-
-    override func stopLoading() {}
-}
-
 /// `ChildDetailView` is a plain SwiftUI `View` struct with no `@Observable`
 /// model to hand a fake transport to, and its `@State` only reliably behaves
 /// once SwiftUI has actually installed the view (calling `load`/`loadStrip`

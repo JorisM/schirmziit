@@ -278,6 +278,43 @@ final class SnapshotTests: XCTestCase {
         assert(SignInView(client: ApiClient(), onSignedIn: { _ in }), named: "sign-in")
     }
 
+    /// The first screen after signing in, and until now the only parent screen
+    /// with no golden at all — which is why the Add control it grew could have
+    /// landed on top of a row or off the bar without a test noticing. `children`
+    /// is passed in rather than fetched for the reason it is non-private: the
+    /// snapshot host does not reliably finish this view's `.task`.
+    ///
+    /// Reduced motion, not `disablesAnimations`: the totals count up inside a
+    /// `TimelineView(.animation)`, which a suppressed transaction does not stop
+    /// — the first recording of this image caught 55 min of a 2 h 14 min total
+    /// and would have differed on every run. `CountingTotal` renders the target
+    /// straight away under reduced motion, and the settled numbers are the only
+    /// thing a still image of a count-up can honestly assert. The final layout
+    /// is the same view either way (`CountingTotal.label`).
+    func testChildrenList() {
+        assert(
+            ChildrenView(
+                client: ApiClient(),
+                onSignOut: {},
+                children: [
+                    ChildResponse(id: "a", displayName: "Mira", todayMs: 8_040_000),
+                    ChildResponse(id: "b", displayName: "Jonas", todayMs: 2_700_000),
+                ]
+            )
+            .environment(\._accessibilityReduceMotion, true),
+            named: "children"
+        )
+    }
+
+    /// The state the Add control exists for. An empty list has to invite the
+    /// action, not merely report the absence.
+    func testChildrenListWhenEmpty() {
+        assert(
+            ChildrenView(client: ApiClient(), onSignOut: {}, children: []),
+            named: "children-empty"
+        )
+    }
+
     func testDayRibbon() {
         // Fixed figures: a ribbon that changes shape between runs is not a
         // snapshot test, it is a random image generator.

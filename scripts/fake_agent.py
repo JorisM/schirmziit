@@ -8,7 +8,7 @@ on the Mac without a toolchain.
 Two modes:
 
   # Against a deployed instance: mint a code in the dashboard first.
-  python3 scripts/fake_agent.py --base https://schirmziit.jorisda.ch --code ABCD-1234
+  python3 scripts/fake_agent.py --base https://api.schirmziit.ch --code ABCD-1234
 
   # Against a local dev server with ALLOW_REGISTRATION=open: does everything,
   # including creating the parent and child, then checks the acceptance criteria.

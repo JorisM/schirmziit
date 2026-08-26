@@ -1,5 +1,7 @@
 ---
 import '../styles/site.css'
+import AlphaBanner from '../components/AlphaBanner.astro'
+import Waitlist from '../components/Waitlist.astro'
 import { localeNames, locales, prefix, sites, type Locale } from '../content'
 
 interface Props {
@@ -55,6 +57,7 @@ const analyticsId = import.meta.env.PUBLIC_UMAMI_ID
     )}
   </head>
   <body>
+    <AlphaBanner locale={locale} />
     <header class="site">
       <div class="wrap">
         <a class="brand" href={`${base}/` || '/'}>Schirmziit</a>
@@ -74,7 +77,10 @@ const analyticsId = import.meta.env.PUBLIC_UMAMI_ID
       </div>
     </header>
 
-    <main class="wrap"><slot /></main>
+    <main class="wrap">
+      <slot />
+      <Waitlist locale={locale} />
+    </main>
 
     <footer class="site">
       <div class="wrap">

@@ -6,6 +6,28 @@ export const de: Site = {
   swissLabel: 'Entwickelt in der Schweiz',
   nav: { home: 'Übersicht', selfHost: 'Selbst hosten', hosted: 'Gehostet', privacy: 'Datenschutz' },
 
+  alpha: {
+    bannerTitle: 'Private Alpha',
+    bannerBody:
+      'Schirmziit ist mitten in der Entwicklung und noch nicht veröffentlicht. Was hier steht, beschreibt, was schon läuft — nicht etwas, das du heute für deine Familie aufsetzen solltest.',
+    bannerCta: 'Auf die Warteliste',
+    title: 'Warteliste',
+    lead:
+      'Trag deine Mail-Adresse ein, und du hörst von uns, sobald Schirmziit veröffentlicht ist. Eine Mail, dann ist Schluss — kein Newsletter.',
+    emailLabel: 'Mail-Adresse',
+    placeholder: 'du@example.ch',
+    submit: 'Eintragen',
+    sending: 'Wird eingetragen …',
+    done: 'Eingetragen. Wir melden uns, sobald es losgeht.',
+    invalid: 'Das sieht nicht wie eine Mail-Adresse aus.',
+    failed: 'Das hat nicht funktioniert. Versuch es später nochmals oder schreib uns eine Mail.',
+    stored:
+      'Gespeichert werden die Adresse und die Sprache dieser Seite, sonst nichts. Kein Tracking, keine Weitergabe. Schreib uns, und der Eintrag ist weg.',
+    mailFallback:
+      'Das Formular braucht JavaScript. Schreib uns stattdessen kurz eine Mail — das genügt.',
+    mailCta: 'Mail schreiben',
+  },
+
   home: {
     kicker: 'Bildschirmzeit für Familien',
     title: 'Bildschirmzeit im Blick, zum Schutz deines Kindes',
@@ -168,6 +190,10 @@ export const de: Site = {
       {
         title: 'Dritte',
         body: 'Keine. Kein Analytics im Kinderhandy, keine Werbe-SDKs, keine Crash-Reporter, keine Weitergabe.',
+      },
+      {
+        title: 'Warteliste',
+        body: 'Trägst du dich für die Warteliste ein, speichern wir deine Mail-Adresse und die Sprache, in der du die Seite gelesen hast. Nur dafür: eine Mail, wenn Schirmziit veröffentlicht ist. Kein Newsletter, keine Weitergabe. Schreib uns, und wir löschen den Eintrag.',
       },
     ],
     analyticsTitle: 'Diese Webseite',

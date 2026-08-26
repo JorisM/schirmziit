@@ -117,8 +117,18 @@ targets:
     sources:
       - path: AgentMonitor
       - path: AgentShared
+    # xcodegen writes this file from the properties below, so an NSExtension
+    # dictionary added to the plist by hand is gone on the next `ios-project`.
+    # Without it installd rejects the whole app: an .appex that declares no
+    # extension point is not something iOS can host.
     info:
       path: AgentMonitor/Info.plist
+      properties:
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.deviceactivity.monitor-extension
+          # Module.Class — the DeviceActivityMonitor subclass in
+          # MonitorExtension.swift, in this target's module.
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).SchirmziitMonitor
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.monitor
@@ -133,6 +143,11 @@ targets:
       - path: AgentShared
     info:
       path: AgentReport/Info.plist
+      properties:
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.deviceactivityui.report-extension
+          # No principal class: a DeviceActivityReportExtension is a SwiftUI
+          # scene entered through @main, not an NSObject the system instantiates.
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.report

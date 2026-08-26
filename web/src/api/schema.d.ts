@@ -273,6 +273,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/waitlist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["join"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -486,6 +502,11 @@ export interface components {
             /** Format: date */
             to: string;
             tz: string;
+        };
+        WaitlistRequest: {
+            email: string;
+            /** @description One of `de`, `fr`, `it`, `en`. */
+            locale: string;
         };
     };
     responses: never;
@@ -1091,6 +1112,35 @@ export interface operations {
             };
             /** @description Device read limit */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    join: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WaitlistRequest"];
+            };
+        };
+        responses: {
+            /** @description On the list — also the answer when the address was already on it */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not an email address, or a language the site does not speak */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

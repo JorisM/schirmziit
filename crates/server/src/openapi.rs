@@ -23,6 +23,7 @@ use utoipa::OpenApi;
         crate::routes::usage::summary,
         crate::routes::usage::my_usage,
         crate::routes::purge::purge,
+        crate::routes::waitlist::join,
     ),
     components(schemas(
         crate::auth::routes::Credentials,
@@ -37,6 +38,7 @@ use utoipa::OpenApi;
         crate::routes::enroll::EnrollRequest,
         crate::routes::enroll::EnrolledResponse,
         crate::routes::purge::PurgeResponse,
+        crate::routes::waitlist::WaitlistRequest,
         crate::routes::usage::UsageResponse,
         crate::routes::usage::SummaryResponse,
         crate::routes::usage::DeviceStatus,

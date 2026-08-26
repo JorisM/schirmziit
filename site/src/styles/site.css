@@ -203,8 +203,9 @@ footer.site .wrap { display: flex; flex-wrap: wrap; gap: 1rem; align-items: cent
 }
 
 /*
- * Scroll-reveal with no JavaScript. The site ships zero client: directives and
- * this must not be what introduces some.
+ * Scroll-reveal with no JavaScript. The only script on this site is the
+ * waiting-list form, which degrades to a mail address — the reveal must not be
+ * what adds a second one.
  *
  * Content is visible by default and the reveal exists only inside @supports, so
  * a browser without scroll-driven animations (Firefox today) and a browser with
@@ -224,3 +225,82 @@ footer.site .wrap { display: flex; flex-wrap: wrap; gap: 1rem; align-items: cent
     }
   }
 }
+
+/*
+ * The private-alpha banner and the waiting list it points at.
+ *
+ * The banner sits above the sticky header on purpose: it should be read once and
+ * then scroll away, not eat a line of every screen for the whole visit.
+ */
+.alpha {
+  background: var(--sunken);
+  border-bottom: 1px solid var(--hairline);
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+}
+.alpha .wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.9rem;
+  align-items: baseline;
+  padding-block: 0.6rem;
+}
+.alpha p { margin: 0; max-width: 46rem; }
+.alpha-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--card);
+  background: var(--urgent);
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+  white-space: nowrap;
+}
+.alpha-cta { white-space: nowrap; font-weight: 600; }
+
+.waitlist {
+  margin-top: 3.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--hairline);
+}
+.waitlist-row { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.35rem; }
+.waitlist label { font-size: 0.9rem; color: var(--ink-muted); }
+.waitlist input {
+  flex: 1 1 16rem;
+  min-width: 0;
+  background: var(--card);
+  color: var(--ink);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  padding: 0.6rem 0.8rem;
+  font: inherit;
+}
+.waitlist input:disabled { color: var(--ink-faint); }
+.waitlist button {
+  background: var(--accent);
+  color: var(--card);
+  border: 0;
+  border-radius: 12px;
+  padding: 0.6rem 1.1rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 120ms cubic-bezier(0.2, 0, 0, 1), filter 120ms linear;
+}
+.waitlist button:hover { filter: brightness(1.08); }
+.waitlist button:active { transform: scale(0.97); }
+.waitlist button:disabled { cursor: progress; filter: none; }
+
+.waitlist-status { margin: 0.6rem 0 0; font-size: 0.95rem; }
+.waitlist-status.ok { color: var(--ok); font-weight: 600; }
+.waitlist-status.bad { color: var(--urgent); }
+.waitlist-status:not(:empty) { animation: status-in 200ms cubic-bezier(0.2, 0, 0, 1) both; }
+
+@keyframes status-in {
+  from { opacity: 0; transform: translateY(4px); }
+}
+
+.waitlist .fine { font-size: 0.85rem; color: var(--ink-faint); margin-top: 0.8rem; }
+/* Shown only by the <noscript> block inside the section. */
+.waitlist .no-js { display: none; }

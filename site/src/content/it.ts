@@ -5,6 +5,28 @@ export const it: Site = {
   swissLabel: 'Sviluppato in Svizzera',
   nav: { home: 'Panoramica', selfHost: 'Self-hosting', hosted: 'Ospitato', privacy: 'Privacy' },
 
+  alpha: {
+    bannerTitle: 'Alpha privata',
+    bannerBody:
+      'Schirmziit è in pieno sviluppo e non è ancora pubblicato. Quello che leggi qui descrive ciò che già funziona — non qualcosa da installare oggi per la tua famiglia.',
+    bannerCta: "Iscriviti alla lista d'attesa",
+    title: "Lista d'attesa",
+    lead:
+      'Lascia il tuo indirizzo e-mail e ti scriviamo appena Schirmziit viene pubblicato. Un messaggio e basta — nessuna newsletter.',
+    emailLabel: 'Indirizzo e-mail',
+    placeholder: 'tu@example.ch',
+    submit: 'Iscrivimi',
+    sending: 'Iscrizione in corso …',
+    done: 'Fatto. Ti scriviamo appena si parte.',
+    invalid: 'Questo non sembra un indirizzo e-mail.',
+    failed: 'Non ha funzionato. Riprova più tardi o scrivici una e-mail.',
+    stored:
+      "Salviamo l'indirizzo e la lingua di questa pagina, nient'altro. Nessun tracciamento, nessuna condivisione. Scrivici e cancelliamo la voce.",
+    mailFallback:
+      'Il modulo richiede JavaScript. Scrivici invece una breve e-mail — è sufficiente.',
+    mailCta: 'Scrivi una e-mail',
+  },
+
   home: {
     kicker: 'Tempo di schermo per famiglie',
     title: 'Il tempo di schermo sotto controllo, per proteggere tuo figlio',
@@ -166,6 +188,10 @@ export const it: Site = {
       {
         title: 'Terze parti',
         body: 'Nessuna. Nessun analytics sul telefono del bambino, nessun SDK pubblicitario, nessun crash reporter, nessuna trasmissione.',
+      },
+      {
+        title: "Lista d'attesa",
+        body: "Se ti iscrivi alla lista d'attesa salviamo il tuo indirizzo e-mail e la lingua in cui hai letto il sito. Solo per questo: una e-mail quando Schirmziit viene pubblicato. Nessuna newsletter, nessuna condivisione. Scrivici e cancelliamo la voce.",
       },
     ],
     analyticsTitle: 'Questo sito',

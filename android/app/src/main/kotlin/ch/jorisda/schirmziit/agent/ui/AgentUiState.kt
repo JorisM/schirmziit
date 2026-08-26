@@ -35,7 +35,15 @@ data class AgentUiState(
             settings: AgentSettings,
             pendingHours: Int,
             nowMillis: Long,
-            playback: PlaybackReader? = null,
+            /**
+             * Required, deliberately. It used to default to null, and
+             * MainActivity simply never passed one — so [backgroundGranted] was
+             * false on every phone forever, the grant card never cleared, and
+             * granting notification access looked like it had done nothing.
+             * A default that silently means "not granted" cannot be forgotten
+             * loudly; the compiler catching it is worth more than any test.
+             */
+            playback: PlaybackReader,
         ): AgentUiState = AgentUiState(
             hasPermission = source.hasPermission(),
             isPaired = settings.isPaired,
@@ -45,7 +53,7 @@ data class AgentUiState(
                 nowMillis = nowMillis,
             ),
             pendingHours = pendingHours,
-            backgroundGranted = playback?.hasPermission() == true,
+            backgroundGranted = playback.hasPermission(),
             backgroundCardDismissed = settings.backgroundCardDismissed,
         )
     }

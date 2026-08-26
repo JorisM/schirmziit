@@ -1,5 +1,6 @@
 package ch.jorisda.schirmziit.agent.ui
 
+import ch.jorisda.schirmziit.agent.playback.FakePlaybackReader
 import ch.jorisda.schirmziit.agent.power.BatteryHint
 import ch.jorisda.schirmziit.agent.power.FakePowerStatus
 import ch.jorisda.schirmziit.agent.store.FakeAgentSettings
@@ -16,6 +17,7 @@ class AgentUiStateTest {
         paired: Boolean = true,
         lastSync: Long = 0L,
         pending: Int = 0,
+        backgroundGranted: Boolean = false,
     ) = AgentUiState.read(
         source = FakeUsageSource(emptyList(), permitted = permitted),
         power = FakePowerStatus(exempt = exempt),
@@ -26,7 +28,21 @@ class AgentUiStateTest {
         ),
         pendingHours = pending,
         nowMillis = now,
+        playback = FakePlaybackReader(granted = backgroundGranted),
     )
+
+    // Regression: `playback` used to default to null and MainActivity never
+    // passed one, so this was false on every phone no matter what Android said.
+    // Granting notification access then looked like it had done nothing at all.
+    @Test
+    fun `background listening is reported as on once the grant is there`() {
+        assertEquals(true, read(backgroundGranted = true).backgroundGranted)
+    }
+
+    @Test
+    fun `background listening is reported as off without the grant`() {
+        assertEquals(false, read(backgroundGranted = false).backgroundGranted)
+    }
 
     @Test
     fun `suggests the exemption while the phone is not whitelisted`() {
@@ -42,11 +58,11 @@ class AgentUiStateTest {
         val settings = FakeAgentSettings(baseUrl = "https://schirmziit.test", deviceToken = "t")
         val source = FakeUsageSource(emptyList())
 
-        val before = AgentUiState.read(source, power, settings, 0, now)
+        val before = AgentUiState.read(source, power, settings, 0, now, FakePlaybackReader())
         assertEquals(BatteryHint.Suggested, before.batteryHint)
 
         power.exempt = true // what the system dialog does while we are paused
-        val after = AgentUiState.read(source, power, settings, 0, now)
+        val after = AgentUiState.read(source, power, settings, 0, now, FakePlaybackReader())
         assertEquals(BatteryHint.None, after.batteryHint)
     }
 
@@ -55,8 +71,8 @@ class AgentUiStateTest {
         val power = FakePowerStatus(exempt = true)
         val settings = FakeAgentSettings(baseUrl = "https://schirmziit.test", deviceToken = "t")
 
-        assertEquals(false, AgentUiState.read(FakeUsageSource(emptyList(), permitted = false), power, settings, 0, now).hasPermission)
-        assertEquals(true, AgentUiState.read(FakeUsageSource(emptyList(), permitted = true), power, settings, 0, now).hasPermission)
+        assertEquals(false, AgentUiState.read(FakeUsageSource(emptyList(), permitted = false), power, settings, 0, now, FakePlaybackReader()).hasPermission)
+        assertEquals(true, AgentUiState.read(FakeUsageSource(emptyList(), permitted = true), power, settings, 0, now, FakePlaybackReader()).hasPermission)
     }
 
     @Test

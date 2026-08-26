@@ -109,6 +109,17 @@ class ScreenshotTest {
         shoot("unpair-de-dark") { UnpairDialog(onDismiss = {}, onUnpair = { _, _ -> error("not called") }, onUnpaired = {}) }
     }
 
+    // The state nothing captured before: the whole complaint was that granting
+    // notification access produced no visible change, and a screenshot of the
+    // granted screen is what makes that regress loudly instead of silently.
+    @Test
+    @Config(qualifiers = LIGHT_DE)
+    fun `status screen confirming background listening is on in german`() {
+        shoot("status-background-on-de-light") {
+            statusScreen(backgroundGranted = true, backgroundCardDismissed = true)
+        }
+    }
+
     @Composable
     private fun statusScreen(
         hasPermission: Boolean = true,

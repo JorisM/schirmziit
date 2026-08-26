@@ -1,8 +1,21 @@
+import { readFileSync } from 'node:fs'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
+// Read rather than imported: an import attribute (`with { type: 'json' }`) is
+// still uneven across Node versions, and a config that fails to parse takes the
+// whole build with it.
+const { version } = JSON.parse(
+  readFileSync(new URL('./package.json', import.meta.url), 'utf8'),
+) as { version: string }
+
 export default defineConfig({
+  define: {
+    // The version a parent reads out of the copy-details block. Without it the
+    // report says "dev" and nobody can tell which build broke.
+    'import.meta.env.VITE_APP_VERSION': JSON.stringify(version),
+  },
   plugins: [react(), tailwindcss()],
   server: {
     // Dev is same-origin, matching production where the Rust binary serves both.

@@ -5,6 +5,7 @@ import useSWR from 'swr'
 import './index.css'
 import { api } from './api/client'
 import type { components } from './api/schema'
+import { ErrorBoundary, installGlobalErrorHandlers } from './components/ErrorBoundary'
 import { Shell } from './components/Shell'
 import { LocaleProvider } from './i18n'
 import { ChildDetail } from './pages/ChildDetail'
@@ -39,12 +40,19 @@ function App() {
   )
 }
 
+// A rejection nobody caught is still worth recording: the next visible error's
+// copy block then shows what led up to it.
+installGlobalErrorHandlers()
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <LocaleProvider>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      {/* Inside the provider, so the panel it renders has its dictionary. */}
+      <ErrorBoundary>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </ErrorBoundary>
     </LocaleProvider>
   </StrictMode>,
 )

@@ -21,8 +21,6 @@ export type Strings = {
     password: string
     submit: string
     working: string
-    wrongCredentials: string
-    unexpected: string
   }
 
   children: {
@@ -64,7 +62,6 @@ export type Strings = {
     tableView: string
     historyTitle: string
     historyHelp: string
-    historyError: string
     today: string
     selectedHeading: string
   }
@@ -111,7 +108,14 @@ export type Strings = {
     resources: { name: string; note: string; href: string }[]
   }
 
-  errors: { generic: string; notFound: string; offline: string }
+  errorPanel: {
+    retry: string
+    details: string
+    copy: string
+    copied: string
+    reference: string
+  }
+
 
   units: { hoursShort: string; minutesShort: string; secondsShort: string }
 }

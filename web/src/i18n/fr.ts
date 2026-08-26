@@ -18,8 +18,6 @@ export const fr: Strings = {
     password: 'Mot de passe',
     submit: 'Se connecter',
     working: 'Un instant…',
-    wrongCredentials: 'Cet e-mail ou ce mot de passe n’est pas correct.',
-    unexpected: 'Ça n’a pas fonctionné. Réessaie.',
   },
 
   children: {
@@ -66,7 +64,6 @@ export const fr: Strings = {
     tableView: 'En tableau',
     historyTitle: 'Les 14 derniers jours',
     historyHelp: 'Chaque barre est un jour. Touche une barre pour voir ce jour en détail.',
-    historyError: 'Impossible de charger les 14 derniers jours. Réessaie dans un instant.',
     today: 'Aujourd’hui',
     selectedHeading: 'Jour sélectionné',
   },
@@ -157,11 +154,14 @@ export const fr: Strings = {
     ],
   },
 
-  errors: {
-    generic: 'Quelque chose s’est mal passé.',
-    notFound: 'Introuvable.',
-    offline: 'Pas de connexion au serveur.',
+  errorPanel: {
+    retry: 'Réessayer',
+    details: 'Détails',
+    copy: 'Copier les détails',
+    copied: 'Copié',
+    reference: "Code d'erreur et référence",
   },
+
 
   units: { hoursShort: 'h', minutesShort: 'min', secondsShort: 's' },
 }

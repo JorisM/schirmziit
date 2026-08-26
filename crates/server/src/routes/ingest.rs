@@ -74,20 +74,23 @@ pub async fn ingest(
         // buckets the current hour always arrives at least twice.
         sqlx::query!(
             "INSERT INTO device_hours
-               (device_id, hour_start, tz, screen_on_ms, unlock_count, computed_at)
-             VALUES ($1, $2, $3, $4, $5, $6)
+               (device_id, hour_start, tz, screen_on_ms, unlock_count, computed_at,
+                background_measured)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)
              ON CONFLICT (device_id, hour_start) DO UPDATE
-               SET screen_on_ms = EXCLUDED.screen_on_ms,
-                   unlock_count = EXCLUDED.unlock_count,
-                   tz           = EXCLUDED.tz,
-                   computed_at  = EXCLUDED.computed_at
+               SET screen_on_ms        = EXCLUDED.screen_on_ms,
+                   unlock_count        = EXCLUDED.unlock_count,
+                   tz                  = EXCLUDED.tz,
+                   computed_at         = EXCLUDED.computed_at,
+                   background_measured = EXCLUDED.background_measured
              WHERE EXCLUDED.computed_at > device_hours.computed_at",
             device.id,
             hour.hour_start,
             hour.tz,
             hour.screen_on_ms,
             hour.unlock_count,
-            hour.computed_at
+            hour.computed_at,
+            hour.background_measured
         )
         .execute(&mut *tx)
         .await?;
@@ -95,13 +98,15 @@ pub async fn ingest(
         for app in &hour.apps {
             sqlx::query!(
                 "INSERT INTO usage_hours
-                   (device_id, package, hour_start, tz, foreground_ms, launch_count, computed_at)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7)
+                   (device_id, package, hour_start, tz, foreground_ms, launch_count,
+                    computed_at, background_ms)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                  ON CONFLICT (device_id, package, hour_start) DO UPDATE
                    SET foreground_ms = EXCLUDED.foreground_ms,
                        launch_count  = EXCLUDED.launch_count,
                        tz            = EXCLUDED.tz,
-                       computed_at   = EXCLUDED.computed_at
+                       computed_at   = EXCLUDED.computed_at,
+                       background_ms = EXCLUDED.background_ms
                  WHERE EXCLUDED.computed_at > usage_hours.computed_at",
                 device.id,
                 app.package,
@@ -109,7 +114,8 @@ pub async fn ingest(
                 hour.tz,
                 app.foreground_ms,
                 app.launch_count,
-                hour.computed_at
+                hour.computed_at,
+                app.background_ms
             )
             .execute(&mut *tx)
             .await?;

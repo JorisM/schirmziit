@@ -9,8 +9,8 @@ import org.junit.Test
 
 class MyTimeUiStateTest {
 
-    private val goodStrip = listOf(DayTotalFfi("2026-08-20", 60_000L))
-    private val goodDetail = DayDetailFfi(60_000L, 3, List(24) { 0L }, emptyList())
+    private val goodStrip = listOf(DayTotalFfi("2026-08-20", 60_000L, 0L))
+    private val goodDetail = DayDetailFfi(60_000L, 3, List(24) { 0L }, emptyList(), 0L, List(24) { 0L }, false)
     private val good = MyTime(goodStrip, goodDetail, "2026-08-20", failed = false)
     private val failure = MyTime(emptyList(), null, "2026-08-21", failed = true)
 
@@ -49,5 +49,23 @@ class MyTimeUiStateTest {
 
         assertEquals(null, state.myTime)
         assertTrue(state.error)
+    }
+
+    @Test
+    fun `a failed load keeps the previous background numbers on screen`() {
+        // The same rule the screen-time numbers get: a dropped connection adds
+        // an error line, it never wipes what the child was already reading.
+        val previous = MyTime(
+            days = goodStrip,
+            detail = DayDetailFfi(60_000L, 3, List(24) { 0L }, emptyList(), 1_800_000L, List(24) { 0L }, true),
+            selected = "2026-08-20",
+            failed = false,
+        )
+        val merged = mergeMyTimeResult(
+            previous = previous,
+            result = MyTime(emptyList(), null, "2026-08-20", failed = true),
+        )
+        assertEquals(1_800_000L, merged.myTime?.detail?.backgroundMs)
+        assertTrue(merged.error)
     }
 }

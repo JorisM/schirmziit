@@ -41,7 +41,7 @@ class MyTimeLoadArgsTest {
     /// request instead of two.
     @Test
     fun `a strip already on screen is reused, not asked for again`() {
-        val strip = listOf(DayTotalFfi("2026-08-20", 60_000L))
+        val strip = listOf(DayTotalFfi("2026-08-20", 60_000L, 0L))
 
         val args = myTimeLoadArgs(LocalDate.of(2026, 8, 24), previousDays = strip)
 

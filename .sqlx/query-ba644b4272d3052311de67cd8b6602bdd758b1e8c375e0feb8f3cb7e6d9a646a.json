@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT u.package,\n                      COALESCE(p.label, u.package) AS \"label!\",\n                      (u.hour_start AT TIME ZONE $4)::date AS \"day!\",\n                      SUM(u.foreground_ms)::bigint AS \"ms!\",\n                      SUM(u.launch_count)::int      AS \"launches!\"\n               FROM usage_hours u\n               JOIN devices d ON d.id = u.device_id\n               LEFT JOIN packages p ON p.family_id = d.family_id AND p.package = u.package\n               WHERE d.child_id = $1 AND u.hour_start >= $2 AND u.hour_start < $3\n               GROUP BY u.package, \"label!\", 3\n               ORDER BY u.package, 3",
+  "query": "SELECT u.package,\n                      COALESCE(p.label, u.package) AS \"label!\",\n                      (u.hour_start AT TIME ZONE $4)::date AS \"day!\",\n                      SUM(u.foreground_ms)::bigint AS \"ms!\",\n                      SUM(u.launch_count)::int      AS \"launches!\",\n                      SUM(u.background_ms)::bigint  AS \"background_ms!\"\n               FROM usage_hours u\n               JOIN devices d ON d.id = u.device_id\n               LEFT JOIN packages p ON p.family_id = d.family_id AND p.package = u.package\n               WHERE d.child_id = $1 AND u.hour_start >= $2 AND u.hour_start < $3\n               GROUP BY u.package, \"label!\", 3\n               ORDER BY u.package, 3",
   "describe": {
     "columns": [
       {
@@ -37,6 +37,12 @@
         "name": "launches!",
         "type_info": "Int4",
         "origin": "Expression"
+      },
+      {
+        "ordinal": 5,
+        "name": "background_ms!",
+        "type_info": "Int8",
+        "origin": "Expression"
       }
     ],
     "parameters": {
@@ -52,8 +58,9 @@
       null,
       null,
       null,
+      null,
       null
     ]
   },
-  "hash": "50b7a6efcee23e39023f830124a63400f21d29bdc83964f21fa2fb3e45bc3844"
+  "hash": "ba644b4272d3052311de67cd8b6602bdd758b1e8c375e0feb8f3cb7e6d9a646a"
 }

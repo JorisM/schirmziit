@@ -47,11 +47,17 @@ codes remain for when the parent is not there to sign in.
    permanently rejected; an unparseable response (captcha, proxy page) must throw, never
    read as "all accepted". A recomputed hour never replaces a fuller one — that bug
    shipped once on Android and is now guarded on both platforms.
-4. **Services are ClusterIP-only behind Traefik.** A MetalLB IP would serve the app to
+4. **`background_ms` is never screen time.** Background listening — media playing with
+   the screen off — is a separate measure everywhere: its own column, its own field, its
+   own colour. No query, component or total adds it to `foreground_ms` or `screen_on_ms`.
+   `background_measured = false` means "this device could not observe it", never "nothing
+   played"; rendering the two alike is the silent zero the rest of this codebase avoids.
+   Android only (MediaSession behind an opt-in notification grant); iOS reports false.
+5. **Services are ClusterIP-only behind Traefik.** A MetalLB IP would serve the app to
    VLAN 10 outside CrowdSec, rate limiting and forward auth.
-5. **Four languages, always.** de (Schweizer Hochdeutsch: no ß, du-form), fr, it, en.
+6. **Four languages, always.** de (Schweizer Hochdeutsch: no ß, du-form), fr, it, en.
    Every new string lands in all four in the same commit; parity tests fail otherwise.
-6. **Secrets come from pass-cli via `*.yaml.tpl`.** No secret in a manifest, no plaintext
+7. **Secrets come from pass-cli via `*.yaml.tpl`.** No secret in a manifest, no plaintext
    in the repo.
 
 ## The gates

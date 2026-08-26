@@ -1,0 +1,20 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO device_hours\n               (device_id, hour_start, tz, screen_on_ms, unlock_count, computed_at,\n                background_measured)\n             VALUES ($1, $2, $3, $4, $5, $6, $7)\n             ON CONFLICT (device_id, hour_start) DO UPDATE\n               SET screen_on_ms        = EXCLUDED.screen_on_ms,\n                   unlock_count        = EXCLUDED.unlock_count,\n                   tz                  = EXCLUDED.tz,\n                   computed_at         = EXCLUDED.computed_at,\n                   background_measured = EXCLUDED.background_measured\n             WHERE EXCLUDED.computed_at > device_hours.computed_at",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz",
+        "Text",
+        "Int8",
+        "Int4",
+        "Timestamptz",
+        "Bool"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "49655bd1c2f2167eeec072a8ee83491a2e2193a7fb673bd951bbb9a72c19b2f9"
+}

@@ -73,5 +73,9 @@ jobs:
       # JVM tests load the core through JNA and need a host build.
       - run: cargo build -p schirmziit-core --release
       - run: mkdir -p android/app/src/test/resources/linux-x86-64 && cp target/release/libschirmziit_core.so android/app/src/test/resources/linux-x86-64/
+      - name: Show the host library JNA has to load
+        run: |
+          ls -l android/app/src/test/resources/linux-x86-64/
+          file android/app/src/test/resources/linux-x86-64/libschirmziit_core.so
       - run: ./gradlew testDebugUnitTest
         working-directory: android

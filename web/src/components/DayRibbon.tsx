@@ -63,6 +63,9 @@ export function DayRibbon({ totals }: { totals: UsageResponse['device_totals'] }
           return (
             <div
               key={hour}
+              data-ribbon-cell
+              // Enters plainly. The background wave beneath it is this
+              // screen's one flourish; two performing at once and both lose.
               className="cursor-default rounded-[4px] transition-transform"
               style={{
                 height: 56,

@@ -103,6 +103,7 @@
     <string name="unpair_body">Dieses Handy sendet dann keine Bildschirmzeit mehr. Was schon gesendet wurde, bleibt — deine Eltern sehen die Tage bis jetzt weiterhin. Dafür muss sich ein Elternteil anmelden, damit das niemand allein ausschalten kann.</string>
     <string name="unpair_confirm">Abmelden</string>
     <string name="unpair_cancel">Abbrechen</string>
+    <string name="background_on_title">Hören bei ausgeschaltetem Bildschirm wird gezählt</string>
     <string name="mytime_background">Im Hintergrund gehört</string>
     <string name="mytime_background_help">Musik, Podcasts oder Hörbücher, die liefen, während dein Bildschirm aus war.</string>
     <string name="mytime_background_not_measured">Hören bei ausgeschaltetem Bildschirm wird auf diesem Handy nicht gezählt.</string>

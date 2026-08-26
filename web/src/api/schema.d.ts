@@ -78,6 +78,17 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
+        /**
+         * Hides the child and stops their phones, in one transaction.
+         * @description The row itself survives — historical usage stays attributable, and the
+         *     dedicated `DELETE /v1/children/{id}/data` is what actually erases figures,
+         *     deliberately separate so "delete my child's data" is its own reported act.
+         *
+         *     Revoking the devices is not tidying-up: `Device` authorizes on
+         *     `devices.revoked_at` alone, so without this a phone whose child is gone from
+         *     every parent screen keeps uploading hours that nothing can read back. A
+         *     parent removing a child means "and stop reporting".
+         */
         delete: operations["soft_delete"];
         options?: never;
         head?: never;
@@ -724,7 +735,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Soft deleted */
+            /** @description Hidden, and its devices revoked */
             204: {
                 headers: {
                     [name: string]: unknown;

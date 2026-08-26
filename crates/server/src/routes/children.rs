@@ -173,11 +173,21 @@ pub async fn list(
     ))
 }
 
+/// Hides the child and stops their phones, in one transaction.
+///
+/// The row itself survives — historical usage stays attributable, and the
+/// dedicated `DELETE /v1/children/{id}/data` is what actually erases figures,
+/// deliberately separate so "delete my child's data" is its own reported act.
+///
+/// Revoking the devices is not tidying-up: `Device` authorizes on
+/// `devices.revoked_at` alone, so without this a phone whose child is gone from
+/// every parent screen keeps uploading hours that nothing can read back. A
+/// parent removing a child means "and stop reporting".
 #[utoipa::path(
     delete, path = "/v1/children/{id}",
     params(("id" = Uuid, Path, description = "Child id")),
     responses(
-        (status = 204, description = "Soft deleted"),
+        (status = 204, description = "Hidden, and its devices revoked"),
         (status = 404, description = "No such child in this family"),
     ),
     tag = "children"
@@ -188,12 +198,26 @@ pub async fn soft_delete(
     Path(id): Path<Uuid>,
 ) -> Result<StatusCode, ApiError> {
     let child_id = scope::child_of_family(&state.pool, parent.family_id, id).await?;
+    let mut tx = state.pool.begin().await?;
+
     sqlx::query!(
         "UPDATE children SET deleted_at = now() WHERE id = $1",
         child_id
     )
-    .execute(&state.pool)
+    .execute(&mut *tx)
     .await?;
+
+    // `revoked_at IS NULL` so a device revoked earlier keeps the time it was
+    // actually revoked at, rather than being restamped by an unrelated act.
+    sqlx::query!(
+        "UPDATE devices SET revoked_at = now()
+         WHERE child_id = $1 AND revoked_at IS NULL",
+        child_id
+    )
+    .execute(&mut *tx)
+    .await?;
+
+    tx.commit().await?;
     Ok(StatusCode::NO_CONTENT)
 }
 

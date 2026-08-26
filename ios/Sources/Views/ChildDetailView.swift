@@ -12,6 +12,8 @@ struct ChildDetailView: View {
     // Owned here, not by DayRibbonView, so a List row recycle during scroll
     // doesn't replay the fill flourish — see DayRibbonView.filledOverride.
     @State private var ribbonFilled = false
+    /// The phone a swipe has proposed disconnecting, named in the dialog.
+    @State private var pendingRevoke: DeviceStatus?
 
     private static let stripDays = 14
 
@@ -118,6 +120,19 @@ struct ChildDetailView: View {
                                     .foregroundStyle(Palette.inkFaint)
                             }
                         }
+                        // Same reasoning as the children list: no full swipe, so
+                        // the gesture opens the question rather than answering
+                        // it. A disconnected phone cannot be reconnected without
+                        // enrolling it again.
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button(role: .destructive) { pendingRevoke = device } label: {
+                                Label {
+                                    L("devices.revoke")
+                                } icon: {
+                                    Image(systemName: "bolt.horizontal.circle")
+                                }
+                            }
+                        }
                     }
                     if usage.devices.contains(where: \.stale) {
                         L("devices.stale.help")
@@ -131,6 +146,21 @@ struct ChildDetailView: View {
             }
         }
         .navigationTitle(child.displayName)
+        .confirmationDialog(
+            Text(verbatim: pendingRevoke?.label ?? ""),
+            isPresented: Binding(
+                get: { pendingRevoke != nil },
+                set: { if !$0 { pendingRevoke = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            Button(S("devices.revoke.confirm"), role: .destructive) {
+                if let device = pendingRevoke { Task { await revoke(device) } }
+            }
+            Button(S("app.cancel"), role: .cancel) { pendingRevoke = nil }
+        } message: {
+            L("devices.revoke.body")
+        }
         // resetting: false — pull-to-refresh must keep the loaded numbers on
         // screen while it re-fetches, not blank a loaded day back to skeletons.
         .refreshable { await load(resetting: false) }
@@ -162,6 +192,21 @@ struct ChildDetailView: View {
     }
 
     @MainActor
+    private func revoke(_ device: DeviceStatus) async {
+        pendingRevoke = nil
+        switch await Self.revokeDevice(client: client, deviceId: device.id) {
+        case .ok:
+            errorText = nil
+            // A revoked device drops out of the usage response, so re-reading
+            // the day is what removes the row — there is no local list to keep
+            // in step with the server.
+            await load(resetting: false)
+        case .failed(let message):
+            errorText = message
+        }
+    }
+
+    @MainActor
     func loadStrip() async {
         switch await Self.fetchUsage(client: client, childId: child.id, from: from, to: today, bucket: "day") {
         case .success(let response):
@@ -178,6 +223,13 @@ struct ChildDetailView: View {
     /// view can zero-fill into a fake quiet fortnight. Swift's `Result` needs its
     /// `Failure` to conform to `Error`, which plain `String` does not — a local
     /// two-case enum is simpler here than wrapping one.
+    /// A phone is disconnected by its own id, never through the child's route:
+    /// `DELETE /v1/children/{id}` removes the child, which is a different and
+    /// much larger act than dropping one of their devices.
+    static func revokeDevice(client: ApiClient, deviceId: String) async -> WriteOutcome {
+        await WriteOutcome.of { try await client.delete("v1/devices/\(deviceId)") }
+    }
+
     static func fetchUsage(
         client: ApiClient,
         childId: String,

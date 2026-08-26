@@ -73,7 +73,8 @@ export function AppBars({ series }: { series: UsageResponse['series'] }) {
   const row = (app: AppTotal, index: number) => (
     <tr
       key={app.package}
-      className="align-middle"
+      className="align-middle animate-[fade-in_var(--motion-base)_var(--ease-out)_backwards]"
+      style={{ animationDelay: `calc(${index} * var(--motion-stagger))` }}
       title={`${app.package === '__other__' ? t.child.otherApps : app.label} — ${formatDuration(app.ms, t)}`}
     >
       <td className="w-[34%] max-w-56 py-2 pr-4">
@@ -83,7 +84,7 @@ export function AppBars({ series }: { series: UsageResponse['series'] }) {
       </td>
       <td className="py-2 pr-4">
         <div
-          className="h-3 rounded-[4px]"
+          className="h-3 rounded-[4px] origin-left animate-[grow-right_var(--motion-base)_var(--ease-out)_backwards]"
           style={{
             width: busiest > 0 ? `${Math.max(2, (app.ms / busiest) * 100)}%` : '2%',
             background:

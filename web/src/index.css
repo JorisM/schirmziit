@@ -271,6 +271,10 @@ h3 {
   from { opacity: 0; transform: scaleY(0.2); }
 }
 
+@keyframes grow-right {
+  from { transform: scaleX(0); }
+}
+
 @keyframes fade-in {
   from { opacity: 0; }
 }

@@ -131,6 +131,13 @@ matches where this project is headed: its own repository.
 
 ## Build
 
+`bin/android-check` is the gate, and it re-enters the dev shell itself — so none of
+the `PATH`, `JAVA_HOME`, `ANDROID_HOME` and `ANDROID_NDK_HOME` care above applies to
+it. The environment block is for driving gradle by hand.
+
+    bin/android-check      # the whole gate, from a bare terminal
+    bin/check android      # the same gate, inside the full set
+
     just android-check     # rust core for android + gradle unit tests
     cd android && ./gradlew assembleDebug
     adb install -r app/build/outputs/apk/debug/app-debug.apk

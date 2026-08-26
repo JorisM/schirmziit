@@ -92,4 +92,13 @@
     <string name="notification_problem">Problem beim Senden: %1$s</string>
     <string name="notification_last_sent">Zuletzt gesendet %1$s</string>
     <string name="permission_revoked">Nutzungszugriff wurde ausgeschaltet</string>
+    <string name="playback_service_label">Im Hintergrund gehört</string>
+    <string name="background_card_title">Auch Hören bei ausgeschaltetem Bildschirm zählen?</string>
+    <string name="background_card_body">Musik, Podcasts und Hörbücher, die bei ausgeschaltetem Bildschirm laufen, sind keine Bildschirmzeit und werden heute nicht gezählt. Damit sie gezählt werden, braucht Schirmziit Zugriff auf Mitteilungen — nur so lässt Android eine App erkennen, welche App gerade spielt. Schirmziit liest deine Mitteilungen nie und auch nie, was läuft, nur dass etwas läuft.</string>
+    <string name="background_card_action">Einstellungen öffnen</string>
+    <string name="background_card_dismiss">Jetzt nicht</string>
+    <string name="mytime_background">Im Hintergrund gehört</string>
+    <string name="mytime_background_help">Musik, Podcasts oder Hörbücher, die liefen, während dein Bildschirm aus war.</string>
+    <string name="mytime_background_not_measured">Hören bei ausgeschaltetem Bildschirm wird auf diesem Handy nicht gezählt.</string>
+    <string name="mytime_background_empty">An diesem Tag lief nichts bei ausgeschaltetem Bildschirm.</string>
 </resources>

@@ -53,7 +53,22 @@ const analyticsId = import.meta.env.PUBLIC_UMAMI_ID
     {/* Self-hosted, cookieless counting. Injected only when configured, so a
         fork of this site ships without any analytics at all. */}
     {analyticsHost && analyticsId && (
-      <script defer src={`${analyticsHost}/script.js`} data-website-id={analyticsId}></script>
+      <>
+        <script defer src={`${analyticsHost}/script.js`} data-website-id={analyticsId}></script>
+        {/* One helper for every custom event on the site, defined in <head> so
+            it exists before any body script runs. The tracker itself is
+            `defer`, so it is NOT loaded yet at that point — queue until load
+            rather than dropping the event. `window.szTrack` staying undefined
+            when analytics is unconfigured is the whole guard: every call site
+            uses `?.`, so a fork emits nothing. */}
+        <script is:inline>
+          window.szTrack = (name, data) => {
+            const send = () => window.umami && window.umami.track(name, data)
+            if (window.umami) send()
+            else window.addEventListener('load', send, { once: true })
+          }
+        </script>
+      </>
     )}
   </head>
   <body>
@@ -68,7 +83,7 @@ const analyticsId = import.meta.env.PUBLIC_UMAMI_ID
           ))}
           <span class="langs">
             {locales.map((l) => (
-              <a href={pathFor(l)} aria-current={l === locale ? 'true' : undefined} lang={sites[l].htmlLang}>
+              <a href={pathFor(l)} aria-current={l === locale ? 'true' : undefined} lang={sites[l].htmlLang} data-locale={l}>
                 {localeNames[l].slice(0, 2).toUpperCase()}
               </a>
             ))}
@@ -89,5 +104,30 @@ const analyticsId = import.meta.env.PUBLIC_UMAMI_ID
         <a href="mailto:joris@morger-gossweiler.ch">{t.footer.contact}</a>
       </div>
     </footer>
+
+    {/* The custom events the saved Umami reports are built on. A page view
+        already carries the URL, but a funnel needs a first step that is the
+        same across four locale prefixes, and `site-view` is it — it also
+        carries `page`/`locale` as event data, which a raw path does not.
+        Clicks are delegated from one listener so no markup grows handlers. */}
+    <script is:inline define:vars={{ page, locale }}>
+      window.szTrack?.('site-view', { page, locale })
+
+      document.addEventListener('click', (event) => {
+        const link = event.target.closest?.('a')
+        if (!link) return
+
+        if (link.classList.contains('alpha-cta')) {
+          window.szTrack?.('banner-cta', { page, locale })
+        } else if (link.closest('.langs')) {
+          // Only a real change is a switch; clicking the current language is not.
+          const to = link.dataset.locale
+          if (to && to !== locale) window.szTrack?.('lang-switch', { from: locale, to })
+        } else if (link.closest('footer.site')) {
+          if (link.protocol === 'mailto:') window.szTrack?.('contact-click', { page, locale })
+          else window.szTrack?.('source-click', { page, locale })
+        }
+      })
+    </script>
   </body>
 </html>

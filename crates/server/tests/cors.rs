@@ -132,11 +132,12 @@ async fn a_self_hosted_instance_sends_no_cors_headers(pool: PgPool) {
 
 #[sqlx::test]
 async fn more_than_one_origin_can_be_allowed(pool: PgPool) {
-    // Cutover: the old host has to keep working while DNS and app builds catch
-    // up, so the allow-list is a list.
-    let old = "https://schirmziit.jorisda.ch";
-    let response = app(state(pool, &[DASHBOARD, old]))
-        .oneshot(get("/v1/me", old))
+    // The allow-list is a list, not a single value: a domain move needs the old
+    // and the new host granted at once, or every already-open dashboard tab
+    // starts failing the moment DNS flips.
+    let second = "https://dashboard.example.test";
+    let response = app(state(pool, &[DASHBOARD, second]))
+        .oneshot(get("/v1/me", second))
         .await
         .unwrap();
 
@@ -145,7 +146,7 @@ async fn more_than_one_origin_can_be_allowed(pool: PgPool) {
             .headers()
             .get(header::ACCESS_CONTROL_ALLOW_ORIGIN)
             .map(|v| v.to_str().unwrap()),
-        Some(old),
+        Some(second),
     );
 }
 

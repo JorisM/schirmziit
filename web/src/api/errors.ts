@@ -107,3 +107,55 @@ export function recentErrors(): readonly AppError[] {
 export function clearErrorLog() {
   log = []
 }
+
+const PREVIOUS_SHOWN = 4
+
+/** `2026-08-26 14:02:11 +02:00` — sortable, and unambiguous about the zone. */
+function stamp(at: Date): string {
+  const local = at.toLocaleString('sv-SE')
+  const offset = -at.getTimezoneOffset()
+  const sign = offset < 0 ? '-' : '+'
+  const hours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, '0')
+  const minutes = String(Math.abs(offset) % 60).padStart(2, '0')
+  return `${local} ${sign}${hours}:${minutes}`
+}
+
+function where(error: AppError): string {
+  if (!error.endpoint) return ''
+  const status = error.httpStatus ? ` → ${error.httpStatus}` : ''
+  return `GET ${error.endpoint}${status}`
+}
+
+/**
+ * The block behind "copy details".
+ *
+ * It holds what a maintainer needs and nothing that describes a family: no
+ * email, no child name, no request or response body, and the endpoint as a
+ * path with the host stripped in the constructor. The user agent is in here
+ * deliberately — it is the difference between "a rendering bug" and "a
+ * rendering bug on an eight-year-old iPad" — and this block only ever leaves
+ * the machine when the reader chooses to paste it.
+ */
+export function copyDetails(error: AppError): string {
+  const lines = [
+    `${error.code} · ${error.ref}`,
+    stamp(error.at),
+    `schirmziit ${APP_VERSION} · web · ${navigator.userAgent}`,
+    where(error),
+  ].filter(Boolean)
+
+  const previous = recentErrors()
+    .filter((entry) => entry !== error)
+    .slice(-PREVIOUS_SHOWN)
+  if (previous.length > 0) {
+    lines.push('', 'before this:')
+    for (const entry of previous) {
+      lines.push(
+        `  ${entry.code} · ${entry.ref} · ${entry.at.toLocaleTimeString('sv-SE')} · ${
+          where(entry) || '—'
+        }`,
+      )
+    }
+  }
+  return lines.join('\n')
+}

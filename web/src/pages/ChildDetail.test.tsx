@@ -111,6 +111,37 @@ describe('ChildDetail', () => {
     expect(screen.queryByText(locales.en.child.noDataToday)).not.toBeInTheDocument()
   })
 
+  it('keeps the strip on screen while a newly selected day loads', async () => {
+    const user = userEvent.setup()
+    let hourCalls = 0
+    let resolveSecondDay: (value: unknown) => void = () => {}
+    vi.spyOn(api, 'get').mockImplementation(async (path: string) => {
+      const url = new URL(path, 'http://x')
+      if (url.searchParams.get('bucket') === 'day') return usage('day', '2026-08-12', localToday())
+      hourCalls += 1
+      // First call (initial mount) resolves; the second (after the tap) is held
+      // open so the loading state is observable after the click.
+      if (hourCalls === 1) return usage('hour', localToday(), localToday())
+      return new Promise((resolve) => {
+        resolveSecondDay = resolve
+      })
+    })
+
+    renderPage()
+    await waitFor(() => expect(screen.getAllByRole('button').length).toBeGreaterThan(0))
+
+    const bars = screen.getAllByRole('button')
+    await user.click(bars[0]!)
+
+    // The control the parent just tapped must not vanish under their finger.
+    // Before this fix a single `if (!data)` guard blanked the entire page.
+    expect(screen.getAllByRole('button').length).toBeGreaterThan(1)
+    expect(screen.getAllByRole('status').length).toBeGreaterThan(0)
+
+    // Let the held promise resolve so no unhandled state leaks into later tests.
+    resolveSecondDay(usage('hour', localToday(), localToday()))
+  })
+
   it('shows an error instead of a fortnight of zero bars when the strip request fails', async () => {
     vi.spyOn(api, 'get').mockImplementation(async (path: string) => {
       const url = new URL(path, 'http://x')

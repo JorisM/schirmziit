@@ -91,6 +91,25 @@ needed — point `DEVELOPER_DIR` at it per command:
 
 ## Build, test, install
 
+**`$HOME/.cargo/bin` must precede `/opt/homebrew/bin` in `PATH`.** Homebrew's rust
+shadows rustup and carries no iOS std, so `just ios-core` dies with
+
+    error[E0463]: can't find crate for `core`
+      = note: the `aarch64-apple-ios` target may not be installed
+
+while `rustup target list --installed` happily lists that target. `rustup run stable
+cargo …` does not help: cargo shells out to a bare `rustc`, which `PATH` resolves to
+Homebrew's again. Same trap as the Android note, different std.
+
+    export PATH="$HOME/.cargo/bin:$PATH"
+
+**Check the exit status, do not read the tail.** `just ios-core` failing leaves stale
+`ios/Generated/schirmziit_core.swift` behind, and the *next* build then fails with
+`cannot find type 'DayTotalFfi' in scope` — a symptom two steps from its cause. Piping
+`xcodebuild` into `tail` is worse: the pipeline reports `tail`'s status, so a
+`** BUILD FAILED **` run looks like a clean exit 0 and the install fails later with
+`not a valid bundle … Info.plist: missing`. Redirect to a file and check `$?`.
+
     just ios-core                      # Rust core → SchirmziitCoreFFI.xcframework
     just ios-project                   # ios-core, then xcodegen generate
     just ios-check                     # both schemes' tests on a simulator
@@ -109,14 +128,19 @@ Or by hand:
     #   security find-certificate -a -c "Apple Development" -p \
     #     | openssl x509 -noout -subject
     #   → OU=S3JX3CJ9SS  ← team;  CN=… (6TCRCYDSQQ)  ← not the team
-    xcodebuild -project Schirmziit.xcodeproj -scheme Schirmziit \
+    # Scheme SchirmziitLocal on a free Personal Team — the `Schirmziit` scheme
+    # claims Family Controls and App Groups, which such a team cannot sign.
+    xcodebuild -project Schirmziit.xcodeproj -scheme SchirmziitLocal \
       -destination 'id=<device-udid>' \
       -allowProvisioningUpdates DEVELOPMENT_TEAM=S3JX3CJ9SS build
 
     xcrun devicectl list devices                       # find the device id
     xcrun devicectl device install app --device <id> \
-      ~/Library/Developer/Xcode/DerivedData/Schirmziit-*/Build/Products/Debug-iphoneos/Schirmziit.app
-    xcrun devicectl device process launch --device <id> ch.jorisda.schirmziit
+      ~/Library/Developer/Xcode/DerivedData/Schirmziit-*/Build/Products/Debug-iphoneos/SchirmziitLocal.app
+    xcrun devicectl device process launch --device <id> ch.jorisda.schirmziit.local
+
+Swap both names for `Schirmziit.app` / `ch.jorisda.schirmziit` once the entitlement
+exists and the `Schirmziit` scheme is the one being built.
 
 First launch after a fresh install fails with `FBSOpenApplicationErrorDomain
 error 3` until the profile is trusted on the phone: Settings → General → VPN &

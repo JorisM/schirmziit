@@ -104,7 +104,11 @@ class SchirmziitClientTest {
 
         assertEquals(listOf("Emma", "Noah"), children.map { it.displayName })
         val request = server.takeRequest()
-        assertEquals("/v1/children", request.path)
+        assertTrue(request.path!!.startsWith("/v1/children"))
+        // tz is now required by the server; assert it's sent at all rather than
+        // pinning the device's own zone as a literal, which would just be
+        // re-asserting the implementation.
+        assertTrue(!request.requestUrl!!.queryParameter("tz").isNullOrBlank())
         assertEquals("schirmziit_session=abc123", request.getHeader("cookie"))
         server.shutdown()
     }

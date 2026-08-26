@@ -16,6 +16,7 @@
 "children.title" = "Enfants";
 "children.empty" = "Aucun enfant";
 "children.empty.hint" = "Ajoute un enfant dans le tableau de bord, puis connecte son téléphone.";
+"children.todayTotal" = "aujourd’hui";
 
 "child.total" = "Temps d'écran aujourd'hui";
 "child.unlocks %lld" = "%lld déverrouillages";

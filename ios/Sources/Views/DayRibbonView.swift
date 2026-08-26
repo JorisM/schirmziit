@@ -8,7 +8,26 @@ import SwiftUI
 /// screen does not have.
 struct DayRibbonView: View {
     let totals: [DeviceTotal]
+    /// Owned by the enclosing screen when supplied. A `List` can drop and
+    /// recreate this view's own `@State` as a row scrolls off-screen and back,
+    /// which replayed the fill flourish on every recycle; state that lives on
+    /// the screen above the list survives that and plays the flourish only
+    /// once per screen appearance. Defaults to a local fallback so call sites
+    /// that don't need this (previews, snapshot tests) are unaffected.
+    var filledOverride: Binding<Bool>?
     @State private var selected: Int?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var filledFallback = false
+
+    private var filled: Bool { filledOverride?.wrappedValue ?? filledFallback }
+
+    private func markFilled() {
+        if let filledOverride {
+            filledOverride.wrappedValue = true
+        } else {
+            filledFallback = true
+        }
+    }
 
     private var perHour: [Int] { Formatting.hoursFromTotals(totals) }
 
@@ -36,11 +55,24 @@ struct DayRibbonView: View {
                                               lineWidth: selected == hour ? 2 : 0.5)
                         )
                         .frame(height: 52)
+                        .scaleEffect(y: filled ? 1 : 0.2, anchor: .bottom)
+                        .opacity(filled ? 1 : 0)
+                        .animation(
+                            // The sweep IS the day passing. `Motion.slow / 24` spreads the
+                            // whole flourish across the budget rather than per cell.
+                            Motion.animation(
+                                Motion.base,
+                                delay: Double(hour) * Motion.slow / 24,
+                                reduceMotion: reduceMotion
+                            ),
+                            value: filled
+                        )
                         .accessibilityLabel(Text(verbatim: "\(hour):00"))
                         .accessibilityValue(Text(verbatim: Formatting.duration(perHour[hour])))
                         .onTapGesture { selected = selected == hour ? nil : hour }
                 }
             }
+            .onAppear { markFilled() }
 
             HStack {
                 ForEach([0, 6, 12, 18], id: \.self) { hour in

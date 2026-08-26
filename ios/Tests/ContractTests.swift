@@ -22,7 +22,7 @@ final class ContractTests: XCTestCase {
 
     func testDecodesChildrenList() throws {
         let children = try decode(
-            #"[{"id":"c8a19dc2-892d-4895-a82f-a80633152679","display_name":"Fairphone kid"}]"#,
+            #"[{"id":"c8a19dc2-892d-4895-a82f-a80633152679","display_name":"Fairphone kid","today_ms":0}]"#,
             as: [ChildResponse].self
         )
         XCTAssertEqual(children.first?.displayName, "Fairphone kid")

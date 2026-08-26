@@ -96,6 +96,16 @@
           "children"
         ],
         "operationId": "list",
+        "parameters": [
+          {
+            "name": "tz",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Children in this family",
@@ -112,6 +122,9 @@
           },
           "401": {
             "description": "Not authenticated"
+          },
+          "422": {
+            "description": "Unknown timezone"
           }
         }
       },
@@ -663,7 +676,8 @@
         "type": "object",
         "required": [
           "id",
-          "display_name"
+          "display_name",
+          "today_ms"
         ],
         "properties": {
           "display_name": {
@@ -672,6 +686,11 @@
           "id": {
             "type": "string",
             "format": "uuid"
+          },
+          "today_ms": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Foreground milliseconds so far in the caller's local today. Zero, never\nnull: a quiet day is a real number and an absent one renders as a hole."
           }
         }
       },

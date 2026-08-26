@@ -1,6 +1,7 @@
 "app.name" = "Schirmziit";
 "app.help" = "Come funziona";
 "app.signout" = "Esci";
+"app.cancel" = "Annulla";
 
 "signin.intro" = "Schirmziit gira sul server della tua famiglia. Non c'è nessun account presso un'azienda.";
 "signin.server" = "Server";
@@ -15,8 +16,16 @@
 
 "children.title" = "Bambini";
 "children.empty" = "Ancora nessun bambino";
-"children.empty.hint" = "Aggiungi un bambino nella panoramica, poi collega il suo telefono.";
+"children.empty.hint" = "Aggiungi un bambino, poi collega il suo telefono.";
 "children.todayTotal" = "oggi";
+"children.add" = "Aggiungi un bambino";
+"children.add.title" = "Nuovo bambino";
+"children.add.placeholder" = "Nome, p. es. Lena";
+"children.add.save" = "Aggiungi";
+"children.add.empty" = "Dai prima un nome al bambino.";
+"children.remove" = "Rimuovi";
+"children.remove.body" = "Il suo telefono smette subito di inviare e i suoi numeri non vengono più mostrati. Non si può annullare.";
+"children.remove.confirm" = "Sì, rimuovi";
 
 "child.total" = "Tempo di schermo oggi";
 "child.unlocks %lld" = "%lld sblocchi";
@@ -37,6 +46,9 @@
 "devices.stale" = "non invia più nulla";
 "devices.stale.help" = "Nulla da più di 90 minuti. Finché è così, i numeri sopra sono incompleti — non necessariamente bassi.";
 "devices.never" = "non ha mai inviato nulla";
+"devices.revoke" = "Disconnetti";
+"devices.revoke.body" = "Questo telefono smette subito di inviare. I numeri già raccolti restano.";
+"devices.revoke.confirm" = "Sì, disconnetti";
 
 "help.title" = "Come funziona Schirmziit";
 "help.intro" = "Schirmziit mostra quanto e quando viene usato il telefono di tuo figlio. Niente è segreto: il bambino vede gli stessi numeri sul proprio telefono.";

@@ -1,6 +1,7 @@
 "app.name" = "Schirmziit";
 "app.help" = "How this works";
 "app.signout" = "Sign out";
+"app.cancel" = "Cancel";
 
 "signin.intro" = "Schirmziit runs on your family's own server. There is no account with a company.";
 "signin.server" = "Server";
@@ -15,8 +16,16 @@
 
 "children.title" = "Children";
 "children.empty" = "No child yet";
-"children.empty.hint" = "Add a child in the dashboard, then connect their phone.";
+"children.empty.hint" = "Add a child, then connect their phone to it.";
 "children.todayTotal" = "today";
+"children.add" = "Add a child";
+"children.add.title" = "New child";
+"children.add.placeholder" = "Name, e.g. Lena";
+"children.add.save" = "Add";
+"children.add.empty" = "Give the child a name first.";
+"children.remove" = "Remove";
+"children.remove.body" = "Their phone stops reporting straight away and their figures are no longer shown. You cannot undo this.";
+"children.remove.confirm" = "Yes, remove";
 
 "child.total" = "Screen time today";
 "child.unlocks %lld" = "%lld times unlocked";
@@ -37,6 +46,9 @@
 "devices.stale" = "not reporting";
 "devices.stale.help" = "Nothing for over 90 minutes. Until it reports again the numbers above are incomplete — not necessarily low.";
 "devices.never" = "has never reported";
+"devices.revoke" = "Disconnect";
+"devices.revoke.body" = "This phone stops reporting straight away. The figures already collected stay.";
+"devices.revoke.confirm" = "Yes, disconnect";
 
 "help.title" = "How Schirmziit works";
 "help.intro" = "Schirmziit shows how long and when your child's phone is used. None of it is secret: the child sees the same numbers on their own phone.";

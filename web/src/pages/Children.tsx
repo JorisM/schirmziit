@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import useSWR from 'swr'
-import { api } from '../api/client'
+import { api, AppError } from '../api/client'
 import type { components } from '../api/schema'
+import { ErrorPanel } from '../components/ErrorPanel'
 import { formatDuration, useI18n } from '../i18n'
 import { useCountUp } from '../motion'
 
@@ -62,11 +63,7 @@ export function Children() {
   }
 
   if (error) {
-    return (
-      <p role="alert" style={{ color: 'var(--urgent)' }}>
-        {t.errors.generic}
-      </p>
-    )
+    return <ErrorPanel error={error as AppError} onRetry={() => void mutate()} />
   }
 
   return (

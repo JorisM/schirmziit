@@ -59,8 +59,8 @@ describe('AppError', () => {
     for (let i = 0; i < 60; i += 1) fromTransport(new TypeError('x'), { endpoint: `/v1/${i}` })
     const log = recentErrors()
     expect(log).toHaveLength(50)
-    expect(log[0].endpoint).toBe('/v1/10')
-    expect(log[49].endpoint).toBe('/v1/59')
+    expect(log[0]?.endpoint).toBe('/v1/10')
+    expect(log[49]?.endpoint).toBe('/v1/59')
   })
 
   it('never keeps the host, only the path', () => {

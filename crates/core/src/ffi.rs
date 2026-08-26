@@ -4,6 +4,7 @@
 //! calls.
 
 use crate::buckets::bucket_hours;
+use crate::codes::ErrorCode;
 use crate::error::CoreError;
 use crate::events::{EventKind, RawEvent};
 use crate::queue::{apply_result, plan_sync};
@@ -19,6 +20,17 @@ pub enum FfiError {
     UnknownTimezone { tz: String },
     #[error("malformed json: {detail}")]
     BadJson { detail: String },
+}
+
+/// A free function, not a method: `FfiError` is a uniffi *error* type, and
+/// uniffi does not export inherent methods on those. Both apps call
+/// `ffiErrorCode(error)`.
+#[uniffi::export]
+pub fn ffi_error_code(error: &FfiError) -> ErrorCode {
+    match error {
+        FfiError::UnknownTimezone { .. } => ErrorCode::CoreUnknownTimezone,
+        FfiError::BadJson { .. } => ErrorCode::CoreMalformedJson,
+    }
 }
 
 impl From<CoreError> for FfiError {

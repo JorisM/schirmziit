@@ -7,6 +7,7 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.TimeZone
 
 data class EnrollResult(val deviceId: String, val token: String)
 
@@ -70,8 +71,14 @@ class SchirmziitClient(baseUrl: String, private val client: OkHttpClient) {
     }
 
     fun children(session: ParentSession): List<SetupChild> {
+        // tz is required by the server; the device's own zone is what "today"
+        // should mean here, same as myUsage below.
+        val url = "$base/v1/children".toHttpUrl().newBuilder()
+            .addQueryParameter("tz", TimeZone.getDefault().id)
+            .build()
+
         val request = Request.Builder()
-            .url("$base/v1/children")
+            .url(url)
             .header("cookie", session.cookie)
             .build()
 

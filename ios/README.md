@@ -129,6 +129,13 @@ Homebrew's again. Same trap as the Android note, different std.
     just ios-project                   # ios-core, then xcodegen generate
     just ios-check                     # both schemes' tests on a simulator
 
+**Which of the two apps `bin/ios-install` installs:** the real one. It builds the
+`Schirmziit` scheme, so the bundle id is `ch.jorisda.schirmziit` and the home screen
+says *Schirmziit*. `SchirmziitLocal` is the free-team build, `ch.jorisda.schirmziit.local`,
+and its home-screen name is *SchirmziitLocal* — the two are only told apart by that
+name, so a phone carrying both from different eras can otherwise show the wrong one.
+Delete whichever you are not testing.
+
 Or by hand:
 
     cd ios

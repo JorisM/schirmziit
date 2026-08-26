@@ -46,6 +46,15 @@ Traps that cost real time here. Each one was hit; none is theoretical.
   placeholders appear in English in a German snapshot while being correct on a phone.
 * `.lproj` folders must be listed with `type: folder` in `project.yml`, or the four locales
   are flattened into one variant group and a parity test passes while reading one language.
+* **No `UILaunchScreen` key means a letterboxed app**, not a missing splash screen: iOS
+  falls back to legacy compatibility mode, renders at an older screen size and puts a black
+  bar above and below on every modern iPhone. Nothing in the SwiftUI code says so and no
+  snapshot can catch it — the bars are the window, not the layout. The empty dictionary in
+  `project.yml` is the whole opt-in, and it is what then makes the iPad device family demand
+  all four orientations.
+* **Both app targets generate the same `Sources/Resources/Info.plist`**, so its `properties`
+  are a YAML anchor shared between them. Two copies drift, and the target generated last
+  wins silently.
 * **Snapshots record by deletion** (`just ios-record`). `xcodebuild` does not pass plain
   command-line variables into the test process, so a record flag silently does nothing and
   images only change when absent — which looks like a stable suite comparing stale images.

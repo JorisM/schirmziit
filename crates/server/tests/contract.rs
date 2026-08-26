@@ -128,3 +128,16 @@ async fn purge_response_matches_its_schema(pool: PgPool) {
     let purged = app.delete(&format!("/v1/children/{child_id}/data")).await;
     assert_matches_schema("PurgeResponse", &purged.json);
 }
+
+/// The dashboard's generated union comes from this enum. If utoipa ever stops
+/// emitting the renamed strings, web silently falls back to `string` and the
+/// copy lookup loses its compile-time check.
+#[test]
+fn the_error_code_enum_reaches_the_document() {
+    let doc = serde_json::to_value(schirmziit_server::openapi::ApiDoc::openapi()).unwrap();
+    let values = doc["components"]["schemas"]["ErrorCode"]["enum"]
+        .as_array()
+        .expect("ErrorCode is an enum schema");
+    assert!(values.iter().any(|v| v == "SZ-E101"), "{values:?}");
+    assert!(values.iter().any(|v| v == "SZ-E901"), "{values:?}");
+}

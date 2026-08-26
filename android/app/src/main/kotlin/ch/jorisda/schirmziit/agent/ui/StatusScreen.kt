@@ -185,6 +185,42 @@ fun StatusScreen(
             }
         }
 
+        // Granting notification access happens in system settings, with this app
+        // paused — so the only feedback the phone can give is on the way back.
+        // Silently removing the ask card is not feedback: it looks identical to
+        // a grant that failed, or to one this screen never noticed. Say it.
+        if (backgroundGranted) {
+            // A container/on-color PAIR, not a tint over whatever is behind:
+            // an alpha-composited colour has no guaranteed contrast, and the
+            // first recording of this card put an invisible check mark on a
+            // block that read as another warning under the red battery one.
+            // This is a confirmation; it must not look like an alert.
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                ),
+            ) {
+                // One line, not a card with a paragraph. The ask card above
+                // already explained what this grant does; repeating it after
+                // the answer only pushes the rest of the screen off the first
+                // viewport. Stays visible rather than flashing once: this is a
+                // status screen, and the child is entitled to keep seeing what
+                // is measured about them.
+                Row(
+                    Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    Text("✓")
+                    Text(
+                        stringResource(R.string.background_on_title),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+            }
+        }
+
         // Optional, and shown once. An extra grant that keeps asking is a nag,
         // and declining this one is a supported end state, not a broken setup.
         if (!backgroundGranted && !backgroundCardDismissed) {

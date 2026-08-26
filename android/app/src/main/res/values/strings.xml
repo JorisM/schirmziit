@@ -107,6 +107,7 @@
     <string name="unpair_body">This phone stops sending screen time. Nothing already sent is deleted, and your parents keep seeing the days up to now. A parent has to sign in for this, so nobody can switch it off on their own.</string>
     <string name="unpair_confirm">Stop reporting</string>
     <string name="unpair_cancel">Cancel</string>
+    <string name="background_on_title">Listening with the screen off is counted</string>
     <string name="mytime_background">Listened in the background</string>
     <string name="mytime_background_help">Music, podcasts or audiobooks that played while your screen was off.</string>
     <string name="mytime_background_not_measured">Listening with the screen off is not being counted on this phone.</string>

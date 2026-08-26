@@ -124,6 +124,11 @@ targets:
     info:
       path: AgentMonitor/Info.plist
       properties:
+        # installd requires this of every appex, separately from NSExtension, and
+        # rejects the whole app without it: "does not have a CFBundleDisplayName
+        # key with a non-zero length string value". The product name, which reads
+        # the same in all four languages.
+        CFBundleDisplayName: Schirmziit
         NSExtension:
           NSExtensionPointIdentifier: com.apple.deviceactivity.monitor-extension
           # Module.Class — the DeviceActivityMonitor subclass in
@@ -144,6 +149,8 @@ targets:
     info:
       path: AgentReport/Info.plist
       properties:
+        # Same installd requirement as the monitor extension above.
+        CFBundleDisplayName: Schirmziit
         NSExtension:
           NSExtensionPointIdentifier: com.apple.deviceactivityui.report-extension
           # No principal class: a DeviceActivityReportExtension is a SwiftUI

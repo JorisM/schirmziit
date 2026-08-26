@@ -205,6 +205,20 @@ class MainActivity : ComponentActivity() {
                                 showMyTime = true
                                 loadMyTime(java.time.LocalDate.now().toString())
                             },
+                            backgroundGranted = state.backgroundGranted,
+                            backgroundCardDismissed = state.backgroundCardDismissed,
+                            onAllowBackgroundListening = {
+                                startActivity(
+                                    android.content.Intent(
+                                        android.provider.Settings
+                                            .ACTION_NOTIFICATION_LISTENER_SETTINGS,
+                                    ),
+                                )
+                            },
+                            onDismissBackgroundCard = {
+                                settings.backgroundCardDismissed = true
+                                refresh()
+                            },
                         )
                     }
                 }

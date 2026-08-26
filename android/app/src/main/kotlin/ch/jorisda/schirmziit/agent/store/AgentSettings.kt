@@ -11,6 +11,13 @@ interface AgentSettings {
     var lastSyncMillis: Long
     var lastError: String?
 
+    /**
+     * Whether the family has said "not now" to background listening. One card,
+     * dismissed once, gone for good: an optional grant that keeps asking is a
+     * nag, and this one is genuinely optional.
+     */
+    var backgroundCardDismissed: Boolean
+
     val isPaired: Boolean get() = baseUrl != null && deviceToken != null
 
     fun unpair()

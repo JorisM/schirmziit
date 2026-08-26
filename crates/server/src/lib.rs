@@ -3,6 +3,7 @@ pub mod config;
 pub mod db;
 pub mod error;
 pub mod openapi;
+pub mod request_id;
 pub mod retention;
 pub mod routes;
 pub mod static_files;
@@ -17,6 +18,7 @@ use tower_governor::GovernorLayer;
 use tower_governor::governor::GovernorConfigBuilder;
 use tower_governor::key_extractor::SmartIpKeyExtractor;
 use tower_http::cors::{AllowOrigin, CorsLayer};
+use tower_http::request_id::{PropagateRequestIdLayer, SetRequestIdLayer};
 use uuid::Uuid;
 
 /// Per-device ingest counters, kept in memory. A restart forgets them, which is
@@ -126,9 +128,35 @@ fn build(state: AppState, rate_limit: bool) -> Router {
         .fallback(static_files::handler)
         .layer(cors_layer(&state.config.dashboard_origins));
 
+    // Outermost, and in this order: the id must exist before anything reads it,
+    // the extension is what everything downstream actually uses, and the
+    // propagate layer copies the id onto the response once the handler is done.
     family_routes
         .merge(waitlist_routes.layer(waitlist_cors_layer()))
+        .layer(PropagateRequestIdLayer::new(request_id::HEADER))
+        .layer(axum::middleware::from_fn(insert_request_ref))
+        .layer(SetRequestIdLayer::new(
+            request_id::HEADER,
+            request_id::MakeUuid,
+        ))
         .with_state(state)
+}
+
+/// `SetRequestIdLayer` puts the id in the headers; everything downstream wants
+/// it as a value, not a header lookup.
+async fn insert_request_ref(
+    mut request: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> axum::response::Response {
+    if let Some(id) = request
+        .headers()
+        .get(request_id::HEADER)
+        .and_then(|v| v.to_str().ok())
+        .map(|v| request_id::RequestRef(v.to_string()))
+    {
+        request.extensions_mut().insert(id);
+    }
+    next.run(request).await
 }
 
 /// The cross-origin grant for the hosted `app.` / `api.` split.
@@ -150,6 +178,10 @@ fn cors_layer(origins: &[String]) -> CorsLayer {
         .allow_credentials(true)
         .allow_methods([Method::GET, Method::POST, Method::DELETE, Method::OPTIONS])
         .allow_headers([header::CONTENT_TYPE, header::AUTHORIZATION])
+        // Without this the dashboard can read the reference out of an error
+        // body but not off a successful response, so a slow-but-working request
+        // is untraceable from the browser.
+        .expose_headers([request_id::HEADER])
 }
 
 /// The grant for the public waiting list, and only for it.

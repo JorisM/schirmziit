@@ -49,3 +49,36 @@ async fn the_problem_content_type_is_unchanged(pool: PgPool) {
     );
     assert_eq!(response.json["title"], "unauthenticated");
 }
+
+#[sqlx::test]
+async fn every_response_carries_a_request_id_header(pool: PgPool) {
+    let app = TestApp::registered(pool).await;
+    let response = app.get_raw("/v1/me").await;
+
+    assert!(response.status().is_success());
+    let header = response
+        .headers()
+        .get("x-request-id")
+        .expect("x-request-id on a successful response")
+        .to_str()
+        .unwrap()
+        .to_string();
+    // A successful-but-slow request has to be traceable too, which is why this
+    // is not limited to errors.
+    assert_eq!(header.len(), 36, "a uuid, not {header}");
+}
+
+#[sqlx::test]
+async fn the_body_reference_is_the_head_of_the_request_id(pool: PgPool) {
+    let app = TestApp::new(pool);
+    let (status, json, headers) = app.get_with_headers("/v1/children").await;
+
+    assert_eq!(status, StatusCode::UNAUTHORIZED);
+    let request_id = headers.get("x-request-id").unwrap().to_str().unwrap();
+    let short = json["ref"].as_str().unwrap();
+    assert_eq!(
+        short,
+        &request_id[..6],
+        "grepping the on-screen reference must find the log line"
+    );
+}

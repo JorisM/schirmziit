@@ -33,7 +33,15 @@ gen:
 gen-check: gen
     git diff --exit-code web/src/api/schema.d.ts
 
-web-check: gen-check
+# The error copy: one TOML in four languages becomes the dashboard dictionary,
+# the iOS .strings and the Android string resources.
+gen-copy:
+    cargo run --quiet -p copygen
+
+gen-copy-check: gen-copy
+    git diff --exit-code web/src/i18n/errors.ts ios/Sources/Resources android/app/src/main/res
+
+web-check: gen-check gen-copy-check
     cd web && pnpm tsc -b --noEmit && pnpm vitest run
 
 # Uses podman on shire, docker on the Mac; both accept the same arguments.

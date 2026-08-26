@@ -135,6 +135,12 @@ habit stick.
 4. **Skeletons shaped like the final content**, never a spinner over the layout; data
    crossfades in over its own skeleton.
 
+**Error states get entry motion and press feedback, but no flourish.** The flourish
+belongs to the data. An interface that animates a failure is enjoying itself at the
+parent's expense. An error panel takes the footprint its skeleton had, and a *refresh*
+that fails leaves the loaded data on screen with a banner over it — blanking a chart
+because a poll failed loses a day at the presentation layer.
+
 **Budget:** 200–400 ms typical for entry and transition motion, 600 ms for a hero
 count-up. That band describes how long a screen's own transitions run — it is not a
 floor. Press feedback (`--motion-fast`, 120 ms) and the per-row stagger offset
@@ -184,6 +190,7 @@ is its budget.
 | `web/` | React dashboard, generated API types, typed locale dictionaries |
 | `android/` | Child agent (Kotlin/Compose), `ParentSetup` for code-free enrolment |
 | `ios/` | One app, two roles; everything testable lives in `SchirmziitKit` |
+| `copy/errors.toml` | The one source for every error message, in all four languages |
 | `site/` | Astro product and docs site |
 | `e2e/` | Maestro journeys + `seed.nu` for a throwaway instance |
 | `deploy/` | docker-compose for self-hosters, change into ../home-network to run deploy commands |

@@ -327,7 +327,34 @@ async fn a_wrong_email_and_a_wrong_password_are_indistinguishable(pool: PgPool) 
         .unwrap()
         .to_bytes();
     let unknown = no_such_user.into_body().collect().await.unwrap().to_bytes();
-    assert_eq!(known, unknown, "the two answers must be byte-identical");
+
+    // Every response carries a per-request reference, so the two bodies are not
+    // byte-identical any more. That reference is noise, not signal: it differs
+    // between any two requests, including two identical ones — the assertion
+    // below proves exactly that, so it is not being relaxed to accommodate the
+    // new field. Everything that could tell the two cases apart must still
+    // match exactly.
+    let mut known: serde_json::Value = serde_json::from_slice(&known).unwrap();
+    let mut unknown: serde_json::Value = serde_json::from_slice(&unknown).unwrap();
+    let known_ref = known["ref"].take();
+    let unknown_ref = unknown["ref"].take();
+    assert_eq!(known, unknown, "the two answers must be identical");
+    assert_eq!(known_ref.as_str().unwrap().len(), 6);
+    assert_ne!(
+        known_ref, unknown_ref,
+        "the reference is per-request noise; two requests sharing one would make it signal"
+    );
+
+    // The same wrong email twice: still a different reference, so the value
+    // says nothing about which of the two cases the caller hit.
+    let repeat = router
+        .clone()
+        .oneshot(post("/v1/auth/login", credentials("nobody@example.ch")))
+        .await
+        .unwrap();
+    let repeat: serde_json::Value =
+        serde_json::from_slice(&repeat.into_body().collect().await.unwrap().to_bytes()).unwrap();
+    assert_ne!(repeat["ref"], unknown_ref);
 
     // The timing half of the same property: a missing account still pays for an
     // argon2 verify. Generous bounds — this asserts the decoy hash is actually

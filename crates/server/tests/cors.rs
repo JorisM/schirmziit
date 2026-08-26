@@ -238,3 +238,19 @@ async fn the_waiting_list_answers_with_exactly_one_grant(pool: PgPool) {
         1,
     );
 }
+
+#[sqlx::test]
+async fn the_request_id_is_exposed_to_the_dashboard(pool: PgPool) {
+    let response = app(state(pool, &[DASHBOARD]))
+        .oneshot(get("/v1/me", DASHBOARD))
+        .await
+        .unwrap();
+
+    let exposed = response
+        .headers()
+        .get(header::ACCESS_CONTROL_EXPOSE_HEADERS)
+        .expect("the dashboard cannot read a header it is not granted")
+        .to_str()
+        .unwrap();
+    assert!(exposed.contains("x-request-id"), "{exposed}");
+}

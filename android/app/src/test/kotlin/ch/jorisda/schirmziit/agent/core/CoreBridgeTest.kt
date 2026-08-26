@@ -18,6 +18,7 @@ class CoreBridgeTest {
     fun `stitches a session across the boundary`() {
         val out = bridge.stitch(
             prevOpen = null,
+            prevPlayback = null,
             events = listOf(
                 RawEvent(noon, EventKind.Resumed("com.a")),
                 RawEvent(noon + 300_000, EventKind.Paused("com.a")),
@@ -33,6 +34,7 @@ class CoreBridgeTest {
     fun `carries the still-open app back out`() {
         val out = bridge.stitch(
             prevOpen = null,
+            prevPlayback = null,
             events = listOf(RawEvent(noon, EventKind.Resumed("com.b"))),
             windowEndMillis = noon + 1_800_000,
         )
@@ -44,9 +46,11 @@ class CoreBridgeTest {
     fun `builds the ingest body the server accepts`() {
         val hours = bridge.bucket(
             sessions = listOf(Session("com.a", noon, noon + 600_000)),
+            background = emptyList(),
             unlockMillis = listOf(noon),
             tz = "Europe/Zurich",
             labels = mapOf("com.a" to "App A"),
+            backgroundMeasured = false,
             computedAtMillis = noon + hour,
         )
         assertEquals(1, hours.size)
@@ -60,9 +64,11 @@ class CoreBridgeTest {
     fun `refuses to interpret a captcha page as success`() {
         val hours = bridge.bucket(
             sessions = listOf(Session("com.a", noon, noon + 1000)),
+            background = emptyList(),
             unlockMillis = emptyList(),
             tz = "UTC",
             labels = emptyMap(),
+            backgroundMeasured = false,
             computedAtMillis = noon,
         )
         // A queue-wiping bug would return an empty list here instead of throwing.
@@ -77,9 +83,11 @@ class CoreBridgeTest {
                 Session("com.a", noon, noon + 600_000),
                 Session("com.a", noon + hour, noon + hour + 600_000),
             ),
+            background = emptyList(),
             unlockMillis = emptyList(),
             tz = "UTC",
             labels = emptyMap(),
+            backgroundMeasured = false,
             computedAtMillis = noon + 2 * hour,
         )
         val plan = bridge.planSync(hours, maxRows = 1u)

@@ -147,7 +147,7 @@ class ScreenshotTest {
             "2026-08-18" to 3_600_000L,
             "2026-08-19" to 7_800_000L,
             "2026-08-20" to 6_300_000L,
-        ).map { (day, ms) -> DayTotalFfi(day, ms) }
+        ).map { (day, ms) -> DayTotalFfi(day, ms, 1_800_000L) }
 
         val hours = List(24) { hour ->
             when {
@@ -159,24 +159,36 @@ class ScreenshotTest {
         }
 
         val apps = listOf(
-            AppTotalFfi("ch.jorisda.videoapp", "VideoApp", 2_400_000L),
-            AppTotalFfi("ch.jorisda.chat", "ChatApp", 1_800_000L),
-            AppTotalFfi("ch.jorisda.browser", "Browser", 900_000L),
-            AppTotalFfi("ch.jorisda.game1", "Game One", 600_000L),
-            AppTotalFfi("ch.jorisda.game2", "Game Two", 300_000L),
-            AppTotalFfi("ch.jorisda.music", "Music", 180_000L),
-            AppTotalFfi("ch.jorisda.notes", "Notes", 90_000L),
-            AppTotalFfi("ch.jorisda.mail", "Mail", 30_000L),
-            AppTotalFfi("ch.jorisda.weather", "Weather", 10_000L),
+            AppTotalFfi("ch.jorisda.videoapp", "VideoApp", 2_400_000L, 0L),
+            AppTotalFfi("ch.jorisda.chat", "ChatApp", 1_800_000L, 0L),
+            AppTotalFfi("ch.jorisda.browser", "Browser", 900_000L, 0L),
+            AppTotalFfi("ch.jorisda.game1", "Game One", 600_000L, 0L),
+            AppTotalFfi("ch.jorisda.game2", "Game Two", 300_000L, 0L),
+            // Listened to with the screen off, mostly at bedtime.
+            AppTotalFfi("ch.jorisda.music", "Music", 180_000L, 4_500_000L),
+            AppTotalFfi("ch.jorisda.notes", "Notes", 90_000L, 0L),
+            AppTotalFfi("ch.jorisda.mail", "Mail", 30_000L, 0L),
+            AppTotalFfi("ch.jorisda.weather", "Weather", 10_000L, 0L),
             // Rounds to 0 s and must not appear anywhere, folded or not.
-            AppTotalFfi("ch.jorisda.blink", "Blink", 300L),
+            AppTotalFfi("ch.jorisda.blink", "Blink", 300L, 0L),
         )
+
+        val backgroundHours = List(24) { hour ->
+            when (hour) {
+                21 -> 1_500_000L
+                22 -> 3_000_000L
+                else -> 0L
+            }
+        }
 
         val detail = DayDetailFfi(
             totalMs = 6_300_000L,
             unlockCount = 42,
             hours = hours,
             apps = apps,
+            backgroundMs = 4_500_000L,
+            backgroundHours = backgroundHours,
+            backgroundMeasured = true,
         )
 
         return MyTime(days = days, detail = detail, selected = "2026-08-20", failed = false)

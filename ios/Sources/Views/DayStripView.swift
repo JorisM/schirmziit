@@ -43,7 +43,7 @@ struct DayStripView: View {
                                 .foregroundStyle(Palette.inkFaint)
                         }
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(PressableBarStyle())
                     .accessibilityLabel(Self.spokenDay(entry.day))
                     .accessibilityValue(Text(verbatim: Formatting.duration(entry.ms)))
                     .accessibilityAddTraits(entry.day == selected ? [.isSelected] : [])

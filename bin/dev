@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# Everything a browser needs, in one terminal.
+#
+#   bin/dev          api + dashboard + site
+#   bin/dev api      just the axum server
+#   bin/dev web      just the dashboard (expects an api already running)
+#   bin/dev site     just the Astro site
+#
+# Ports are not arbitrary: web/vite.config.ts proxies /v1 and /healthz to
+# 127.0.0.1:8099, so dev is same-origin exactly like production, where the Rust
+# binary serves the dashboard itself. Change one, change both.
+source "$(dirname "${BASH_SOURCE[0]}")/_lib.sh"
+need_dev_shell "$@"
+
+api_addr=127.0.0.1:8099
+what="${1:-all}"
+
+pids=()
+cleanup() {
+  trap - INT TERM EXIT
+  [ ${#pids[@]} -gt 0 ] && kill "${pids[@]}" 2>/dev/null || true
+  wait 2>/dev/null || true
+}
+trap cleanup INT TERM EXIT
+
+start_api() {
+  db_ensure
+  say "api        http://$api_addr"
+  (
+    cd "$root"
+    # `open` registration, not the production `first-user-only`: a dev database
+    # gets reset, and a locked-out registration on an empty database is a
+    # confusing five minutes.
+    DATABASE_URL="$(db_url)" \
+    PUBLIC_URL="http://$api_addr" \
+    BIND_ADDR="$api_addr" \
+    ALLOW_REGISTRATION=open \
+    RUST_LOG="${RUST_LOG:-info,schirmziit_server=debug}" \
+      cargo run --quiet -p schirmziit-server --bin schirmziit-server
+  ) &
+  pids+=($!)
+}
+
+start_web() {
+  say "dashboard  http://localhost:5173"
+  ( cd "$root/web" && pnpm install --silent && pnpm dev ) &
+  pids+=($!)
+}
+
+start_site() {
+  say "site       http://localhost:4321"
+  (
+    cd "$root/site" && pnpm install --silent \
+      && PUBLIC_WAITLIST_API="http://$api_addr/v1/waitlist" pnpm dev
+  ) &
+  pids+=($!)
+}
+
+case "$what" in
+  all)  start_api; start_web; start_site ;;
+  api)  start_api ;;
+  web)  start_web ;;
+  site) start_site ;;
+  *) die "usage: bin/dev [all|api|web|site]" ;;
+esac
+
+echo
+bold "Ctrl-C stops everything."
+# Exit as soon as any one of them dies: a dashboard talking to a server that
+# crashed on startup looks like a frontend bug for a while.
+wait -n
+warn "one of the processes exited — stopping the rest"

@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Schirmziit.app. Simulator by default, because that needs no signing.
+#
+#   bin/ios-build            simulator slice, unsigned
+#   bin/ios-build --device   device slice, signed with your team
+#
+# Note which target this builds: `Schirmziit`, the real one, with both Family
+# Controls extensions embedded. `SchirmziitLocal` is the free-team leftover.
+source "$(dirname "${BASH_SOURCE[0]}")/_lib.sh"
+need_dev_shell "$@"
+need_xcode
+
+case "${1:-}" in
+  # ARCHS=arm64 is not a shortcut: `just ios-core` builds an xcframework with the
+  # arm64 device and arm64 simulator slices only, so a generic simulator
+  # destination — which also wants x86_64 — fails the link on an architecture no
+  # Mac this runs on has needed for years.
+  ""|--sim)  destination='generic/platform=iOS Simulator'
+             extra=(CODE_SIGNING_ALLOWED=NO ARCHS=arm64 ONLY_ACTIVE_ARCH=NO) ;;
+  --device)  destination='generic/platform=iOS'
+             extra=(-allowProvisioningUpdates "DEVELOPMENT_TEAM=$(ios_team)") ;;
+  *) die "usage: bin/ios-build [--sim|--device]" ;;
+esac
+
+say "regenerating the xcframework and the project"
+just --justfile "$root/justfile" --working-directory "$root" ios-project
+
+say "xcodebuild ($destination)"
+cd "$root/ios"
+apple_tool xcodebuild -project Schirmziit.xcodeproj -scheme Schirmziit \
+  -configuration Debug -destination "$destination" \
+  -derivedDataPath "$root/build/ios" "${extra[@]}" build
+
+app="$(find "$root/build/ios/Build/Products" -maxdepth 2 -name 'Schirmziit.app' | head -1)"
+[ -n "$app" ] || die "xcodebuild reported success but produced no .app"
+bold "→ $app"

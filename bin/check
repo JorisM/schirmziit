@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# Every gate, in one run.
+#
+#   bin/check              all of them
+#   bin/check rust web     only those
+#
+# Runs them all even after one fails, and reports at the end: a red Android gate
+# should not hide a red iOS one, and "run it again to see the next failure" is
+# how a five-minute check becomes half an hour.
+source "$(dirname "${BASH_SOURCE[0]}")/_lib.sh"
+need_dev_shell "$@"
+
+gates=("$@")
+[ ${#gates[@]} -eq 0 ] && gates=(rust web android ios site)
+
+failed=()
+passed=()
+
+run_gate() {
+  local name="$1"
+  shift
+  echo
+  bold "━━━ $name"
+  if "$@"; then
+    passed+=("$name")
+  else
+    failed+=("$name")
+    warn "$name failed"
+  fi
+}
+
+gate_rust() {
+  db_ensure
+  just --justfile "$root/justfile" --working-directory "$root" rust-check
+}
+gate_web()     { just --justfile "$root/justfile" --working-directory "$root" web-check; }
+gate_android() { just --justfile "$root/justfile" --working-directory "$root" android-check; }
+gate_ios() {
+  if [ "$(uname)" != "Darwin" ]; then
+    warn "skipping ios: not macOS"
+    return 0
+  fi
+  need_xcode
+  just --justfile "$root/justfile" --working-directory "$root" ios-check
+}
+gate_site() { ( cd "$root/site" && pnpm install --silent && pnpm build && pnpm check ); }
+
+for gate in "${gates[@]}"; do
+  case "$gate" in
+    rust|web|android|ios|site) run_gate "$gate" "gate_$gate" ;;
+    *) die "unknown gate: $gate (rust web android ios site)" ;;
+  esac
+done
+
+echo
+[ ${#passed[@]} -gt 0 ] && bold "passed: ${passed[*]}"
+if [ ${#failed[@]} -gt 0 ]; then
+  bold "failed: ${failed[*]}"
+  exit 1
+fi
+bold "everything green"

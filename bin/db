@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# The dev Postgres.
+#
+#   bin/db up       start it and apply migrations
+#   bin/db down     stop it
+#   bin/db psql     a shell on it
+#   bin/db migrate  apply migrations
+#   bin/db reset    drop the volume, start clean, apply migrations
+#   bin/db prepare  regenerate .sqlx so the query macros work offline
+source "$(dirname "${BASH_SOURCE[0]}")/_lib.sh"
+need_dev_shell "$@"
+
+case "${1:-up}" in
+  up)
+    db_ensure
+    bold "→ $(db_url)"
+    ;;
+  down)
+    just --justfile "$root/justfile" --working-directory "$root" db-down
+    ;;
+  psql)
+    db_ensure
+    exec psql "$(db_url)"
+    ;;
+  migrate)
+    db_ensure
+    bold "→ migrations applied"
+    ;;
+  reset)
+    # `db-up` gives the container an anonymous volume, so removing the container
+    # is removing the data — no named volume to clean up separately.
+    say "removing the container, and with it the data"
+    just --justfile "$root/justfile" --working-directory "$root" db-down || true
+    db_ensure
+    bold "→ empty database, migrations applied"
+    ;;
+  prepare)
+    # `.sqlx` is committed and `rust-check` compares against it, so this is the
+    # step after any change to a query or to the schema.
+    db_ensure
+    cd "$root" && DATABASE_URL="$(db_url)" cargo sqlx prepare --workspace
+    ;;
+  *) die "usage: bin/db [up|down|psql|migrate|reset|prepare]" ;;
+esac

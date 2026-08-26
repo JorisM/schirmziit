@@ -66,11 +66,35 @@ android-check: android-bindings
     cd android && ./gradlew test
 
 # ─── iOS ─────────────────────────────────────────────────────────────
+# Inside `nix develop` the darwin stdenv owns the C toolchain: DEVELOPER_DIR and
+# SDKROOT point at a macOS-only apple-sdk, and `cc` is a wrapper pinned to
+# arm64-apple-darwin. That produces two different failures, so there are two
+# different prefixes.
+#
+# `apple` is for cargo cross-compiling to an iOS target, and only for those two
+# lines — the host build of uniffi-bindgen wants nix's compiler. Without it,
+# `xcrun --sdk iphonesimulator` finds no SDK (DEVELOPER_DIR), rustc links against
+# a macOS sysroot (SDKROOT), and the link pulls in nix's macOS libiconv:
+# "building for iOS Simulator, but linking in dylib built for macOS". Naming
+# Xcode's clang as the linker is what avoids the last one; prepending it to PATH
+# instead does not survive a PATH with a space in it.
+#
+# `xcb` is for xcodebuild, which reads far more of the environment than that —
+# with the dev shell's, linking an appex dies on "-objc_abi_version '-Xlinker'
+# not supported (expected 2)". A bare environment is the only reliable answer,
+# which is also why xcodegen is not run through it: that one is a nix binary.
+#
+# Outside nix both are no-ops in effect — the same Xcode, the same PATH.
+xcode_dir := if os() == "macos" { `DEVELOPER_DIR= xcode-select -p 2>/dev/null || true` } else { "" }
+xcode_clang := xcode_dir + "/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang"
+apple := if os() == "macos" { "env -u SDKROOT -u NIX_CFLAGS_COMPILE -u NIX_LDFLAGS DEVELOPER_DIR=" + xcode_dir + " CARGO_TARGET_AARCH64_APPLE_IOS_LINKER=" + xcode_clang + " CARGO_TARGET_AARCH64_APPLE_IOS_SIM_LINKER=" + xcode_clang } else { "" }
+xcb := if os() == "macos" { "env -i HOME=" + env('HOME') + " USER=" + env('USER') + " TMPDIR=" + env('TMPDIR', '/tmp') + " LANG=en_US.UTF-8 PATH=/usr/bin:/bin:/usr/sbin:/sbin xcodebuild" } else { "xcodebuild" }
+
 # The child agent and the parent viewer share the Rust core through a Swift
 # xcframework. Both simulator and device slices, so `ios-check` needs no signing.
 ios-core:
-    cargo build -p schirmziit-core --release --target aarch64-apple-ios
-    cargo build -p schirmziit-core --release --target aarch64-apple-ios-sim
+    {{ apple }} cargo build -p schirmziit-core --release --target aarch64-apple-ios
+    {{ apple }} cargo build -p schirmziit-core --release --target aarch64-apple-ios-sim
     rm -rf ios/Generated ios/Frameworks build/ios
     mkdir -p ios/Generated build/ios/include
     cargo run --quiet --bin uniffi-bindgen -- generate \
@@ -78,7 +102,7 @@ ios-core:
         --language swift --out-dir ios/Generated
     cp ios/Generated/schirmziit_coreFFI.h build/ios/include/
     cp ios/Generated/schirmziit_coreFFI.modulemap build/ios/include/module.modulemap
-    xcodebuild -create-xcframework \
+    {{ xcb }} -create-xcframework \
         -library target/aarch64-apple-ios/release/libschirmziit_core.a -headers build/ios/include \
         -library target/aarch64-apple-ios-sim/release/libschirmziit_core.a -headers build/ios/include \
         -output ios/Frameworks/SchirmziitCoreFFI.xcframework
@@ -88,7 +112,7 @@ ios-project: ios-core
 
 # Both apps, on the simulator, unsigned. Not part of `check`: CI runs on Linux.
 ios-check: ios-project
-    cd ios && xcodebuild -project Schirmziit.xcodeproj -scheme Schirmziit \
+    cd ios && {{ xcb }} -project Schirmziit.xcodeproj -scheme Schirmziit \
         -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test CODE_SIGNING_ALLOWED=NO
 
 # Re-record the screen images, deliberately: delete them, then let the run write
@@ -96,8 +120,8 @@ ios-check: ios-project
 # library saying "there was no reference". Check `git diff` before committing.
 ios-record: ios-project
     rm -rf ios/Tests/__Snapshots__
-    -cd ios && xcodebuild -project Schirmziit.xcodeproj -scheme Schirmziit \
+    -cd ios && {{ xcb }} -project Schirmziit.xcodeproj -scheme Schirmziit \
         -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test CODE_SIGNING_ALLOWED=NO
-    cd ios && xcodebuild -project Schirmziit.xcodeproj -scheme Schirmziit \
+    cd ios && {{ xcb }} -project Schirmziit.xcodeproj -scheme Schirmziit \
         -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test CODE_SIGNING_ALLOWED=NO
 

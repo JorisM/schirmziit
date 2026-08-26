@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Re-record the screenshot goldens. Deliberate on purpose: this overwrites the
+# images the tests compare against, so the diff is the review.
+#
+#   bin/record ios | android | all
+source "$(dirname "${BASH_SOURCE[0]}")/_lib.sh"
+need_dev_shell "$@"
+
+record_ios() {
+  need_xcode
+  say "iOS snapshots"
+  just --justfile "$root/justfile" --working-directory "$root" ios-record
+}
+
+record_android() {
+  say "Roborazzi screenshots"
+  just --justfile "$root/justfile" --working-directory "$root" android-bindings
+  cd "$root/android" && ./gradlew test -Precord.snapshots
+}
+
+case "${1:-all}" in
+  ios)     record_ios ;;
+  android) record_android ;;
+  all)     record_ios; record_android ;;
+  *) die "usage: bin/record [ios|android|all]" ;;
+esac
+
+echo
+bold "Look at the diff before committing:"
+echo "  git status --short ios/Tests/__Snapshots__ android/app/src/test/snapshots"

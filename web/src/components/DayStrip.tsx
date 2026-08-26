@@ -79,7 +79,7 @@ export function DayStrip({
               type="button"
               aria-pressed={day === selected}
               onClick={() => onSelect(day)}
-              className="flex flex-1 cursor-pointer flex-col items-center gap-1 rounded-[4px] bg-transparent p-0"
+              className="flex flex-1 cursor-pointer flex-col items-center gap-1 rounded-[4px] bg-transparent p-0 transition-transform duration-[var(--motion-fast)] ease-[var(--ease-out)] active:scale-[0.97]"
               title={`${label} — ${formatDuration(ms, t)}`}
               aria-label={`${label} — ${formatDuration(ms, t)}`}
             >

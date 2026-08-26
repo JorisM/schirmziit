@@ -128,7 +128,7 @@ export function AppBars({ series }: { series: UsageResponse['series'] }) {
                   type="button"
                   aria-expanded={briefOpen}
                   onClick={() => setBriefOpen((open) => !open)}
-                  className="text-sm underline"
+                  className="text-sm underline transition-opacity duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:opacity-70 active:opacity-50"
                   style={{ color: 'var(--ink-faint)' }}
                 >
                   {t.child.briefApps} ({brief.length})

@@ -73,6 +73,8 @@ const mailto = `mailto:joris@morger-gossweiler.ch?subject=${encodeURIComponent(t
         status.className = 'waitlist-status'
         button.disabled = true
         button.textContent = button.dataset.sending
+        // Fired before the request, so submit-minus-joined is the failure rate.
+        window.szTrack?.('waitlist-submit', { locale: form.dataset.locale })
 
         try {
           const response = await fetch(form.dataset.api, {
@@ -88,16 +90,22 @@ const mailto = `mailto:joris@morger-gossweiler.ch?subject=${encodeURIComponent(t
             status.classList.add('ok')
             input.disabled = true
             button.hidden = true
+            window.szTrack?.('waitlist-joined', { locale: form.dataset.locale })
             return
           }
 
           status.textContent =
             response.status === 422 ? status.dataset.invalid : status.dataset.failed
           status.classList.add('bad')
+          window.szTrack?.('waitlist-error', {
+            locale: form.dataset.locale,
+            reason: response.status === 422 ? 'invalid' : 'rejected',
+          })
         } catch {
           // Offline, blocked, DNS — all the same thing to the reader.
           status.textContent = status.dataset.failed
           status.classList.add('bad')
+          window.szTrack?.('waitlist-error', { locale: form.dataset.locale, reason: 'unreachable' })
         }
 
         button.disabled = false
@@ -106,3 +114,22 @@ const mailto = `mailto:joris@morger-gossweiler.ch?subject=${encodeURIComponent(t
     }
   </script>
 )}
+
+{/* Top of the waiting-list funnel: the section is below the fold on every page,
+    so a page view says nothing about whether anyone got here. Fires once per
+    page load, at 50% visible, which is the point a reader could actually act. */}
+<script is:inline define:vars={{ locale }}>
+  {
+    const section = document.getElementById('waitlist')
+    if (section && 'IntersectionObserver' in window) {
+      const seen = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue
+          seen.disconnect()
+          window.szTrack?.('waitlist-view', { locale })
+        }
+      }, { threshold: 0.5 })
+      seen.observe(section)
+    }
+  }
+</script>

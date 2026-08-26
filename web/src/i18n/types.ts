@@ -111,6 +111,14 @@ export type Strings = {
     resources: { name: string; note: string; href: string }[]
   }
 
+  errorPanel: {
+    retry: string
+    details: string
+    copy: string
+    copied: string
+    reference: string
+  }
+
   errors: { generic: string; notFound: string; offline: string }
 
   units: { hoursShort: string; minutesShort: string; secondsShort: string }

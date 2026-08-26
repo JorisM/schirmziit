@@ -156,6 +156,14 @@ export const en: Strings = {
     ],
   },
 
+  errorPanel: {
+    retry: 'Try again',
+    details: 'Details',
+    copy: 'Copy details',
+    copied: 'Copied',
+    reference: 'Error code and reference',
+  },
+
   errors: {
     generic: 'Something went wrong.',
     notFound: 'Not found.',

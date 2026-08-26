@@ -157,6 +157,14 @@ export const de: Strings = {
     ],
   },
 
+  errorPanel: {
+    retry: 'Nochmal versuchen',
+    details: 'Details',
+    copy: 'Details kopieren',
+    copied: 'Kopiert',
+    reference: 'Fehlercode und Referenz',
+  },
+
   errors: {
     generic: 'Da ist etwas schiefgelaufen.',
     notFound: 'Nicht gefunden.',

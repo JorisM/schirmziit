@@ -1,0 +1,10 @@
+[package]
+name = "copygen"
+edition.workspace = true
+version.workspace = true
+publish = false
+
+[dependencies]
+schirmziit-core = { path = "../core" }
+serde.workspace = true
+toml = "0.9"

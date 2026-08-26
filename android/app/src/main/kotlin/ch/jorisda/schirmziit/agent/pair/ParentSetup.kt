@@ -34,6 +34,37 @@ class ParentSetup(private val client: SchirmziitClient, private val settings: Ag
         return SignIn.Ready(session, children)
     }
 
+    sealed interface Unpair {
+        data object Done : Unpair
+        data object WrongCredentials : Unpair
+        data class Failed(val message: String) : Unpair
+    }
+
+    /**
+     * Stops this phone reporting — behind the parent's password, deliberately.
+     *
+     * The child can see every number this app sends, but must not be able to
+     * switch it off alone; that is the same guard as leaving child mode, and the
+     * reason this takes a password rather than a confirm dialog.
+     *
+     * Only the *local* pairing is cleared. The device row keeps its token
+     * server-side: the phone never learns its own device id, so revoking is the
+     * parent's job from the dashboard. Nothing holds the token afterwards — it
+     * is erased here — so the row is orphaned rather than live.
+     */
+    fun unpair(email: String, password: String): Unpair {
+        val session = runCatching { client.signIn(email, password) }
+            .getOrElse { return Unpair.Failed(it.message ?: "") }
+            ?: return Unpair.WrongCredentials
+
+        // Ended before the local wipe, and its failure deliberately ignored: a
+        // phone that stopped reporting because a logout call blipped would be a
+        // silent gap, which is the one outcome worse than a stale session.
+        runCatching { client.signOut(session) }
+        settings.unpair()
+        return Unpair.Done
+    }
+
     /**
      * Returns the enrolled device on success. The session is ended either way,
      * so a parent who walks away mid-setup leaves nothing behind.

@@ -96,6 +96,12 @@
     <string name="background_card_body">Musica, podcast e audiolibri riprodotti mentre lo schermo è spento non sono tempo di schermo, quindi oggi non vengono contati. Per contarli, Schirmziit ha bisogno dell\'accesso alle notifiche — è l\'unico modo in cui Android permette a un\'app di vedere quale app sta riproducendo. Schirmziit non legge mai le tue notifiche né cosa stai ascoltando, solo che qualcosa è in riproduzione.</string>
     <string name="background_card_action">Apri le impostazioni</string>
     <string name="background_card_dismiss">Non ora</string>
+    <!-- Unpairing: a parent's act, behind their password. -->
+    <string name="unpair_show">Scollega questo telefono</string>
+    <string name="unpair_title">Scollegare questo telefono?</string>
+    <string name="unpair_body">Questo telefono smette di inviare il tempo di schermo. Quello che è già stato inviato resta: i tuoi genitori vedono ancora i giorni fino a ora. Per farlo deve accedere un genitore, così nessuno può spegnerlo da solo.</string>
+    <string name="unpair_confirm">Scollega</string>
+    <string name="unpair_cancel">Annulla</string>
     <string name="mytime_background">Ascoltato in sottofondo</string>
     <string name="mytime_background_help">Musica, podcast o audiolibri riprodotti mentre il tuo schermo era spento.</string>
     <string name="mytime_background_not_measured">L\'ascolto a schermo spento non viene contato su questo telefono.</string>

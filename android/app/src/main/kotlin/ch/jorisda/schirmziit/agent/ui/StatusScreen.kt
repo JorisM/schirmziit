@@ -11,15 +11,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,11 +31,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import ch.jorisda.schirmziit.agent.R
+import ch.jorisda.schirmziit.agent.pair.ParentSetup
 import ch.jorisda.schirmziit.agent.power.BatteryHint
 import ch.jorisda.schirmziit.agent.store.AgentSettings
+import kotlinx.coroutines.launch
 
 /**
  * What the child sees. Structure mirrors the parent dashboard's help page — the
@@ -52,8 +58,19 @@ fun StatusScreen(
     backgroundCardDismissed: Boolean = true,
     onAllowBackgroundListening: () -> Unit = {},
     onDismissBackgroundCard: () -> Unit = {},
+    /**
+     * Checked against the server, never locally: the password is the whole
+     * guard, and a phone that could verify it offline could be tricked into
+     * saying yes. The default exists so previews and screenshot tests can
+     * render the entry point without a server behind it.
+     */
+    onUnpair: suspend (String, String) -> ParentSetup.Unpair = { _, _ ->
+        ParentSetup.Unpair.Failed("")
+    },
+    onUnpaired: () -> Unit = {},
 ) {
     var helpOpen by remember { mutableStateOf(false) }
+    var unpairOpen by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -250,9 +267,130 @@ fun StatusScreen(
                 ) {
                     Text(stringResource(R.string.help_support_link))
                 }
+
+                HorizontalDivider()
+                // Inside the help section, not on the front of the screen: this
+                // is a rare, deliberate act by a parent, and the page that
+                // explains what the app does is the honest place to say how to
+                // stop it. Nothing is hidden — it just is not a control the
+                // child needs while reading their own numbers.
+                TextButton(onClick = { unpairOpen = true }) {
+                    Text(stringResource(R.string.unpair_show))
+                }
             }
         }
     }
+
+    if (unpairOpen) {
+        UnpairDialog(
+            onDismiss = { unpairOpen = false },
+            onUnpair = onUnpair,
+            onUnpaired = {
+                unpairOpen = false
+                onUnpaired()
+            },
+        )
+    }
+}
+
+/**
+ * Asks for the parent's password before this phone stops reporting.
+ *
+ * A confirm dialog alone would not do: the child holds this phone, so anything
+ * they can tap through is not a guard. The password is checked by the server,
+ * which is also what makes "wrong password" and "server unreachable" two
+ * different answers here — the second must never look like the first, or a
+ * parent retypes a correct password at a server that is simply down.
+ */
+// internal, not private: the screenshot test renders it directly. `shoot`
+// captures a composable with no compose rule behind it, so there is no way to
+// tap the help toggle and then the entry point — and this dialog carries the
+// longest translated sentence in the app, which is exactly what those images
+// exist to catch.
+@Composable
+internal fun UnpairDialog(
+    onDismiss: () -> Unit,
+    onUnpair: suspend (String, String) -> ParentSetup.Unpair,
+    onUnpaired: () -> Unit,
+) {
+    val scope = rememberCoroutineScope()
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var busy by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    val wrongLabel = stringResource(R.string.pair_parent_wrong)
+    val failedLabel = stringResource(R.string.pair_failed)
+
+    AlertDialog(
+        onDismissRequest = { if (!busy) onDismiss() },
+        title = { Text(stringResource(R.string.unpair_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    stringResource(R.string.unpair_body),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text(stringResource(R.string.pair_email)) },
+                    singleLine = true,
+                    enabled = !busy,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text(stringResource(R.string.pair_password)) },
+                    singleLine = true,
+                    enabled = !busy,
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                error?.let {
+                    Text(
+                        it,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                enabled = !busy && email.isNotBlank() && password.isNotEmpty(),
+                onClick = {
+                    busy = true
+                    error = null
+                    scope.launch {
+                        when (val result = onUnpair(email.trim(), password)) {
+                            is ParentSetup.Unpair.Done -> onUnpaired()
+                            is ParentSetup.Unpair.WrongCredentials -> {
+                                error = wrongLabel
+                                busy = false
+                            }
+                            is ParentSetup.Unpair.Failed -> {
+                                error = failedLabel.format(result.message)
+                                busy = false
+                            }
+                        }
+                    }
+                },
+            ) {
+                Text(
+                    stringResource(
+                        if (busy) R.string.pair_working else R.string.unpair_confirm,
+                    ),
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(enabled = !busy, onClick = onDismiss) {
+                Text(stringResource(R.string.unpair_cancel))
+            }
+        },
+    )
 }
 
 @Composable

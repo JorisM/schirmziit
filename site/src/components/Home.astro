@@ -25,11 +25,11 @@ const base = prefix(locale)
   <ol class="steps">{t.home.how.map((step) => <li><span>{step}</span></li>)}</ol>
 
   <div class="cards" style="margin-top:2.5rem">
-    <section class="card">
+    <section class="reveal card">
       <h3 style="color:var(--ok)">{t.home.measuresTitle}</h3>
       <ul class="yes">{t.home.measures.map((line) => <li>{line}</li>)}</ul>
     </section>
-    <section class="card">
+    <section class="reveal card">
       <h3 style="color:var(--urgent)">{t.home.neverTitle}</h3>
       <ul class="no">{t.home.never.map((line) => <li>{line}</li>)}</ul>
     </section>
@@ -41,11 +41,11 @@ const base = prefix(locale)
   <h2>{t.home.platformsTitle}</h2>
   <p>{t.home.platformsBody}</p>
   <div class="cards">
-    <section class="card">
+    <section class="reveal card">
       <h3>{t.home.androidLabel}</h3>
       <p>{t.home.androidBody}</p>
     </section>
-    <section class="card">
+    <section class="reveal card">
       <h3>{t.home.iosLabel}</h3>
       <p>{t.home.iosBody}</p>
     </section>
@@ -53,13 +53,13 @@ const base = prefix(locale)
 
   <h2>{t.choose.title}</h2>
   <div class="cards">
-    <section class="card">
+    <section class="reveal card">
       <h3>{t.choose.selfHostTitle}</h3>
       <p>{t.choose.selfHostFor}</p>
       <ul>{t.choose.selfHostPoints.map((line) => <li>{line}</li>)}</ul>
       <div class="buttons"><a class="button ghost" href={`${base}/self-hosting`}>{t.nav.selfHost}</a></div>
     </section>
-    <section class="card">
+    <section class="reveal card">
       <h3>{t.choose.hostedTitle}</h3>
       <p>{t.choose.hostedFor}</p>
       <ul>{t.choose.hostedPoints.map((line) => <li>{line}</li>)}</ul>
@@ -71,7 +71,7 @@ const base = prefix(locale)
   <p>{t.resources.lead}</p>
   <div class="cards">
     {t.resources.items.map((item) => (
-      <section class="card">
+      <section class="reveal card">
         <h3><a href={item.href} rel="noopener external">{item.name}</a></h3>
         <p>{item.note}</p>
       </section>

@@ -66,7 +66,7 @@ export function DayStrip({
       </figcaption>
 
       <div className="flex items-end gap-1">
-        {days.map(({ day, ms }) => {
+        {days.map(({ day, ms }, index) => {
           const share = busiest > 0 ? ms / busiest : 0
           const label = new Date(`${day}T00:00:00`).toLocaleDateString(locale, {
             weekday: 'short',
@@ -84,8 +84,9 @@ export function DayStrip({
               aria-label={`${label} — ${formatDuration(ms, t)}`}
             >
               <span
-                className="w-full rounded-[3px] transition-transform"
+                className="w-full rounded-[3px] origin-bottom animate-[grow-up_var(--motion-base)_var(--ease-out)_backwards] transition-[box-shadow,transform] duration-[var(--motion-fast)] ease-[var(--ease-out)]"
                 style={{
+                  animationDelay: `calc(${index} * var(--motion-stagger))`,
                   // A floor, not a zero: an empty day is still a day, and a bar
                   // of no height reads as a hole in the chart.
                   height: `${8 + Math.round(share * 56)}px`,

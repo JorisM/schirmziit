@@ -38,9 +38,11 @@ serde_json.workspace = true
 thiserror.workspace = true
 uuid.workspace = true
 tracing = "0.1"
+# The normalise middleware reads an already-produced response body back in, so
+# this is no longer test-only.
+http-body-util = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [dev-dependencies]
 tower = { version = "0.5", features = ["util"] }
-http-body-util = "0.1"
 jsonschema = "0.30"

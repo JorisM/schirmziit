@@ -2,6 +2,7 @@ pub mod auth;
 pub mod config;
 pub mod db;
 pub mod error;
+pub mod normalize;
 pub mod openapi;
 pub mod request_id;
 pub mod retention;
@@ -134,6 +135,7 @@ fn build(state: AppState, rate_limit: bool) -> Router {
     family_routes
         .merge(waitlist_routes.layer(waitlist_cors_layer()))
         .layer(PropagateRequestIdLayer::new(request_id::HEADER))
+        .layer(axum::middleware::from_fn(normalize::normalize))
         .layer(axum::middleware::from_fn(insert_request_ref))
         .layer(SetRequestIdLayer::new(
             request_id::HEADER,

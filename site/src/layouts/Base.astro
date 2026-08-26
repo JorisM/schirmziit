@@ -16,7 +16,7 @@ const t = sites[locale]
 const base = prefix(locale)
 
 const pages = [
-  { key: 'home' as const, href: `${base}/` || '/', label: t.nav.home },
+  { key: 'home' as const, href: base || '/', label: t.nav.home },
   { key: 'selfHost' as const, href: `${base}/self-hosting`, label: t.nav.selfHost },
   { key: 'hosted' as const, href: `${base}/hosted`, label: t.nav.hosted },
   { key: 'privacy' as const, href: `${base}/privacy`, label: t.nav.privacy },
@@ -25,7 +25,7 @@ const pages = [
 // The same page in the other languages, for the switcher and for hreflang.
 const pathFor = (target: Locale) => {
   const p = prefix(target)
-  if (page === 'home') return `${p}/` || '/'
+  if (page === 'home') return p || '/'
   const slug = page === 'selfHost' ? 'self-hosting' : page
   return `${p}/${slug}`
 }
@@ -75,7 +75,7 @@ const analyticsId = import.meta.env.PUBLIC_UMAMI_ID
     <AlphaBanner locale={locale} />
     <header class="site">
       <div class="wrap">
-        <a class="brand" href={`${base}/` || '/'}>Schirmziit</a>
+        <a class="brand" href={base || '/'}>Schirmziit</a>
         <span class="swiss">🇨🇭 {t.swissLabel}</span>
         <nav class="site">
           {pages.map((p) => (

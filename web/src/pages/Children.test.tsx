@@ -1,7 +1,7 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { SWRConfig } from 'swr'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Children } from './Children'
 import { LocaleProvider, formatDuration, locales } from '../i18n'
 import { api } from '../api/client'
@@ -17,7 +17,16 @@ const renderPage = () =>
     </MemoryRouter>,
   )
 
-afterEach(() => vi.restoreAllMocks())
+// Same pattern as motion.test.ts: only rAF/performance are faked, so SWR's
+// promise-microtask resolution and waitFor's own real-timer polling still run
+// normally, while the count-up's animation frames advance deterministically
+// under our control instead of racing real wall-clock frames — which is what
+// made this test flake under CPU load.
+beforeEach(() => vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'performance'] }))
+afterEach(() => {
+  vi.useRealTimers()
+  vi.restoreAllMocks()
+})
 
 describe('Children', () => {
   it('asks for the list in the local zone and shows each child today total', async () => {
@@ -32,11 +41,16 @@ describe('Children', () => {
     // refuses the call without it.
     const [path] = get.mock.calls[0] ?? []
     expect(path).toContain('tz=')
-    // The exact formatted total, not the brief's `/1/` — that regex would match
-    // almost any render. jsdom's default locale resolves to `en`, and vitest
-    // runs with no rAF loop, so a `waitFor` on this string only ever succeeds
-    // once the count-up has settled on the real target.
+
+    // Drive the count-up's rAF loop to completion ourselves rather than
+    // waiting on real frames.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600)
+    })
+
+    // The exact formatted total, not a substring match that would pass on
+    // almost any render.
     const expected = formatDuration(3_600_000, locales.en)
-    await waitFor(() => expect(screen.getByText(expected)).toBeTruthy())
+    expect(screen.getByText(expected)).toBeTruthy()
   })
 })

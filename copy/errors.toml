@@ -1,0 +1,305 @@
+# The single source for every error message the product shows.
+#
+# `just gen-copy` turns this into the dashboard dictionary, the iOS .strings
+# and the Android string resources. Never edit those generated files.
+#
+# weight: "urgent" (something broke, needs attention) or "neutral" (expected,
+# self-correcting, or waiting on the user).
+# reach:  which surfaces can emit the code at all.
+#
+# Copy rules: say what happened, then what to do. Short sentences, du-form in
+# German, no ß. Never imply that anything is hidden from the child.
+
+# ─── 1xx — auth / session ────────────────────────────────────────────
+
+[SZ-E101]
+weight = "urgent"
+reach = ["web", "ios", "android"]
+de = { title = "E-Mail oder Passwort stimmt nicht.", action = "Probier es nochmal. Wenn du das Passwort vergessen hast, setz es auf deinem Server zurück." }
+fr = { title = "L'e-mail ou le mot de passe est incorrect.", action = "Réessaie. Si tu as oublié ton mot de passe, réinitialise-le sur ton serveur." }
+it = { title = "L'e-mail o la password non è corretta.", action = "Riprova. Se hai dimenticato la password, reimpostala sul tuo server." }
+en = { title = "That email or password is wrong.", action = "Try again. If you forgot your password, reset it on your server." }
+
+[SZ-E102]
+weight = "neutral"
+reach = ["web", "ios", "android"]
+de = { title = "Du bist nicht angemeldet.", action = "Melde dich nochmal an." }
+fr = { title = "Tu n'es pas connecté.", action = "Reconnecte-toi." }
+it = { title = "Non hai effettuato l'accesso.", action = "Accedi di nuovo." }
+en = { title = "You're not signed in.", action = "Sign in again." }
+
+[SZ-E103]
+weight = "neutral"
+reach = ["web", "ios"]
+de = { title = "Deine Sitzung ist abgelaufen.", action = "Melde dich nochmal an, dann geht es weiter." }
+fr = { title = "Ta session a expiré.", action = "Reconnecte-toi pour continuer." }
+it = { title = "La sessione è scaduta.", action = "Accedi di nuovo per continuare." }
+en = { title = "Your session ran out.", action = "Sign in again to carry on." }
+
+[SZ-E104]
+weight = "neutral"
+reach = ["web", "ios"]
+de = { title = "Dieser Server nimmt keine neuen Konten an.", action = "Frag die Person, die den Server betreibt, um eine Einladung." }
+fr = { title = "Ce serveur n'accepte pas de nouveaux comptes.", action = "Demande une invitation à la personne qui gère le serveur." }
+it = { title = "Questo server non accetta nuovi account.", action = "Chiedi un invito a chi gestisce il server." }
+en = { title = "This server isn't taking new accounts.", action = "Ask whoever runs the server for an invite." }
+
+[SZ-E105]
+weight = "urgent"
+reach = ["web", "ios"]
+de = { title = "Für diese E-Mail gibt es schon ein Konto.", action = "Melde dich damit an oder nimm eine andere Adresse." }
+fr = { title = "Un compte existe déjà avec cet e-mail.", action = "Connecte-toi avec, ou utilise une autre adresse." }
+it = { title = "Esiste già un account con questa e-mail.", action = "Accedi con quello o usa un altro indirizzo." }
+en = { title = "That email already has an account.", action = "Sign in with it, or use another address." }
+
+[SZ-E106]
+weight = "urgent"
+reach = ["ios", "android"]
+de = { title = "Das Passwort stimmt nicht, der Kindermodus bleibt an.", action = "Probier es nochmal. Nur ein Elternteil kann den Kindermodus beenden." }
+fr = { title = "Le mot de passe est incorrect, le mode enfant reste actif.", action = "Réessaie. Seul un parent peut quitter le mode enfant." }
+it = { title = "La password non è corretta, la modalità bambino resta attiva.", action = "Riprova. Solo un genitore può uscire dalla modalità bambino." }
+en = { title = "That password is wrong, so child mode stays on.", action = "Try again. Only a parent can leave child mode." }
+
+# ─── 2xx — scope / existence ─────────────────────────────────────────
+
+[SZ-E201]
+weight = "neutral"
+reach = ["web", "ios", "android"]
+de = { title = "Das gibt es hier nicht.", action = "Geh zurück und probier es nochmal." }
+fr = { title = "Cela n'existe pas ici.", action = "Reviens en arrière et réessaie." }
+it = { title = "Qui non c'è nulla.", action = "Torna indietro e riprova." }
+en = { title = "That isn't here.", action = "Go back and try again." }
+
+[SZ-E202]
+weight = "neutral"
+reach = ["web", "ios"]
+de = { title = "Dieses Kind ist nicht mehr auf dem Server.", action = "Geh zurück zur Übersicht." }
+fr = { title = "Cet enfant n'est plus sur le serveur.", action = "Retourne à la vue d'ensemble." }
+it = { title = "Questo bambino non è più sul server.", action = "Torna alla panoramica." }
+en = { title = "That child isn't on the server any more.", action = "Go back to the overview." }
+
+[SZ-E203]
+weight = "urgent"
+reach = ["ios", "android"]
+de = { title = "Dieses Handy ist nicht mehr angemeldet.", action = "Meldet es neu an, sonst werden keine Zeiten mehr gezählt." }
+fr = { title = "Ce téléphone n'est plus enregistré.", action = "Enregistre-le à nouveau, sinon plus rien n'est compté." }
+it = { title = "Questo telefono non è più registrato.", action = "Registralo di nuovo, altrimenti non viene contato nulla." }
+en = { title = "This phone isn't enrolled any more.", action = "Enrol it again, or nothing gets counted." }
+
+[SZ-E204]
+weight = "urgent"
+reach = ["ios", "android"]
+de = { title = "Dieser Code stimmt nicht.", action = "Prüf die Zeichen und gib ihn nochmal ein." }
+fr = { title = "Ce code n'est pas correct.", action = "Vérifie les caractères et saisis-le à nouveau." }
+it = { title = "Questo codice non è corretto.", action = "Controlla i caratteri e inseriscilo di nuovo." }
+en = { title = "That code isn't right.", action = "Check the characters and enter it again." }
+
+[SZ-E205]
+weight = "neutral"
+reach = ["ios", "android"]
+de = { title = "Dieser Code ist abgelaufen.", action = "Lass dir auf dem Elterngerät einen neuen geben." }
+fr = { title = "Ce code a expiré.", action = "Fais-en générer un nouveau sur l'appareil du parent." }
+it = { title = "Questo codice è scaduto.", action = "Fatene generare uno nuovo sul dispositivo del genitore." }
+en = { title = "That code has expired.", action = "Make a new one on the parent's device." }
+
+# ─── 3xx — request shape ─────────────────────────────────────────────
+
+[SZ-E301]
+weight = "urgent"
+reach = ["web", "ios", "android"]
+de = { title = "Der Server konnte damit nichts anfangen.", action = "Prüf deine Eingaben und schick es nochmal." }
+fr = { title = "Le serveur n'a pas pu traiter cette demande.", action = "Vérifie ce que tu as saisi et renvoie." }
+it = { title = "Il server non ha potuto usare questi dati.", action = "Controlla quello che hai inserito e riprova." }
+en = { title = "The server couldn't use that.", action = "Check what you entered and send it again." }
+
+[SZ-E302]
+weight = "urgent"
+reach = ["ios", "android"]
+de = { title = "Zu viel auf einmal.", action = "Die App schickt die Daten gleich in kleineren Teilen. Du musst nichts tun." }
+fr = { title = "Trop de données d'un coup.", action = "L'app va les envoyer en plus petits morceaux. Tu n'as rien à faire." }
+it = { title = "Troppi dati insieme.", action = "L'app li invierà in parti più piccole. Non devi fare nulla." }
+en = { title = "Too much at once.", action = "The app will send it in smaller pieces. Nothing for you to do." }
+
+[SZ-E303]
+weight = "urgent"
+reach = ["ios", "android"]
+de = { title = "Diese App ist älter als der Server erwartet.", action = "Aktualisiere die App, dann werden die Zeiten wieder übertragen." }
+fr = { title = "Cette app est plus ancienne que ce que le serveur attend.", action = "Mets l'app à jour pour que les temps repartent." }
+it = { title = "Questa app è più vecchia di quanto il server si aspetti.", action = "Aggiorna l'app per riprendere l'invio dei tempi." }
+en = { title = "This app is older than the server expects.", action = "Update the app and the times start flowing again." }
+
+[SZ-E304]
+weight = "neutral"
+reach = ["web", "ios", "android"]
+de = { title = "Zu viele Versuche kurz nacheinander.", action = "Warte einen Moment und probier es nochmal." }
+fr = { title = "Trop de tentatives d'affilée.", action = "Attends un instant et réessaie." }
+it = { title = "Troppi tentativi ravvicinati.", action = "Aspetta un momento e riprova." }
+en = { title = "Too many tries in a row.", action = "Wait a moment and try again." }
+
+# ─── 5xx — transport, client-only ────────────────────────────────────
+
+[SZ-E501]
+weight = "neutral"
+reach = ["web", "ios", "android"]
+de = { title = "Keine Verbindung.", action = "Prüf dein WLAN oder das mobile Netz und probier es nochmal." }
+fr = { title = "Pas de connexion.", action = "Vérifie le Wi-Fi ou les données mobiles, puis réessaie." }
+it = { title = "Nessuna connessione.", action = "Controlla il Wi-Fi o i dati mobili e riprova." }
+en = { title = "No connection.", action = "Check your Wi-Fi or mobile data, then try again." }
+
+[SZ-E502]
+weight = "neutral"
+reach = ["web", "ios", "android"]
+de = { title = "Der Server hat zu lange gebraucht.", action = "Probier es gleich nochmal." }
+fr = { title = "Le serveur a mis trop de temps.", action = "Réessaie dans un instant." }
+it = { title = "Il server ha impiegato troppo tempo.", action = "Riprova tra poco." }
+en = { title = "The server took too long.", action = "Try again in a moment." }
+
+[SZ-E503]
+weight = "urgent"
+reach = ["web", "ios", "android"]
+de = { title = "Die sichere Verbindung ist fehlgeschlagen.", action = "Prüf die Serveradresse und das Zertifikat deines Servers." }
+fr = { title = "La connexion sécurisée a échoué.", action = "Vérifie l'adresse du serveur et son certificat." }
+it = { title = "La connessione sicura non è riuscita.", action = "Controlla l'indirizzo del server e il suo certificato." }
+en = { title = "The secure connection failed.", action = "Check the server address and your server's certificate." }
+
+[SZ-E504]
+weight = "urgent"
+reach = ["web", "ios", "android"]
+de = { title = "Die Antwort kam nicht von deinem Server.", action = "Oft steckt ein Gast-WLAN mit Anmeldeseite dahinter. Melde dich dort an und probier es nochmal." }
+fr = { title = "La réponse ne venait pas de ton serveur.", action = "Souvent c'est un Wi-Fi public avec une page de connexion. Connecte-toi, puis réessaie." }
+it = { title = "La risposta non arrivava dal tuo server.", action = "Spesso c'è di mezzo un Wi-Fi pubblico con pagina di accesso. Accedi e riprova." }
+en = { title = "That answer didn't come from your server.", action = "Often it's a guest Wi-Fi with a login page. Sign in there, then try again." }
+
+[SZ-E505]
+weight = "urgent"
+reach = ["web", "ios", "android"]
+de = { title = "Der Server ist unter dieser Adresse nicht erreichbar.", action = "Prüf die Adresse und ob der Server läuft." }
+fr = { title = "Le serveur est injoignable à cette adresse.", action = "Vérifie l'adresse et que le serveur tourne." }
+it = { title = "Il server non è raggiungibile a questo indirizzo.", action = "Controlla l'indirizzo e che il server sia in funzione." }
+en = { title = "The server can't be reached at that address.", action = "Check the address, and that the server is running." }
+
+[SZ-E506]
+weight = "urgent"
+reach = ["ios", "android"]
+de = { title = "Es ist noch keine Serveradresse hinterlegt.", action = "Trag die Adresse deines Servers ein." }
+fr = { title = "Aucune adresse de serveur n'est encore enregistrée.", action = "Saisis l'adresse de ton serveur." }
+it = { title = "Non è ancora impostato nessun indirizzo del server.", action = "Inserisci l'indirizzo del tuo server." }
+en = { title = "No server address is set yet.", action = "Enter your server's address." }
+
+# ─── 6xx — platform permission, client-only ──────────────────────────
+
+[SZ-E601]
+weight = "urgent"
+reach = ["android"]
+de = { title = "Der Zugriff auf die Nutzungsdaten ist aus, es wird nichts gezählt.", action = "Schalte ihn in den Einstellungen unter Spezieller App-Zugriff wieder ein." }
+fr = { title = "L'accès aux données d'utilisation est désactivé, rien n'est compté.", action = "Réactive-le dans Réglages, sous Accès spécial des applications." }
+it = { title = "L'accesso ai dati di utilizzo è disattivato, non viene contato nulla.", action = "Riattivalo in Impostazioni, sotto Accesso speciale alle app." }
+en = { title = "Usage access is off, so nothing is being counted.", action = "Switch it back on in Settings, under Special app access." }
+
+[SZ-E602]
+weight = "neutral"
+reach = ["android"]
+de = { title = "Benachrichtigungen sind aus, der laufende Hinweis kann nicht angezeigt werden.", action = "Erlaube Benachrichtigungen, damit sichtbar bleibt, dass gezählt wird." }
+fr = { title = "Les notifications sont désactivées, l'avis permanent ne peut pas s'afficher.", action = "Autorise les notifications pour qu'il reste visible que le comptage tourne." }
+it = { title = "Le notifiche sono disattivate, l'avviso permanente non può essere mostrato.", action = "Consenti le notifiche perché resti visibile che il conteggio è attivo." }
+en = { title = "Notifications are off, so the ongoing notice can't show.", action = "Allow notifications so it stays visible that counting is on." }
+
+[SZ-E603]
+weight = "neutral"
+reach = ["android"]
+de = { title = "Hintergrund-Wiedergabe wird nicht gemessen.", action = "Gib in den Einstellungen den Zugriff auf Benachrichtigungen frei, damit Musik bei ausgeschaltetem Bildschirm mitgezählt wird." }
+fr = { title = "L'écoute en arrière-plan n'est pas mesurée.", action = "Autorise l'accès aux notifications dans les réglages pour compter la musique écran éteint." }
+it = { title = "L'ascolto in background non viene misurato.", action = "Consenti l'accesso alle notifiche nelle impostazioni per contare la musica a schermo spento." }
+en = { title = "Background listening isn't being measured.", action = "Allow notification access in settings so music with the screen off is counted." }
+
+[SZ-E604]
+weight = "urgent"
+reach = ["ios"]
+de = { title = "Der Zugriff auf die Bildschirmzeit wurde abgelehnt, es wird nichts gezählt.", action = "Erlaube ihn in den Einstellungen unter Bildschirmzeit." }
+fr = { title = "L'accès au Temps d'écran a été refusé, rien n'est compté.", action = "Autorise-le dans Réglages, sous Temps d'écran." }
+it = { title = "L'accesso a Tempo di utilizzo è stato negato, non viene contato nulla.", action = "Consentilo in Impostazioni, sotto Tempo di utilizzo." }
+en = { title = "Screen Time access was declined, so nothing is being counted.", action = "Allow it in Settings, under Screen Time." }
+
+[SZ-E605]
+weight = "neutral"
+reach = ["ios"]
+de = { title = "Die Aktualisierung im Hintergrund ist aus, die Zahlen kommen später an.", action = "Schalte sie in den Einstellungen ein, dann sind die Zeiten aktueller." }
+fr = { title = "L'actualisation en arrière-plan est désactivée, les chiffres arrivent en retard.", action = "Active-la dans les réglages pour des temps plus à jour." }
+it = { title = "L'aggiornamento in background è disattivato, i dati arrivano in ritardo.", action = "Attivalo nelle impostazioni per avere tempi più aggiornati." }
+en = { title = "Background refresh is off, so numbers arrive late.", action = "Switch it on in settings to keep the times current." }
+
+# ─── 7xx — local storage / decode, client-only ───────────────────────
+
+[SZ-E701]
+weight = "urgent"
+reach = ["ios"]
+de = { title = "Die gespeicherte Anmeldung konnte nicht gelesen werden.", action = "Melde dich nochmal an." }
+fr = { title = "La connexion enregistrée n'a pas pu être lue.", action = "Reconnecte-toi." }
+it = { title = "Non è stato possibile leggere l'accesso salvato.", action = "Accedi di nuovo." }
+en = { title = "The saved sign-in couldn't be read.", action = "Sign in again." }
+
+[SZ-E702]
+weight = "urgent"
+reach = ["ios"]
+de = { title = "Die Anmeldung konnte nicht gespeichert werden.", action = "Probier es nochmal. Bleibt es so, starte das Gerät neu." }
+fr = { title = "La connexion n'a pas pu être enregistrée.", action = "Réessaie. Si cela persiste, redémarre l'appareil." }
+it = { title = "Non è stato possibile salvare l'accesso.", action = "Riprova. Se continua, riavvia il dispositivo." }
+en = { title = "The sign-in couldn't be saved.", action = "Try again. If it keeps happening, restart the device." }
+
+[SZ-E703]
+weight = "urgent"
+reach = ["web", "ios", "android"]
+de = { title = "Gespeicherte Daten auf diesem Gerät konnten nicht gelesen werden.", action = "Probier es nochmal. Bleibt es so, meld dich ab und wieder an." }
+fr = { title = "Des données enregistrées sur cet appareil n'ont pas pu être lues.", action = "Réessaie. Si cela persiste, déconnecte-toi puis reconnecte-toi." }
+it = { title = "Non è stato possibile leggere i dati salvati su questo dispositivo.", action = "Riprova. Se continua, esci e accedi di nuovo." }
+en = { title = "Saved data on this device couldn't be read.", action = "Try again. If it keeps happening, sign out and back in." }
+
+[SZ-E704]
+weight = "urgent"
+reach = ["ios", "android"]
+de = { title = "Eine Stunde konnte nicht zwischengespeichert werden.", action = "Die App versucht es weiter. Prüf, ob auf dem Gerät noch Speicher frei ist." }
+fr = { title = "Une heure n'a pas pu être mise en file d'attente.", action = "L'app réessaie. Vérifie qu'il reste de l'espace sur l'appareil." }
+it = { title = "Non è stato possibile mettere in coda un'ora.", action = "L'app riprova. Controlla che ci sia ancora spazio sul dispositivo." }
+en = { title = "An hour couldn't be queued.", action = "The app keeps trying. Check there's still storage free on the device." }
+
+[SZ-E705]
+weight = "urgent"
+reach = ["ios", "android"]
+de = { title = "Die Zeitzone des Geräts kennt diese App nicht.", action = "Prüf die Zeitzone in den Einstellungen des Geräts." }
+fr = { title = "L'app ne connaît pas le fuseau horaire de l'appareil.", action = "Vérifie le fuseau horaire dans les réglages de l'appareil." }
+it = { title = "L'app non conosce il fuso orario del dispositivo.", action = "Controlla il fuso orario nelle impostazioni del dispositivo." }
+en = { title = "This app doesn't know the device's time zone.", action = "Check the time zone in the device settings." }
+
+[SZ-E706]
+weight = "urgent"
+reach = ["ios", "android"]
+de = { title = "Die Daten konnten nicht gelesen werden.", action = "Probier es nochmal. Bleibt es so, aktualisiere die App." }
+fr = { title = "Les données n'ont pas pu être lues.", action = "Réessaie. Si cela persiste, mets l'app à jour." }
+it = { title = "Non è stato possibile leggere i dati.", action = "Riprova. Se continua, aggiorna l'app." }
+en = { title = "The data couldn't be read.", action = "Try again. If it keeps happening, update the app." }
+
+[SZ-E707]
+weight = "urgent"
+reach = ["web"]
+de = { title = "Etwas ist unerwartet schiefgelaufen.", action = "Lade die Seite neu. Passiert es wieder, schick uns den Code und die Referenz unten." }
+fr = { title = "Quelque chose s'est mal passé de façon inattendue.", action = "Recharge la page. Si cela se reproduit, envoie-nous le code et la référence ci-dessous." }
+it = { title = "Qualcosa è andato storto in modo inatteso.", action = "Ricarica la pagina. Se succede di nuovo, mandaci il codice e il riferimento qui sotto." }
+en = { title = "Something went wrong unexpectedly.", action = "Reload the page. If it happens again, send us the code and reference below." }
+
+# ─── 9xx — server-side ───────────────────────────────────────────────
+
+[SZ-E901]
+weight = "urgent"
+reach = ["web", "ios", "android"]
+de = { title = "Auf dem Server ist etwas schiefgelaufen.", action = "Probier es gleich nochmal. Bleibt es so, such im Server-Log nach der Referenz unten." }
+fr = { title = "Un problème est survenu côté serveur.", action = "Réessaie dans un instant. Si cela persiste, cherche la référence ci-dessous dans le journal du serveur." }
+it = { title = "Sul server è andato storto qualcosa.", action = "Riprova tra poco. Se continua, cerca il riferimento qui sotto nel log del server." }
+en = { title = "Something went wrong on the server.", action = "Try again in a moment. If it keeps happening, look for the reference below in the server log." }
+
+[SZ-E902]
+weight = "urgent"
+reach = ["web", "ios", "android"]
+de = { title = "Der Server erreicht seine Datenbank nicht.", action = "Probier es später nochmal. Prüf, ob die Datenbank läuft." }
+fr = { title = "Le serveur n'atteint pas sa base de données.", action = "Réessaie plus tard. Vérifie que la base de données tourne." }
+it = { title = "Il server non raggiunge il suo database.", action = "Riprova più tardi. Controlla che il database sia in funzione." }
+en = { title = "The server can't reach its database.", action = "Try again later. Check that the database is running." }

@@ -154,9 +154,12 @@ fr = { title = "Le serveur a mis trop de temps.", action = "Réessaie dans un in
 it = { title = "Il server ha impiegato troppo tempo.", action = "Riprova tra poco." }
 en = { title = "The server took too long.", action = "Try again in a moment." }
 
+# Not web: a browser reports a bad certificate, a refused connection and a
+# cross-origin block as one indistinguishable TypeError, so the dashboard can
+# never honestly claim this one.
 [SZ-E503]
 weight = "urgent"
-reach = ["web", "ios", "android"]
+reach = ["ios", "android"]
 de = { title = "Die sichere Verbindung ist fehlgeschlagen.", action = "Prüf die Serveradresse und das Zertifikat deines Servers." }
 fr = { title = "La connexion sécurisée a échoué.", action = "Vérifie l'adresse du serveur et son certificat." }
 it = { title = "La connessione sicura non è riuscita.", action = "Controlla l'indirizzo del server e il suo certificato." }

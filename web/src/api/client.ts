@@ -1,16 +1,7 @@
-export type ApiProblem = {
-  type: string
-  title: string
-  status: number
-  detail: string
-}
+import { AppError, badResponseBody, fromProblem, fromTransport, type Problem } from './errors'
 
-export class ApiError extends Error {
-  constructor(readonly problem: ApiProblem) {
-    super(problem.detail)
-    this.name = 'ApiError'
-  }
-}
+export { AppError }
+export type { Problem }
 
 /**
  * Where the API lives, relative to the page.
@@ -29,28 +20,32 @@ export function apiUrl(path: string, base: string = API_BASE): string {
 }
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
-  const response = await fetch(apiUrl(path), {
-    method,
-    headers: body ? { 'content-type': 'application/json' } : undefined,
-    body: body ? JSON.stringify(body) : undefined,
-    // `include`, not `same-origin`: on the split hosts the session cookie is
-    // set by and sent to `api.`, which is a different origin from the page.
-    // Both are under `schirmziit.ch`, so this stays a same-SITE cookie and no
-    // third-party-cookie policy applies. Same-origin self-hosting is
-    // unaffected — `include` behaves identically there.
-    credentials: 'include',
-  })
+  let response: Response
+  try {
+    response = await fetch(apiUrl(path), {
+      method,
+      headers: body ? { 'content-type': 'application/json' } : undefined,
+      body: body ? JSON.stringify(body) : undefined,
+      // `include`, not `same-origin`: on the split hosts the session cookie is
+      // set by and sent to `api.`, which is a different origin from the page.
+      // Both are under `schirmziit.ch`, so this stays a same-SITE cookie and no
+      // third-party-cookie policy applies. Same-origin self-hosting is
+      // unaffected — `include` behaves identically there.
+      credentials: 'include',
+    })
+  } catch (cause) {
+    throw fromTransport(cause, { endpoint: path })
+  }
 
   if (!response.ok) {
-    const problem = (await response.json().catch(() => null)) as ApiProblem | null
-    throw new ApiError(
-      problem ?? {
-        type: 'about:blank',
-        title: 'error',
-        status: response.status,
-        detail: response.statusText,
-      },
-    )
+    const problem = (await response.json().catch(() => null)) as Problem | null
+    // A body that is not the API's problem shape means something answered in
+    // the server's place — a captive portal, a proxy error page. It must throw
+    // rather than be read as anything else.
+    if (!problem || typeof problem.code !== 'string') {
+      throw badResponseBody({ endpoint: path, httpStatus: response.status })
+    }
+    throw fromProblem(problem, { endpoint: path, httpStatus: response.status })
   }
   return response.status === 204 ? (undefined as T) : ((await response.json()) as T)
 }

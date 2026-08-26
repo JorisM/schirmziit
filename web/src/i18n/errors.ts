@@ -88,13 +88,6 @@ export const errorCopy = {
     it: { title: 'Il server ha impiegato troppo tempo.', action: 'Riprova tra poco.' },
     en: { title: 'The server took too long.', action: 'Try again in a moment.' },
   },
-  'SZ-E503': {
-    weight: 'urgent',
-    de: { title: 'Die sichere Verbindung ist fehlgeschlagen.', action: 'Prüf die Serveradresse und das Zertifikat deines Servers.' },
-    fr: { title: 'La connexion sécurisée a échoué.', action: 'Vérifie l\'adresse du serveur et son certificat.' },
-    it: { title: 'La connessione sicura non è riuscita.', action: 'Controlla l\'indirizzo del server e il suo certificato.' },
-    en: { title: 'The secure connection failed.', action: 'Check the server address and your server\'s certificate.' },
-  },
   'SZ-E504': {
     weight: 'urgent',
     de: { title: 'Die Antwort kam nicht von deinem Server.', action: 'Oft steckt ein Gast-WLAN mit Anmeldeseite dahinter. Melde dich dort an und probier es nochmal.' },

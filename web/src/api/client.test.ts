@@ -50,6 +50,8 @@ describe('request', () => {
   it('throws on a non-JSON error body instead of reading it as success', async () => {
     // A captcha or proxy page must never look like an answer.
     stubFetch(new Response('<html>challenge</html>', { status: 403 }))
-    await expect(api.get('/v1/me')).rejects.toThrow()
+    // And it names the case, so the panel can say "often a guest Wi-Fi with a
+    // login page" rather than shrugging.
+    await expect(api.get('/v1/me')).rejects.toMatchObject({ code: 'SZ-E504' })
   })
 })

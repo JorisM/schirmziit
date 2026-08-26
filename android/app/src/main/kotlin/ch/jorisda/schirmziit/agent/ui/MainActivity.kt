@@ -27,6 +27,7 @@ import ch.jorisda.schirmziit.agent.mytime.mergeMyTimeResult
 import ch.jorisda.schirmziit.agent.mytime.myTimeLoadArgs
 import ch.jorisda.schirmziit.agent.notify.OngoingNotice
 import ch.jorisda.schirmziit.agent.pair.EnrollPayloadParser
+import ch.jorisda.schirmziit.agent.pair.ParentSetup
 import ch.jorisda.schirmziit.agent.pair.PairingScreen
 import ch.jorisda.schirmziit.agent.power.AndroidPowerStatus
 import ch.jorisda.schirmziit.agent.store.AgentDatabase
@@ -217,6 +218,35 @@ class MainActivity : ComponentActivity() {
                             },
                             onDismissBackgroundCard = {
                                 settings.backgroundCardDismissed = true
+                                refresh()
+                            },
+                            // Off the composition thread: this signs in and out
+                            // against the server, and Compose's thread may not
+                            // do network work.
+                            onUnpair = { email, password ->
+                                val base = settings.baseUrl
+                                if (base == null) {
+                                    // Unreachable in practice: this screen only
+                                    // renders when isPaired, which requires a
+                                    // base URL. Handled rather than asserted so
+                                    // the worst case is a phone that lands back
+                                    // on pairing, not one that crashes there.
+                                    settings.unpair()
+                                    ParentSetup.Unpair.Done
+                                } else {
+                                    withContext(Dispatchers.IO) {
+                                        ParentSetup(
+                                            SchirmziitClient(base, httpClient),
+                                            settings,
+                                        ).unpair(email, password)
+                                    }
+                                }
+                            },
+                            onUnpaired = {
+                                // The ongoing notice claims this phone is
+                                // reporting; it has to go before the screen
+                                // does, or it outlives the pairing it describes.
+                                OngoingNotice.update(this@MainActivity, settings)
                                 refresh()
                             },
                         )

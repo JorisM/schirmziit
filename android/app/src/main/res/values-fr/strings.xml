@@ -96,6 +96,12 @@
     <string name="background_card_body">La musique, les podcasts et les livres audio qui jouent pendant que l\'écran est éteint ne sont pas du temps d\'écran, ils ne sont donc pas comptés aujourd\'hui. Pour les compter, Schirmziit a besoin de l\'accès aux notifications — c\'est la seule façon dont Android laisse une app voir quelle app joue. Schirmziit ne lit jamais tes notifications, ni ce qui joue, seulement que quelque chose joue.</string>
     <string name="background_card_action">Ouvrir les réglages</string>
     <string name="background_card_dismiss">Pas maintenant</string>
+    <!-- Unpairing: a parent's act, behind their password. -->
+    <string name="unpair_show">Déconnecter ce téléphone</string>
+    <string name="unpair_title">Déconnecter ce téléphone ?</string>
+    <string name="unpair_body">Ce téléphone arrête d\'envoyer le temps d\'écran. Ce qui a déjà été envoyé reste : tes parents voient toujours les jours jusqu\'à maintenant. Un parent doit se connecter pour cela, pour que personne ne puisse le désactiver seul.</string>
+    <string name="unpair_confirm">Déconnecter</string>
+    <string name="unpair_cancel">Annuler</string>
     <string name="mytime_background">Écouté en arrière-plan</string>
     <string name="mytime_background_help">Musique, podcasts ou livres audio qui jouaient pendant que ton écran était éteint.</string>
     <string name="mytime_background_not_measured">L\'écoute avec l\'écran éteint n\'est pas comptée sur ce téléphone.</string>

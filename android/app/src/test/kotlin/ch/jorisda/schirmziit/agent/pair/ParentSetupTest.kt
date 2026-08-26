@@ -11,6 +11,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import java.util.concurrent.TimeUnit
 
 @RunWith(RobolectricTestRunner::class)
 class ParentSetupTest {
@@ -104,6 +105,64 @@ class ParentSetupTest {
         // this whole flow exists to avoid.
         repeat(3) { server.takeRequest() }
         assertEquals("/v1/auth/logout", server.takeRequest().path)
+        server.shutdown()
+    }
+
+    @Test
+    fun `unpairing needs the parent password, so a child cannot stop reporting`() {
+        val settings = FakeAgentSettings(baseUrl = "https://api.example.ch", deviceToken = "t1")
+        val server = MockWebServer().apply {
+            enqueue(MockResponse().setResponseCode(401))
+            start()
+        }
+
+        val result = setup(server, settings).unpair("anna@example.ch", "the child's guess")
+
+        assertTrue(result is ParentSetup.Unpair.WrongCredentials)
+        // The point of the whole guard: a wrong password changes nothing.
+        assertEquals("t1", settings.deviceToken)
+        assertEquals("https://api.example.ch", settings.baseUrl)
+        server.shutdown()
+    }
+
+    @Test
+    fun `unpairing clears the token and then ends the parent session`() {
+        val settings = FakeAgentSettings(baseUrl = "https://api.example.ch", deviceToken = "t1")
+        val server = MockWebServer().apply {
+            enqueue(loggedIn())
+            enqueue(MockResponse().setResponseCode(204))
+            start()
+        }
+
+        val result = setup(server, settings).unpair("anna@example.ch", "a long password")
+
+        assertTrue(result is ParentSetup.Unpair.Done)
+        assertNull(settings.deviceToken)
+        assertNull(settings.baseUrl)
+        // Bounded, not the blocking overload: an implementation that stops
+        // calling the server at all would hang this test forever instead of
+        // failing it, and a test that hangs reports nothing.
+        assertEquals("/v1/auth/login", server.takeRequest(2, TimeUnit.SECONDS)?.path)
+        // Same rule as claim(): the session opened to check the password is
+        // never left behind on a child's phone.
+        assertEquals("/v1/auth/logout", server.takeRequest(2, TimeUnit.SECONDS)?.path)
+        server.shutdown()
+    }
+
+    @Test
+    fun `an unreachable server leaves the phone paired rather than half-unpaired`() {
+        val settings = FakeAgentSettings(baseUrl = "https://api.example.ch", deviceToken = "t1")
+        val server = MockWebServer().apply {
+            enqueue(MockResponse().setResponseCode(502))
+            start()
+        }
+
+        val result = setup(server, settings).unpair("anna@example.ch", "a long password")
+
+        assertTrue("expected Failed, got $result", result is ParentSetup.Unpair.Failed)
+        // A phone that silently stopped reporting because the server blipped is
+        // the failure this product exists to avoid.
+        assertEquals("t1", settings.deviceToken)
         server.shutdown()
     }
 

@@ -157,6 +157,14 @@ export const fr: Strings = {
     ],
   },
 
+  errorPanel: {
+    retry: 'Réessayer',
+    details: 'Détails',
+    copy: 'Copier les détails',
+    copied: 'Copié',
+    reference: "Code d'erreur et référence",
+  },
+
   errors: {
     generic: 'Quelque chose s’est mal passé.',
     notFound: 'Introuvable.',

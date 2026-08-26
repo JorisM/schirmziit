@@ -71,15 +71,39 @@ targets:
         embed: true
       - target: SchirmziitMonitor
       - target: SchirmziitReport
+    # Both app targets generate this one file, so the properties are an anchor
+    # reused below rather than a copy: two copies drift, and the second target
+    # written wins silently.
     info:
       path: Sources/Resources/Info.plist
+      properties: &appInfo
+        # Without this key iOS runs the app in legacy compatibility mode: it
+        # renders at an older screen size and letterboxes the result, which on
+        # every modern iPhone is a black bar above the app and one below it. An
+        # empty dictionary is the whole opt-in — it means "no launch image, use
+        # the system background".
+        UILaunchScreen: {}
+        # A modern app in the iPad device family has to support all four
+        # orientations or opt out of multitasking, and the launch-screen key
+        # above is what makes it modern — without these the build warns "All
+        # interface orientations must be supported unless the app requires full
+        # screen". The iPhone default (no upside down) is left alone.
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        # The home-screen name, per target: "Schirmziit" for this one,
+        # "SchirmziitLocal" for the free-team build, so a phone carrying both
+        # says which is which. Spelled out because INFOPLIST_KEY_* settings are
+        # ignored when GENERATE_INFOPLIST_FILE is NO, as it is here.
+        CFBundleDisplayName: $(PRODUCT_NAME)
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit
         CODE_SIGN_STYLE: Automatic
         CODE_SIGN_ENTITLEMENTS: Sources/Resources/Schirmziit.entitlements
         GENERATE_INFOPLIST_FILE: NO
-        INFOPLIST_KEY_CFBundleDisplayName: Schirmziit
         TARGETED_DEVICE_FAMILY: "1,2"
 
   # Installable on a phone signed by a free Personal Team, which cannot sign
@@ -98,17 +122,17 @@ targets:
         embed: true
     info:
       path: Sources/Resources/Info.plist
+      properties: *appInfo
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.local
         # No PRODUCT_NAME override: it would build SchirmziitLocal.app on top of
         # the real target's Schirmziit.app in the same directory, and the
-        # leftover PlugIns then fail installation. The home-screen name comes
-        # from CFBundleDisplayName either way.
+        # leftover PlugIns then fail installation. It is also what tells the two
+        # apart on a phone that has both — see CFBundleDisplayName above.
         CODE_SIGN_STYLE: Automatic
         CODE_SIGN_ENTITLEMENTS: Sources/Resources/SchirmziitLocal.entitlements
         GENERATE_INFOPLIST_FILE: NO
-        INFOPLIST_KEY_CFBundleDisplayName: Schirmziit
         TARGETED_DEVICE_FAMILY: "1,2"
 
   SchirmziitMonitor:

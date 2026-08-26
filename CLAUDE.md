@@ -11,6 +11,7 @@ Fast orientation:
     bin/doctor                                          # what this machine has, and lacks
     bin/dev                                             # api :8099, dashboard :5173, site :4321
     bin/check                                           # every gate, all of them even after one fails
+    bin/ios-check                                       # only the iOS gate, on a simulator
     bin/android-install / bin/ios-install               # onto the phone in front of you
     bin/record ios|android                              # re-record the screen goldens, deliberately
 

@@ -5,6 +5,28 @@ export const en: Site = {
   swissLabel: 'Made in Switzerland',
   nav: { home: 'Overview', selfHost: 'Self-hosting', hosted: 'Hosted', privacy: 'Privacy' },
 
+  alpha: {
+    bannerTitle: 'Private alpha',
+    bannerBody:
+      'Schirmziit is under heavy development and not released yet. What you read here describes what already works — not something to set up for your family today.',
+    bannerCta: 'Join the waiting list',
+    title: 'Waiting list',
+    lead:
+      'Leave your email address and you will hear from us once Schirmziit is released. One mail, then nothing — no newsletter.',
+    emailLabel: 'Email address',
+    placeholder: 'you@example.ch',
+    submit: 'Join',
+    sending: 'Signing up …',
+    done: 'You are on the list. We will write once it is out.',
+    invalid: 'That does not look like an email address.',
+    failed: 'That did not work. Try again later, or send us a mail.',
+    stored:
+      'We store the address and the language of this page, nothing else. No tracking, no sharing. Write to us and the entry is gone.',
+    mailFallback:
+      'The form needs JavaScript. Send us a short mail instead — that works just as well.',
+    mailCta: 'Send a mail',
+  },
+
   home: {
     kicker: 'Screen time for families',
     title: 'Screen time in view, to protect your child',
@@ -165,6 +187,10 @@ export const en: Site = {
       {
         title: 'Third parties',
         body: 'None. No analytics on the child’s phone, no advertising SDKs, no crash reporters, no sharing.',
+      },
+      {
+        title: 'Waiting list',
+        body: 'If you join the waiting list we store your email address and the language you read the site in. For one purpose only: a mail when Schirmziit is released. No newsletter, no sharing. Write to us and we delete the entry.',
       },
     ],
     analyticsTitle: 'This website',

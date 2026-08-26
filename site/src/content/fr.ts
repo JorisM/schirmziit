@@ -5,6 +5,28 @@ export const fr: Site = {
   swissLabel: 'Développé en Suisse',
   nav: { home: 'Aperçu', selfHost: 'Auto-hébergement', hosted: 'Hébergé', privacy: 'Confidentialité' },
 
+  alpha: {
+    bannerTitle: 'Alpha privée',
+    bannerBody:
+      "Schirmziit est en plein développement et n'est pas encore publié. Ce que tu lis ici décrit ce qui fonctionne déjà — pas quelque chose à installer aujourd'hui pour ta famille.",
+    bannerCta: "S'inscrire à la liste d'attente",
+    title: "Liste d'attente",
+    lead:
+      'Laisse ton adresse e-mail et tu auras des nouvelles dès que Schirmziit sera publié. Un seul message, puis plus rien — pas de newsletter.',
+    emailLabel: 'Adresse e-mail',
+    placeholder: 'toi@example.ch',
+    submit: "S'inscrire",
+    sending: 'Inscription …',
+    done: 'C\'est noté. On te fait signe dès que ça démarre.',
+    invalid: "Cela ne ressemble pas à une adresse e-mail.",
+    failed: "Ça n'a pas marché. Réessaie plus tard ou écris-nous un e-mail.",
+    stored:
+      "Nous enregistrons l'adresse et la langue de cette page, rien d'autre. Pas de pistage, pas de transmission. Écris-nous et l'entrée disparaît.",
+    mailFallback:
+      "Le formulaire a besoin de JavaScript. Écris-nous plutôt un court e-mail — cela suffit.",
+    mailCta: 'Écrire un e-mail',
+  },
+
   home: {
     kicker: 'Temps d’écran pour les familles',
     title: 'Le temps d’écran sous les yeux, pour protéger ton enfant',
@@ -167,6 +189,10 @@ export const fr: Site = {
       {
         title: 'Tiers',
         body: 'Aucun. Pas d’analytics sur le téléphone de l’enfant, pas de SDK publicitaire, pas de rapport de crash, aucune transmission.',
+      },
+      {
+        title: "Liste d'attente",
+        body: "Si tu t'inscris à la liste d'attente, nous enregistrons ton adresse e-mail et la langue dans laquelle tu as lu le site. Uniquement pour cela : un e-mail quand Schirmziit sera publié. Pas de newsletter, pas de transmission. Écris-nous et nous supprimons l'entrée.",
       },
     ],
     analyticsTitle: 'Ce site web',

@@ -8,6 +8,11 @@ COPY . .
 ARG PUBLIC_UMAMI_HOST=""
 ARG PUBLIC_UMAMI_ID=""
 ENV PUBLIC_UMAMI_HOST=$PUBLIC_UMAMI_HOST PUBLIC_UMAMI_ID=$PUBLIC_UMAMI_ID
+# The waiting-list endpoint, opt-in for the same reason: unset, the page offers a
+# mail address instead of a form, so a fork never posts strangers' addresses to
+# our instance. Set it to the API origin, e.g. https://api.schirmziit.ch/v1/waitlist.
+ARG PUBLIC_WAITLIST_API=""
+ENV PUBLIC_WAITLIST_API=$PUBLIC_WAITLIST_API
 RUN pnpm build
 
 FROM nginx:alpine

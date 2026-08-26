@@ -85,10 +85,20 @@ class ScreenshotTest {
         shoot("status-battery-de-light") { statusScreen(batteryHint = BatteryHint.Urgent) }
     }
 
+    @Test
+    @Config(qualifiers = LIGHT_DE)
+    fun `status screen offering background listening in german`() {
+        shoot("status-background-de-light") {
+            statusScreen(backgroundGranted = false, backgroundCardDismissed = false)
+        }
+    }
+
     @Composable
     private fun statusScreen(
         hasPermission: Boolean = true,
         batteryHint: BatteryHint = BatteryHint.None,
+        backgroundGranted: Boolean = true,
+        backgroundCardDismissed: Boolean = true,
     ) {
         StatusScreen(
             settings = FakeAgentSettings(
@@ -102,6 +112,8 @@ class ScreenshotTest {
             onSendNow = {},
             onAllowBackground = {},
             onOpenMyTime = {},
+            backgroundGranted = backgroundGranted,
+            backgroundCardDismissed = backgroundCardDismissed,
         )
     }
 

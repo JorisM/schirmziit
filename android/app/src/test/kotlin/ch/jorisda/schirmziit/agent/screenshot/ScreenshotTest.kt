@@ -118,6 +118,29 @@ class ScreenshotTest {
     }
 
     @Test
+    @Config(qualifiers = LIGHT_EN)
+    fun `my time screen where background listening is not measured`() {
+        // Must read as "not counted here", never as a flat zero line: a phone
+        // without the grant does not know that nothing played.
+        shoot("mytime-background-unmeasured-en-light") {
+            MyTimeScreen(
+                state = sampleMyTime().let {
+                    it.copy(
+                        detail = it.detail!!.copy(
+                            backgroundMs = 0L,
+                            backgroundHours = List(24) { 0L },
+                            backgroundMeasured = false,
+                        ),
+                    )
+                },
+                onSelectDay = {},
+                onRetry = {},
+                onBack = {},
+            )
+        }
+    }
+
+    @Test
     @Config(qualifiers = LIGHT_DE)
     fun `my time screen in german`() {
         shoot("mytime-de-light") { MyTimeScreen(state = sampleMyTime(), onSelectDay = {}, onRetry = {}, onBack = {}) }

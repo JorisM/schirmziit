@@ -26,7 +26,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathMeasure
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import android.provider.Settings
+import ch.jorisda.schirmziit.agent.mytime.backgroundShare
 import androidx.compose.ui.semantics.collapse
 import androidx.compose.ui.semantics.expand
 import androidx.compose.ui.semantics.semantics
@@ -36,6 +50,7 @@ import ch.jorisda.schirmziit.agent.mytime.MyTime
 import ch.jorisda.schirmziit.agent.mytime.splitApps
 import ch.jorisda.schirmziit.agent.mytime.visibleApps
 import ch.jorisda.schirmziit.core.AppTotalFfi
+import ch.jorisda.schirmziit.core.DayDetailFfi
 
 /**
  * What the child sees about themselves. Deliberately the same numbers the parent
@@ -154,6 +169,21 @@ fun MyTimeScreen(
                     )
                     Text("${detail.unlockCount}")
                 }
+                if (detail.backgroundMeasured) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text(
+                            stringResource(R.string.mytime_background),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        // Its own number, next to screen time and never inside
+                        // it: listening with the screen off is not screen time.
+                        Text(
+                            StatusText.duration(detail.backgroundMs),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.tertiary,
+                        )
+                    }
+                }
             }
         }
 
@@ -182,6 +212,8 @@ fun MyTimeScreen(
                 )
             }
         }
+
+        BackgroundLane(detail)
 
         if (detail.apps.isNotEmpty()) {
             // `visibleApps` is the tested seam: the cap lands on `shown`
@@ -233,5 +265,95 @@ private fun AppRow(app: AppTotalFfi) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         Text(app.label)
         Text(StatusText.duration(app.foregroundMs), color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+/**
+ * Background listening as a lane under the hour ribbon, same 24-hour axis.
+ *
+ * `backgroundMeasured` is not "was there any": a phone that cannot observe
+ * background playback gets a sentence saying so. A flat line here would tell
+ * the child nothing played, which is the one thing we do not know.
+ */
+@Composable
+private fun BackgroundLane(detail: DayDetailFfi) {
+    if (!detail.backgroundMeasured) {
+        Text(
+            stringResource(R.string.mytime_background),
+            style = MaterialTheme.typography.titleMedium,
+        )
+        Text(
+            stringResource(R.string.mytime_background_not_measured),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        return
+    }
+
+    val context = LocalContext.current
+    // Reduced motion is a first-class path, not a fallback: it lands on the
+    // finished wave rather than on a half-drawn one.
+    val animatorScale = remember {
+        Settings.Global.getFloat(
+            context.contentResolver,
+            Settings.Global.ANIMATOR_DURATION_SCALE,
+            1f,
+        )
+    }
+    var drawn by remember(detail) { mutableStateOf(animatorScale == 0f) }
+    LaunchedEffect(detail) { drawn = true }
+    val progress by animateFloatAsState(
+        targetValue = if (drawn) 1f else 0f,
+        animationSpec = tween(durationMillis = if (animatorScale == 0f) 0 else 600),
+        label = "background-wave",
+    )
+
+    val colour = MaterialTheme.colorScheme.tertiary
+    // Titled, or the help line reads as a caption for the hour ribbon above it
+    // and the wave looks like part of the same measure.
+    Text(
+        stringResource(R.string.mytime_background),
+        style = MaterialTheme.typography.titleMedium,
+    )
+    Text(
+        stringResource(R.string.mytime_background_help),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    Canvas(
+        Modifier
+            .fillMaxWidth()
+            .height(40.dp)
+            .testTag("background-wave"),
+    ) {
+        val step = size.width / detail.backgroundHours.size
+        val points = detail.backgroundHours.mapIndexed { index, ms ->
+            Offset(step * (index + 0.5f), size.height - backgroundShare(ms) * size.height)
+        }
+        val path = Path().apply {
+            moveTo(points.first().x, points.first().y)
+            for (index in 1 until points.size) {
+                val previous = points[index - 1]
+                val current = points[index]
+                val midX = (previous.x + current.x) / 2
+                // Horizontally symmetric control points: an ordinary spline
+                // overshoots below the baseline after a spike and draws
+                // listening into an hour that had none.
+                cubicTo(midX, previous.y, midX, current.y, current.x, current.y)
+            }
+        }
+
+        val measure = PathMeasure().apply { setPath(path, false) }
+        val drawnPath = Path()
+        measure.getSegment(0f, measure.length * progress, drawnPath, true)
+        drawPath(drawnPath, colour, style = Stroke(width = 2.dp.toPx()))
+    }
+
+    if (detail.backgroundMs == 0L) {
+        Text(
+            stringResource(R.string.mytime_background_empty),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }

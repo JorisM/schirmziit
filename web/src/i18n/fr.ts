@@ -9,6 +9,7 @@ export const fr: Strings = {
     help: 'Comment ça marche ?',
     signOut: 'Se déconnecter',
     language: 'Langue',
+    cancel: 'Annuler',
   },
 
   login: {
@@ -28,6 +29,10 @@ export const fr: Strings = {
     addPlaceholder: 'Prénom, p. ex. Lena',
     todayTotal: 'aujourd’hui',
     openChild: 'Voir les détails',
+    remove: 'Retirer',
+    removeBody:
+      'Son téléphone arrête aussitôt d’envoyer, et ses chiffres ne sont plus affichés. Tu ne peux pas revenir en arrière.',
+    removeConfirm: 'Oui, retirer',
   },
 
   child: {
@@ -77,6 +82,9 @@ export const fr: Strings = {
     neverReported: 'n’a jamais rien envoyé',
     lastSeen: 'Dernier envoi',
     revoke: 'Déconnecter',
+    revokeBody:
+      'Ce téléphone arrête aussitôt d’envoyer. Les chiffres déjà collectés restent.',
+    revokeConfirm: 'Oui, déconnecter',
     revoked: 'déconnecté',
     addDevice: 'Connecter un téléphone',
     pairTitle: 'Connecter un téléphone',

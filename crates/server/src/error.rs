@@ -85,9 +85,8 @@ pub struct Problem {
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
         let (status, kind) = self.parts();
-        if status == StatusCode::INTERNAL_SERVER_ERROR {
-            tracing::error!(error = %self, "internal error");
-        }
+        // Not logged here: the normalise layer writes one line per failed
+        // request, and unlike this spot it knows the reference and the path.
         let code = self.code();
         let detail = match self {
             // Never leak database internals to a client.

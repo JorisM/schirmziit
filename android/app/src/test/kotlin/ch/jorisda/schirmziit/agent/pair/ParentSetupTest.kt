@@ -70,11 +70,15 @@ class ParentSetupTest {
         assertEquals("t1", settings.deviceToken)
         assertEquals(base, settings.baseUrl)
 
-        val paths = (1..4).map { server.takeRequest().path }
-        assertEquals(
-            listOf("/v1/auth/login", "/v1/children", "/v1/children/c1/devices", "/v1/auth/logout"),
-            paths,
-        )
+        val requests = (1..4).map { server.takeRequest() }
+        assertEquals("/v1/auth/login", requests[0].path)
+        // tz is required by the server; asserted as present rather than pinning
+        // the device's own zone as a literal, which would just be re-asserting
+        // the implementation.
+        assertTrue(requests[1].path!!.startsWith("/v1/children"))
+        assertTrue(!requests[1].requestUrl!!.queryParameter("tz").isNullOrBlank())
+        assertEquals("/v1/children/c1/devices", requests[2].path)
+        assertEquals("/v1/auth/logout", requests[3].path)
         server.shutdown()
     }
 

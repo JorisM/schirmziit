@@ -16,6 +16,7 @@
 "children.title" = "Bambini";
 "children.empty" = "Ancora nessun bambino";
 "children.empty.hint" = "Aggiungi un bambino nella panoramica, poi collega il suo telefono.";
+"children.todayTotal" = "oggi";
 
 "child.total" = "Tempo di schermo oggi";
 "child.unlocks %lld" = "%lld sblocchi";

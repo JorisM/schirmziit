@@ -43,7 +43,9 @@ def main [
         | get 0
     )
 
-    let children = (http get --headers [cookie $cookie] $"($server)/v1/children")
+    # tz is required by the server; fixed rather than derived, since this seeds
+    # a throwaway instance and determinism matters more than locality here.
+    let children = (http get --headers [cookie $cookie] $"($server)/v1/children?tz=Europe%2FZurich")
     if ($children | where display_name == $child | is-empty) {
         (http post --headers [cookie $cookie] --content-type application/json
             $"($server)/v1/children" { display_name: $child }) | ignore

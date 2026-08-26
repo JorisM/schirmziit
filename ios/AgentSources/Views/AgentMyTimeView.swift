@@ -6,6 +6,9 @@ import SwiftUI
 /// that this screen and the parent's dashboard never disagree.
 struct AgentMyTimeView: View {
     let model: AgentModel
+    // Owned here, not by DayRibbonView, so a List row recycle during scroll
+    // doesn't replay the fill flourish — see DayRibbonView.filledOverride.
+    @State private var ribbonFilled = false
 
     private var today: String { ISO8601DateFormatter.dayOnly.string(from: Date()) }
 
@@ -55,7 +58,7 @@ struct AgentMyTimeView: View {
                 // and looked like a broken button, not a busy one.
                 .disabled(model.myTimeBusy)
                 if model.myTimeBusy {
-                    ProgressView().padding(.vertical, 4)
+                    StripSkeleton().padding(.vertical, 4)
                 }
             }
 
@@ -65,6 +68,9 @@ struct AgentMyTimeView: View {
                         L(model.mySelectedDay == today ? "child.total" : "child.selected")
                             .font(.subheadline)
                             .foregroundStyle(Palette.inkMuted)
+                        // Deliberately not a count-up: the parent's list celebrates
+                        // the habit of looking, but a number racing upward reads as a
+                        // score to the child it describes.
                         Text(verbatim: Formatting.duration(Int(truncatingIfNeeded: day.totalMs)))
                             .font(.system(size: 40, weight: .bold, design: .rounded))
                             .monospacedDigit()
@@ -89,7 +95,8 @@ struct AgentMyTimeView: View {
                 }
 
                 Section {
-                    DayRibbonView(totals: hourlyTotals).padding(.vertical, 4)
+                    DayRibbonView(totals: hourlyTotals, filledOverride: $ribbonFilled)
+                        .padding(.vertical, 4)
                 }
 
                 if !day.apps.isEmpty {
@@ -114,7 +121,8 @@ struct AgentMyTimeView: View {
                     }
                 }
             } else if model.myTimeError == nil {
-                Section { ProgressView() }
+                Section { RowsSkeleton() }
+                Section { RibbonSkeleton() }
             }
 
             Section {

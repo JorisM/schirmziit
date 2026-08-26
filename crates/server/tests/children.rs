@@ -1,5 +1,6 @@
 mod helpers;
 use axum::http::StatusCode;
+use chrono::{DurationRound, Utc};
 use helpers::TestApp;
 use sqlx::PgPool;
 
@@ -12,7 +13,7 @@ async fn creates_and_lists_children(pool: PgPool) {
     assert_eq!(created.status, StatusCode::CREATED);
     assert_eq!(created.json["display_name"], "Kid");
 
-    let listed = app.get("/v1/children").await;
+    let listed = app.get("/v1/children?tz=Europe/Zurich").await;
     assert_eq!(listed.json.as_array().unwrap().len(), 1);
 }
 
@@ -77,7 +78,12 @@ async fn deleting_a_child_soft_deletes_and_hides_it(pool: PgPool) {
         StatusCode::NO_CONTENT
     );
     assert_eq!(
-        app.get("/v1/children").await.json.as_array().unwrap().len(),
+        app.get("/v1/children?tz=Europe/Zurich")
+            .await
+            .json
+            .as_array()
+            .unwrap()
+            .len(),
         0
     );
 
@@ -222,4 +228,49 @@ async fn an_empty_label_is_refused_when_claiming(pool: PgPool) {
         .await;
 
     assert_eq!(response.status, StatusCode::UNPROCESSABLE_ENTITY);
+}
+
+#[sqlx::test]
+async fn listing_children_reports_todays_total_in_the_callers_zone(pool: PgPool) {
+    let app = TestApp::registered(pool.clone()).await;
+    let child_id = app.create_child("Kid").await;
+    let (device_id, _) = app.enroll_device(&child_id).await;
+
+    // An hour that is unambiguously inside today in Zurich: the current hour,
+    // truncated. A fixed date would age out of "today" the day after it is written.
+    let hour = Utc::now()
+        .duration_trunc(chrono::Duration::hours(1))
+        .unwrap();
+    sqlx::query(
+        "INSERT INTO usage_hours
+           (device_id, package, hour_start, tz, foreground_ms, launch_count, computed_at)
+         VALUES ($1, 'com.a', $2, 'Europe/Zurich', 90000, 1, now())",
+    )
+    .bind(device_id.parse::<uuid::Uuid>().unwrap())
+    .bind(hour)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let listed = app.get("/v1/children?tz=Europe/Zurich").await;
+    assert_eq!(listed.status, StatusCode::OK);
+    assert_eq!(listed.json[0]["today_ms"], 90000);
+}
+
+#[sqlx::test]
+async fn a_child_with_no_usage_today_reports_zero_not_null(pool: PgPool) {
+    // A null would render as an empty hero on the list; a quiet day is a real
+    // zero and must read as one.
+    let app = TestApp::registered(pool).await;
+    app.create_child("Kid").await;
+
+    let listed = app.get("/v1/children?tz=Europe/Zurich").await;
+    assert_eq!(listed.json[0]["today_ms"], 0);
+}
+
+#[sqlx::test]
+async fn an_unknown_timezone_is_refused(pool: PgPool) {
+    let app = TestApp::registered(pool).await;
+    let listed = app.get("/v1/children?tz=Mars/Olympus").await;
+    assert_eq!(listed.status, StatusCode::UNPROCESSABLE_ENTITY);
 }

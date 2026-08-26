@@ -33,6 +33,7 @@ final class SnapshotTests: XCTestCase {
         _ view: V,
         named name: String,
         locale: String = "de",
+        disablesAnimations: Bool = true,
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
@@ -41,6 +42,23 @@ final class SnapshotTests: XCTestCase {
             let wrapped = view
                 .environment(\.locale, Locale(identifier: locale))
                 .frame(width: 393, height: 852)
+                // The offscreen host has no live display link, so a real
+                // `.animation(...)` transition (the ribbon fill, the strip's
+                // and app rows' entry stagger) commits its `onAppear`-triggered
+                // state change but never advances past frame zero of the
+                // interpolation — captured as invisible content, not settled
+                // content, no matter how long `.wait` below runs for. Disabling
+                // transactions for the capture is what reduced motion already
+                // gets for free (`Motion.animation` returns `nil`): the target
+                // value applies instantly, so every screen's still image shows
+                // what a user sees once the motion has finished, which is the
+                // only thing a still image can faithfully represent anyway.
+                // `disablesAnimations` is a parameter, not a constant `true`,
+                // because it would otherwise also force the reduced-motion
+                // test's transaction to settle instantly regardless of what
+                // `DayRibbonView` actually does with `accessibilityReduceMotion`
+                // — turning that test into one that only ever matches itself.
+                .transaction { $0.disablesAnimations = disablesAnimations }
             withSnapshotTesting(record: recordMode) {
             assertSnapshot(
                 of: wrapped,
@@ -274,6 +292,39 @@ final class SnapshotTests: XCTestCase {
         assert(DayRibbonView(totals: totals).padding(), named: "day-ribbon")
     }
 
+    /// The reduced-motion path must land on the finished layout on frame one.
+    ///
+    /// Deliberately asserted against `day-ribbon` — the reference the normal
+    /// render already produced. A reduced-motion capture with its own name would
+    /// only ever prove it matches itself; sharing the name is what makes this a
+    /// test that a screen is not animating when it was asked not to.
+    func testDayRibbonUnderReducedMotionIsTheSettledImage() {
+        let minutes = [0, 0, 0, 0, 0, 0, 0, 12, 34, 8, 0, 0, 41, 55, 22, 6, 0, 0, 63, 48, 19, 4, 0, 0]
+        let totals = minutes.enumerated().map { hour, value in
+            DeviceTotal(
+                start: String(format: "2026-08-22T%02d:00:00+02:00", hour),
+                screenOnMs: value * 60_000,
+                unlockCount: value > 0 ? 3 : 0
+            )
+        }
+        assert(
+            DayRibbonView(totals: totals)
+                .padding()
+                // `\.accessibilityReduceMotion` is get-only on this SDK — it mirrors
+                // the system setting, not something a test can inject. The
+                // underscored sibling is the actual writable storage SwiftUI reads
+                // it from, and is the only lever a snapshot test has for this.
+                .environment(\._accessibilityReduceMotion, true),
+            named: "day-ribbon",
+            // The shared helper's `disablesAnimations: true` default would settle
+            // any transaction instantly regardless of what the view does with
+            // reduce motion, making this test pass even if `DayRibbonView` ignored
+            // the setting entirely. Opting out here is what makes this assertion
+            // about the view's own behaviour rather than about the harness.
+            disablesAnimations: false
+        )
+    }
+
     func testAppRowsFoldTheSubMinuteGlances() {
         // Three ordinary apps, two glances under a minute (folded into one
         // disclosure row), and one that rounds to 0 s — the single case that
@@ -316,6 +367,42 @@ final class SnapshotTests: XCTestCase {
             DayStripView(days: days, selected: days[10].day, onSelect: { _ in }).padding(),
             named: "day-strip"
         )
+    }
+
+    /// The strip's `Section` sits outside `if let usage` in `ChildDetailView`, so
+    /// a day switch — which clears `usage` while the new day's request is in
+    /// flight — must never touch it: the parent's finger is still on the bar
+    /// they just tapped, and only the sections below (hero, ribbon, apps,
+    /// devices) fall back to a skeleton. `usage` and `strip` are non-private
+    /// `@State` precisely so this in-between state can be constructed directly
+    /// here, since `ChildDetailView` has no `@Observable` model a stub transport
+    /// could drive asynchronously (see `ChildDetailViewTests`).
+    func testChildDetailDaySwitching() {
+        // Same fixed fortnight shape as `testDayStrip`, but keyed to the real
+        // last-fourteen-days window `ChildDetailView` computes from `Date()` —
+        // fixed calendar dates would drift out of that window and silently
+        // render an all-zero strip the day after this test was written.
+        let minutes = [40, 55, 0, 12, 90, 65, 30, 45, 20, 100, 15, 60, 35, 50]
+        let start = Calendar.current.date(byAdding: .day, value: -13, to: Date()) ?? Date()
+        let points = minutes.enumerated().map { offset, value -> UsagePoint in
+            let day = Calendar.current.date(byAdding: .day, value: offset, to: start) ?? start
+            return UsagePoint(
+                start: ISO8601DateFormatter.dayOnly.string(from: day),
+                foregroundMs: value * 60_000,
+                launchCount: value > 0 ? 1 : 0
+            )
+        }
+        let strip = UsageResponse(
+            childId: "kid", from: "irrelevant", to: "irrelevant", bucket: "day", tz: "Europe/Zurich",
+            devices: [], series: [UsageSeries(package: "com.games.puzzle", label: "Puzzle", points: points)],
+            deviceTotals: []
+        )
+        let view = ChildDetailView(
+            child: ChildResponse(id: "kid", displayName: "Mira", todayMs: 0),
+            client: ApiClient(),
+            strip: strip
+        )
+        assert(view, named: "child-detail-day-switching")
     }
 
     // MARK: - The four languages, where the text is longest

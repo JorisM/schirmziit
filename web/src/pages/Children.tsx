@@ -3,13 +3,48 @@ import { Link } from 'react-router-dom'
 import useSWR from 'swr'
 import { api } from '../api/client'
 import type { components } from '../api/schema'
-import { useI18n } from '../i18n'
+import { formatDuration, useI18n } from '../i18n'
+import { useCountUp } from '../motion'
 
 type ChildResponse = components['schemas']['ChildResponse']
 
+/**
+ * One child, with today's total counting up beside the name.
+ *
+ * The count-up lives on the parent's list, not on the child's own screen: the
+ * gesture celebrates the act of looking, and a number sprinting upward reads as
+ * a score to the person it describes.
+ */
+function ChildCard({ child, index }: { child: ChildResponse; index: number }) {
+  const { t } = useI18n()
+  const ms = useCountUp(child.today_ms)
+  return (
+    <li
+      className="animate-[rise-in_var(--motion-base)_var(--ease-out)_backwards]"
+      style={{ animationDelay: `calc(${index} * var(--motion-stagger))` }}
+    >
+      <Link
+        to={`/children/${child.id}`}
+        className="card flex items-baseline justify-between p-5 transition-transform duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:-translate-y-0.5 active:scale-[0.99]"
+      >
+        <span className="font-display text-xl">{child.display_name}</span>
+        <span className="text-right">
+          <span className="tabular block text-lg">{formatDuration(ms, t)}</span>
+          <span className="text-sm" style={{ color: 'var(--ink-faint)' }}>
+            {t.children.todayTotal}
+          </span>
+        </span>
+      </Link>
+    </li>
+  )
+}
+
 export function Children() {
   const { t } = useI18n()
-  const { data, error, mutate } = useSWR<ChildResponse[]>('/v1/children', api.get)
+  const { data, error, mutate } = useSWR<ChildResponse[]>(
+    `/v1/children?tz=${Intl.DateTimeFormat().resolvedOptions().timeZone}`,
+    api.get,
+  )
   const [name, setName] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -48,18 +83,8 @@ export function Children() {
       )}
 
       <ul className="grid gap-3 sm:grid-cols-2">
-        {(data ?? []).map((child) => (
-          <li key={child.id}>
-            <Link
-              to={`/children/${child.id}`}
-              className="card flex items-baseline justify-between p-5 transition-transform hover:-translate-y-0.5"
-            >
-              <span className="font-display text-xl">{child.display_name}</span>
-              <span className="text-sm underline" style={{ color: 'var(--accent)' }}>
-                {t.children.openChild}
-              </span>
-            </Link>
-          </li>
+        {(data ?? []).map((child, index) => (
+          <ChildCard key={child.id} child={child} index={index} />
         ))}
       </ul>
 

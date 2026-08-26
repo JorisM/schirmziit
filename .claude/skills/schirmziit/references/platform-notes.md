@@ -52,6 +52,20 @@ Traps that cost real time here. Each one was hit; none is theoretical.
 * `NavigationStack` lays its bar out asynchronously: snapshots need
   `.wait(for: 0.5, on: .image(precision: 0.99, perceptualPrecision: 0.98, …))` or they
   differ run to run.
+* `$HOME/.cargo/bin` must precede `/opt/homebrew/bin` here too — Homebrew's rust has no iOS
+  std either, and `rustup run stable cargo` does **not** save you: cargo shells out to a bare
+  `rustc`, which `PATH` resolves back to Homebrew's.
+* **A failed `just ios-core` is invisible two steps later.** It leaves the previous
+  `ios/Generated/schirmziit_core.swift` in place, so the next build fails with
+  `cannot find type 'DayTotalFfi' in scope` — which reads like drifted bindings rather than a
+  Rust build that never ran. Check the exit status, not the log tail.
+* **Never pipe `xcodebuild` into `tail`/`grep`.** The pipeline reports the filter's status, so
+  `** BUILD FAILED **` exits 0 and looks clean; the lie surfaces at install time as
+  `not a valid bundle … Info.plist: missing` from an `.app` holding only `Frameworks/`.
+  Redirect to a file and test `$?`. (The `curl | jq` rule from home-network, on a Mac.)
+* On a free Personal Team the installable target is **`SchirmziitLocal`**
+  (`ch.jorisda.schirmziit.local`), not `Schirmziit` — the latter claims Family Controls and
+  App Groups. It has no `PRODUCT_NAME` override but still builds `SchirmziitLocal.app`.
 * Xcode **beta** at `~/Downloads/Xcode-beta.app` (not `/Applications`); point `DEVELOPER_DIR`
   at it per command. `DEVELOPMENT_TEAM` is the certificate's **OU**, not the id in
   parentheses. A free Personal Team means a 7-day profile.

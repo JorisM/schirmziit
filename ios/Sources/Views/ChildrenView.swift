@@ -28,7 +28,11 @@ struct ChildrenView: View {
 
                 ForEach(children) { child in
                     NavigationLink(value: child) {
-                        Text(verbatim: child.displayName)
+                        HStack {
+                            Text(verbatim: child.displayName)
+                            Spacer()
+                            CountingTotal(targetMs: child.todayMs)
+                        }
                     }
                 }
             }
@@ -63,7 +67,8 @@ struct ChildrenView: View {
 
     private func load() async {
         do {
-            children = try await client.get("v1/children", as: [ChildResponse].self)
+            let zone = TimeZone.current.identifier
+            children = try await client.get("v1/children?tz=\(zone)", as: [ChildResponse].self)
             errorText = nil
         } catch let ApiError.problem(problem) {
             errorText = problem.detail
@@ -76,4 +81,46 @@ struct ChildrenView: View {
 extension ChildResponse: Hashable {
     static func == (lhs: ChildResponse, rhs: ChildResponse) -> Bool { lhs.id == rhs.id }
     func hash(into hasher: inout Hasher) { hasher.combine(id) }
+}
+
+/// Today's total, counting up. Read-only and self-contained so the list row stays
+/// a list row.
+private struct CountingTotal: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    let targetMs: Int64
+    @State private var start = Date()
+    // Once the eased progress reaches 1, the timeline has nothing left to earn
+    // its 60 fps redraws with — a `TimelineView(.animation)` never stops on its
+    // own, and a list screen that keeps a display link alive forever after the
+    // count-up finishes is a battery cost with no matching benefit.
+    @State private var settled = false
+
+    var body: some View {
+        // Reduced motion never enters the timeline at all: an animation that
+        // starts and is immediately finished is still an animation.
+        if reduceMotion || settled {
+            label(targetMs)
+        } else {
+            TimelineView(.animation(minimumInterval: 1.0 / 60.0, paused: false)) { context in
+                let elapsed = context.date.timeIntervalSince(start) / Motion.hero
+                // Assigned, not interpolated, at the end: a total that stops one
+                // millisecond short formats as the wrong duration.
+                let eased = elapsed >= 1 ? 1 : 1 - pow(1 - max(0, elapsed), 3)
+                label(Int64(Double(targetMs) * eased))
+                    .onChange(of: eased) { _, newValue in
+                        if newValue >= 1 { settled = true }
+                    }
+            }
+        }
+    }
+
+    private func label(_ ms: Int64) -> some View {
+        VStack(alignment: .trailing) {
+            Text(verbatim: Formatting.duration(Int(ms)))
+                .monospacedDigit()
+            L("children.todayTotal")
+                .font(.caption)
+                .foregroundStyle(Palette.inkFaint)
+        }
+    }
 }

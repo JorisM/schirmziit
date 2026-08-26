@@ -8,6 +8,8 @@ import SwiftUI
 /// the way `DayRibbonView`/`DayStripView` are.
 struct AppRowsView: View {
     let series: [UsageSeries]
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var shown = false
 
     private var split: (shown: [(label: String, ms: Int)], brief: [(label: String, ms: Int)]) {
         let ranked = series
@@ -21,18 +23,21 @@ struct AppRowsView: View {
         // rather than `shown.prefix` inlined here with its own comment
         // claiming the same cap: a comment is not a constant.
         let visible = Formatting.visibleApps(split, cap: Formatting.appRowCap)
-        ForEach(Array(visible.shown.enumerated()), id: \.offset) { index, entry in
-            row(entry, index: index)
-        }
-        if !visible.brief.isEmpty {
-            DisclosureGroup {
-                ForEach(Array(visible.brief.enumerated()), id: \.offset) { index, entry in
-                    row(entry, index: visible.shown.count + index)
+        Group {
+            ForEach(Array(visible.shown.enumerated()), id: \.offset) { index, entry in
+                row(entry, index: index)
+            }
+            if !visible.brief.isEmpty {
+                DisclosureGroup {
+                    ForEach(Array(visible.brief.enumerated()), id: \.offset) { index, entry in
+                        row(entry, index: visible.shown.count + index)
+                    }
+                } label: {
+                    Text(verbatim: "\(S("child.apps.brief")) (\(visible.brief.count))")
                 }
-            } label: {
-                Text(verbatim: "\(S("child.apps.brief")) (\(visible.brief.count))")
             }
         }
+        .onAppear { shown = true }
     }
 
     private func row(_ entry: (label: String, ms: Int), index: Int) -> some View {
@@ -46,5 +51,10 @@ struct AppRowsView: View {
                 .monospacedDigit()
                 .foregroundStyle(Palette.inkMuted)
         }
+        .opacity(shown ? 1 : 0)
+        .animation(
+            Motion.animation(Motion.base, delay: Motion.staggerDelay(index), reduceMotion: reduceMotion),
+            value: shown
+        )
     }
 }

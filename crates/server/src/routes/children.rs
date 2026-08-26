@@ -39,6 +39,9 @@ pub struct NewChild {
 pub struct ChildResponse {
     pub id: Uuid,
     pub display_name: String,
+    /// Foreground milliseconds so far in the caller's local today. Zero, never
+    /// null: a quiet day is a real number and an absent one renders as a hole.
+    pub today_ms: i64,
 }
 
 #[derive(serde::Serialize, utoipa::ToSchema)]
@@ -108,26 +111,53 @@ pub async fn create(
         Json(ChildResponse {
             id,
             display_name: body.display_name,
+            today_ms: 0,
         }),
     ))
 }
 
+/// `tz` is required, not defaulted: "today" is a local question, and a server
+/// guessing UTC would report the wrong day for the first hours after midnight
+/// in Zurich — the window a teenager is most likely being looked at in.
+#[derive(serde::Deserialize, utoipa::IntoParams)]
+pub struct ListQuery {
+    tz: String,
+}
+
 #[utoipa::path(
     get, path = "/v1/children",
+    params(ListQuery),
     responses(
         (status = 200, description = "Children in this family", body = Vec<ChildResponse>),
         (status = 401, description = "Not authenticated"),
+        (status = 422, description = "Unknown timezone"),
     ),
     tag = "children"
 )]
 pub async fn list(
     parent: Parent,
     State(state): State<AppState>,
+    axum::extract::Query(q): axum::extract::Query<ListQuery>,
 ) -> Result<Json<Vec<ChildResponse>>, ApiError> {
+    let tz = crate::routes::usage::zone(&q.tz)?;
+    let today = Utc::now().with_timezone(&tz).date_naive();
+    let (start, end) = crate::routes::usage::bounds(today, today, tz)?;
+
+    // One query, not one per child: the list is the first screen after sign-in
+    // and N+1 round trips there is what the fan-out alternative was rejected for.
     let rows = sqlx::query!(
-        "SELECT id, display_name FROM children
-         WHERE family_id = $1 AND deleted_at IS NULL ORDER BY created_at",
-        parent.family_id
+        r#"SELECT c.id, c.display_name,
+                  COALESCE(SUM(u.foreground_ms), 0)::bigint AS "today_ms!"
+           FROM children c
+           LEFT JOIN devices d ON d.child_id = c.id
+           LEFT JOIN usage_hours u
+             ON u.device_id = d.id AND u.hour_start >= $2 AND u.hour_start < $3
+           WHERE c.family_id = $1 AND c.deleted_at IS NULL
+           GROUP BY c.id, c.display_name, c.created_at
+           ORDER BY c.created_at"#,
+        parent.family_id,
+        start,
+        end
     )
     .fetch_all(&state.pool)
     .await?;
@@ -137,6 +167,7 @@ pub async fn list(
             .map(|r| ChildResponse {
                 id: r.id,
                 display_name: r.display_name,
+                today_ms: r.today_ms,
             })
             .collect(),
     ))

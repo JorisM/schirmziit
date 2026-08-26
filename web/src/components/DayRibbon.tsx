@@ -66,7 +66,7 @@ export function DayRibbon({ totals }: { totals: UsageResponse['device_totals'] }
               data-ribbon-cell
               // Enters plainly. The background wave beneath it is this
               // screen's one flourish; two performing at once and both lose.
-              className="cursor-default rounded-[4px] transition-transform"
+              className="cursor-default rounded-[4px] transition-transform duration-[var(--motion-fast)] ease-[var(--ease-out)]"
               style={{
                 height: 56,
                 background: `var(--ribbon-${step})`,

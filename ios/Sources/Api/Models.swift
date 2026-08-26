@@ -12,6 +12,7 @@ struct MeResponse: Codable, Sendable {
 struct ChildResponse: Codable, Sendable, Identifiable {
     let id: String
     let displayName: String
+    let todayMs: Int64
 }
 
 struct DeviceStatus: Codable, Sendable, Identifiable {

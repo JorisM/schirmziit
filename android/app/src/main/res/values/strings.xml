@@ -96,4 +96,13 @@
     <string name="notification_problem">Problem sending: %1$s</string>
     <string name="notification_last_sent">Last sent %1$s</string>
     <string name="permission_revoked">Usage access was turned off</string>
+    <string name="playback_service_label">Background listening</string>
+    <string name="background_card_title">Also count listening with the screen off?</string>
+    <string name="background_card_body">Music, podcasts and audiobooks that play while the screen is off are not screen time, so they are not counted today. To count them, Schirmziit needs notification access — that is the only way Android lets an app see which app is playing. Schirmziit never reads your notifications and never what is playing, only that something is.</string>
+    <string name="background_card_action">Open settings</string>
+    <string name="background_card_dismiss">Not now</string>
+    <string name="mytime_background">Listened in the background</string>
+    <string name="mytime_background_help">Music, podcasts or audiobooks that played while your screen was off.</string>
+    <string name="mytime_background_not_measured">Listening with the screen off is not being counted on this phone.</string>
+    <string name="mytime_background_empty">Nothing played with the screen off on this day.</string>
 </resources>

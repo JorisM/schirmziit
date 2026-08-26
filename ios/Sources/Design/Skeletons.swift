@@ -10,10 +10,15 @@ private struct Pulse: ViewModifier {
         content
             .opacity(dim ? 0.45 : 1)
             .animation(
-                reduceMotion ? nil : .easeInOut(duration: Motion.slow).repeatForever(autoreverses: true),
+                Motion.animation(Motion.slow, reduceMotion: reduceMotion)?.repeatForever(autoreverses: true),
                 value: dim
             )
-            .onAppear { dim = true }
+            .onAppear {
+                // Reduced motion must land at full opacity, not just skip the
+                // animation while still snapping to the dimmed frame — nothing
+                // animating but the wrong final state still reads as disabled.
+                if !reduceMotion { dim = true }
+            }
             .accessibilityHidden(true)
     }
 }

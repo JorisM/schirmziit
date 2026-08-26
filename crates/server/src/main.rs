@@ -2,8 +2,15 @@ use schirmziit_server::{AppState, app_with_rate_limits, config::Config, db, rete
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // With RUST_LOG unset, `from_default_env` alone keeps only ERROR — which
+    // would silently drop the per-request line a self-hoster greps the
+    // reference out of. RUST_LOG still overrides this.
     tracing_subscriber::fmt()
-        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
+                tracing_subscriber::EnvFilter::new("info,tower_http=warn,sqlx=warn")
+            }),
+        )
         .init();
 
     let config = Config::from_env()?;

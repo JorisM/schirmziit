@@ -46,10 +46,22 @@ pub async fn normalize(request: Request, next: Next) -> Response {
         .map(RequestRef::short)
         .unwrap_or_default();
     let path = request.uri().path().to_string();
+    let method = request.method().clone();
+    let started = std::time::Instant::now();
 
     let response = next.run(request).await;
     let status = response.status();
     if status.is_success() || status.is_redirection() || !is_api_path(&path) {
+        // A slow-but-successful request has to be findable too, which is why
+        // the id is on every response and not only on failures.
+        tracing::info!(
+            request_id = %request_ref.as_ref().map(|r| r.0.as_str()).unwrap_or(""),
+            method = %method,
+            path = %path,
+            status = status.as_u16(),
+            latency_ms = started.elapsed().as_millis() as u64,
+            "request"
+        );
         return response;
     }
 
@@ -78,6 +90,33 @@ pub async fn normalize(request: Request, next: Next) -> Response {
     } else {
         fallback(status, short)
     };
+
+    // One line per failed request, with everything needed to find it again and
+    // nothing that identifies the family: no email, no child name, no body.
+    let request_id = request_ref.as_ref().map(|r| r.0.as_str()).unwrap_or("");
+    if status.is_server_error() {
+        tracing::error!(
+            code = problem.code.as_str(),
+            reference = %problem.r#ref,
+            request_id = %request_id,
+            method = %method,
+            path = %path,
+            status = status.as_u16(),
+            latency_ms = started.elapsed().as_millis() as u64,
+            "request failed"
+        );
+    } else {
+        tracing::warn!(
+            code = problem.code.as_str(),
+            reference = %problem.r#ref,
+            request_id = %request_id,
+            method = %method,
+            path = %path,
+            status = status.as_u16(),
+            latency_ms = started.elapsed().as_millis() as u64,
+            "request failed"
+        );
+    }
 
     let mut rebuilt = (parts.status, axum::Json(problem)).into_response();
     // Keep whatever the inner response set — a WWW-Authenticate, a CORS grant —

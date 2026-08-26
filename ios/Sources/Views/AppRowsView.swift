@@ -53,7 +53,7 @@ struct AppRowsView: View {
         }
         .opacity(shown ? 1 : 0)
         .animation(
-            reduceMotion ? nil : .easeOut(duration: Motion.base).delay(Motion.staggerDelay(index)),
+            Motion.animation(Motion.base, delay: Motion.staggerDelay(index), reduceMotion: reduceMotion),
             value: shown
         )
     }

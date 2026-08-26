@@ -33,6 +33,7 @@ final class SnapshotTests: XCTestCase {
         _ view: V,
         named name: String,
         locale: String = "de",
+        disablesAnimations: Bool = true,
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
@@ -52,7 +53,12 @@ final class SnapshotTests: XCTestCase {
                 // value applies instantly, so every screen's still image shows
                 // what a user sees once the motion has finished, which is the
                 // only thing a still image can faithfully represent anyway.
-                .transaction { $0.disablesAnimations = true }
+                // `disablesAnimations` is a parameter, not a constant `true`,
+                // because it would otherwise also force the reduced-motion
+                // test's transaction to settle instantly regardless of what
+                // `DayRibbonView` actually does with `accessibilityReduceMotion`
+                // — turning that test into one that only ever matches itself.
+                .transaction { $0.disablesAnimations = disablesAnimations }
             withSnapshotTesting(record: recordMode) {
             assertSnapshot(
                 of: wrapped,
@@ -309,7 +315,13 @@ final class SnapshotTests: XCTestCase {
                 // underscored sibling is the actual writable storage SwiftUI reads
                 // it from, and is the only lever a snapshot test has for this.
                 .environment(\._accessibilityReduceMotion, true),
-            named: "day-ribbon"
+            named: "day-ribbon",
+            // The shared helper's `disablesAnimations: true` default would settle
+            // any transaction instantly regardless of what the view does with
+            // reduce motion, making this test pass even if `DayRibbonView` ignored
+            // the setting entirely. Opting out here is what makes this assertion
+            // about the view's own behaviour rather than about the harness.
+            disablesAnimations: false
         )
     }
 

@@ -14,9 +14,14 @@ enum Motion {
     static func staggerDelay(_ index: Int) -> Double { Double(index) * staggerStep }
 
     /// `nil` is SwiftUI's "apply instantly" — the reduced-motion path lands on
-    /// the final state rather than running a shorter animation.
-    static func animation(_ duration: Double, reduceMotion: Bool) -> Animation? {
-        reduceMotion ? nil : .easeOut(duration: duration)
+    /// the final state rather than running a shorter animation. `delay` defaults
+    /// to zero so every existing call site (no stagger, no sweep) is unaffected;
+    /// views that need a per-cell or per-row offset (the ribbon fill, the day
+    /// strip and app row stagger) pass it instead of hand-rolling their own
+    /// `reduceMotion ? nil : .easeOut(...).delay(...)` ternary — the point of
+    /// this file is that the environment check happens in exactly one place.
+    static func animation(_ duration: Double, delay: Double = 0, reduceMotion: Bool) -> Animation? {
+        reduceMotion ? nil : .easeOut(duration: duration).delay(delay)
     }
 }
 

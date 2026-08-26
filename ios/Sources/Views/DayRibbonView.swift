@@ -43,9 +43,11 @@ struct DayRibbonView: View {
                         .animation(
                             // The sweep IS the day passing. `Motion.slow / 24` spreads the
                             // whole flourish across the budget rather than per cell.
-                            reduceMotion
-                                ? nil
-                                : .easeOut(duration: Motion.base).delay(Double(hour) * Motion.slow / 24),
+                            Motion.animation(
+                                Motion.base,
+                                delay: Double(hour) * Motion.slow / 24,
+                                reduceMotion: reduceMotion
+                            ),
                             value: filled
                         )
                         .accessibilityLabel(Text(verbatim: "\(hour):00"))

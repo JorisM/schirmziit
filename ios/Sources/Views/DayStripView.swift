@@ -31,10 +31,11 @@ struct DayStripView: View {
                                 )
                                 .scaleEffect(y: grown ? 1 : 0.2, anchor: .bottom)
                                 .animation(
-                                    reduceMotion
-                                        ? nil
-                                        : .easeOut(duration: Motion.base)
-                                            .delay(Motion.staggerDelay(index)),
+                                    Motion.animation(
+                                        Motion.base,
+                                        delay: Motion.staggerDelay(index),
+                                        reduceMotion: reduceMotion
+                                    ),
                                     value: grown
                                 )
                             Text(verbatim: String(entry.day.suffix(2)))

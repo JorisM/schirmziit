@@ -14,10 +14,35 @@ export const localeNames: Record<Locale, string> = {
 
 export type Nav = { home: string; selfHost: string; hosted: string; privacy: string }
 
+/**
+ * The private-alpha notice and the waiting list it points at. Every page carries
+ * the banner: someone deep-linked to the hosted page would otherwise read a
+ * finished offer.
+ */
+export type Alpha = {
+  bannerTitle: string
+  bannerBody: string
+  bannerCta: string
+  title: string
+  lead: string
+  emailLabel: string
+  placeholder: string
+  submit: string
+  sending: string
+  done: string
+  invalid: string
+  failed: string
+  stored: string
+  /** Shown instead of the form with JavaScript off, and in a fork with no API configured. */
+  mailFallback: string
+  mailCta: string
+}
+
 export type Site = {
   htmlLang: string
   swissLabel: string
   nav: Nav
+  alpha: Alpha
   home: {
     kicker: string
     title: string

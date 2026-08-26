@@ -1,0 +1,108 @@
+---
+/**
+ * The waiting list, above the footer on every page, so the banner's link works
+ * wherever someone happens to be reading.
+ *
+ * `PUBLIC_WAITLIST_API` is opt-in at build time, the same way analytics is: a
+ * fork of this repo must not post strangers' addresses to our instance, so with
+ * nothing configured this renders the mail route and no form at all.
+ */
+import { sites, type Locale } from '../content'
+
+interface Props {
+  locale: Locale
+}
+
+const { locale } = Astro.props
+const t = sites[locale].alpha
+const api = import.meta.env.PUBLIC_WAITLIST_API
+const mailto = `mailto:joris@morger-gossweiler.ch?subject=${encodeURIComponent(t.title)}`
+---
+<section class="waitlist reveal" id="waitlist">
+  <h2>{t.title}</h2>
+  <p>{t.lead}</p>
+
+  {api ? (
+    <>
+      {/* Posting needs a fetch, so with JavaScript off the form is a dead box.
+          Hiding it and showing the mail route is the honest fallback — and it is
+          done in CSS, so it works without any script having run. */}
+      <noscript>
+        <style is:inline>.waitlist form { display: none } .waitlist .no-js { display: block }</style>
+      </noscript>
+
+      <form data-api={api} data-locale={locale}>
+        <label for="waitlist-email">{t.emailLabel}</label>
+        <div class="waitlist-row">
+          <input
+            id="waitlist-email"
+            name="email"
+            type="email"
+            required
+            autocomplete="email"
+            placeholder={t.placeholder}
+          />
+          <button type="submit" data-submit={t.submit} data-sending={t.sending}>{t.submit}</button>
+        </div>
+        <p
+          class="waitlist-status"
+          role="status"
+          data-done={t.done}
+          data-invalid={t.invalid}
+          data-failed={t.failed}
+        ></p>
+      </form>
+      <p class="fine">{t.stored}</p>
+      <p class="no-js">{t.mailFallback} <a href={mailto}>{t.mailCta}</a></p>
+    </>
+  ) : (
+    <p>{t.mailFallback} <a href={mailto}>{t.mailCta}</a></p>
+  )}
+</section>
+
+{api && (
+  <script is:inline>
+    for (const form of document.querySelectorAll('.waitlist form')) {
+      const status = form.querySelector('.waitlist-status')
+      const button = form.querySelector('button')
+      const input = form.querySelector('input')
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault()
+        status.textContent = ''
+        status.className = 'waitlist-status'
+        button.disabled = true
+        button.textContent = button.dataset.sending
+
+        try {
+          const response = await fetch(form.dataset.api, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ email: input.value, locale: form.dataset.locale }),
+          })
+
+          if (response.ok) {
+            // The same words whether the address was new or already on the list:
+            // the server deliberately does not say which, and neither does this.
+            status.textContent = status.dataset.done
+            status.classList.add('ok')
+            input.disabled = true
+            button.hidden = true
+            return
+          }
+
+          status.textContent =
+            response.status === 422 ? status.dataset.invalid : status.dataset.failed
+          status.classList.add('bad')
+        } catch {
+          // Offline, blocked, DNS — all the same thing to the reader.
+          status.textContent = status.dataset.failed
+          status.classList.add('bad')
+        }
+
+        button.disabled = false
+        button.textContent = button.dataset.submit
+      })
+    }
+  </script>
+)}

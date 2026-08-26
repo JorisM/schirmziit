@@ -1,0 +1,19 @@
+---
+// The honest status of the product, on every page. Someone who lands straight on
+// the hosted page would otherwise read a finished offer.
+import { sites, type Locale } from '../content'
+
+interface Props {
+  locale: Locale
+}
+
+const { locale } = Astro.props
+const t = sites[locale].alpha
+---
+<div class="alpha">
+  <div class="wrap">
+    <span class="alpha-tag">{t.bannerTitle}</span>
+    <p>{t.bannerBody}</p>
+    <a class="alpha-cta" href="#waitlist">{t.bannerCta}</a>
+  </div>
+</div>

@@ -133,7 +133,11 @@ habit stick.
 4. **Skeletons shaped like the final content**, never a spinner over the layout; data
    crossfades in over its own skeleton.
 
-**Budget:** 200–400 ms typical, 600 ms for a hero count-up. Motion never delays reading —
+**Budget:** 200–400 ms typical for entry and transition motion, 600 ms for a hero
+count-up. That band describes how long a screen's own transitions run — it is not a
+floor. Press feedback (`--motion-fast`, 120 ms) and the per-row stagger offset
+(`--motion-stagger`, 40 ms) are a different category, deliberately quicker than any
+entry duration, not an exception to this budget. Motion never delays reading —
 a number is legible on the first frame even mid-animation, and nothing important waits
 for an animation to end. The Astro site meets the same bar with scroll-reveal, and every
 word still renders with JS off.

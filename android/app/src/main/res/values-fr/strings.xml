@@ -102,6 +102,7 @@
     <string name="unpair_body">Ce téléphone arrête d\'envoyer le temps d\'écran. Ce qui a déjà été envoyé reste : tes parents voient toujours les jours jusqu\'à maintenant. Un parent doit se connecter pour cela, pour que personne ne puisse le désactiver seul.</string>
     <string name="unpair_confirm">Déconnecter</string>
     <string name="unpair_cancel">Annuler</string>
+    <string name="background_on_title">L\'écoute écran éteint est comptée</string>
     <string name="mytime_background">Écouté en arrière-plan</string>
     <string name="mytime_background_help">Musique, podcasts ou livres audio qui jouaient pendant que ton écran était éteint.</string>
     <string name="mytime_background_not_measured">L\'écoute avec l\'écran éteint n\'est pas comptée sur ce téléphone.</string>

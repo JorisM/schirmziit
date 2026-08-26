@@ -26,6 +26,7 @@ import ch.jorisda.schirmziit.agent.mytime.MyTimeRepository
 import ch.jorisda.schirmziit.agent.mytime.mergeMyTimeResult
 import ch.jorisda.schirmziit.agent.mytime.myTimeLoadArgs
 import ch.jorisda.schirmziit.agent.notify.OngoingNotice
+import ch.jorisda.schirmziit.agent.playback.MediaSessionPlaybackReader
 import ch.jorisda.schirmziit.agent.pair.EnrollPayloadParser
 import ch.jorisda.schirmziit.agent.pair.ParentSetup
 import ch.jorisda.schirmziit.agent.pair.PairingScreen
@@ -48,6 +49,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val source = AndroidUsageSource(this)
         val power = AndroidPowerStatus(this)
+        // Reads whether notification access is granted. Without it the status
+        // screen cannot tell that background listening was switched on.
+        val playback = MediaSessionPlaybackReader(this)
         val settings: AgentSettings? = runCatching { AgentStore(this) }.getOrNull()
         // Hoisted rather than built per load: this screen is designed around
         // repeated tapping (one day, then another), and a fresh OkHttpClient
@@ -73,7 +77,7 @@ class MainActivity : ComponentActivity() {
                     val scope = rememberCoroutineScope()
                     var state by remember {
                         mutableStateOf(
-                            AgentUiState.read(source, power, settings, 0, System.currentTimeMillis()),
+                            AgentUiState.read(source, power, settings, 0, System.currentTimeMillis(), playback),
                         )
                     }
 
@@ -90,6 +94,7 @@ class MainActivity : ComponentActivity() {
                                 settings,
                                 pending,
                                 System.currentTimeMillis(),
+                                playback,
                             )
                         }
                     }

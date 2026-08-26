@@ -1,6 +1,7 @@
 "app.name" = "Schirmziit";
 "app.help" = "Wie das funktioniert";
 "app.signout" = "Abmelden";
+"app.cancel" = "Abbrechen";
 
 "signin.intro" = "Schirmziit läuft auf dem eigenen Server deiner Familie. Es gibt kein Konto bei einer Firma.";
 "signin.server" = "Server";
@@ -15,8 +16,16 @@
 
 "children.title" = "Kinder";
 "children.empty" = "Noch kein Kind";
-"children.empty.hint" = "Lege in der Übersicht ein Kind an und verbinde dann dessen Handy.";
+"children.empty.hint" = "Lege ein Kind an und verbinde dann dessen Handy damit.";
 "children.todayTotal" = "heute";
+"children.add" = "Kind hinzufügen";
+"children.add.title" = "Neues Kind";
+"children.add.placeholder" = "Name, z. B. Lena";
+"children.add.save" = "Hinzufügen";
+"children.add.empty" = "Gib dem Kind zuerst einen Namen.";
+"children.remove" = "Entfernen";
+"children.remove.body" = "Das Handy hört sofort auf zu melden, und die Zahlen werden nicht mehr angezeigt. Das kannst du nicht rückgängig machen.";
+"children.remove.confirm" = "Ja, entfernen";
 
 "child.total" = "Bildschirmzeit heute";
 "child.unlocks %lld" = "%lld Mal entsperrt";
@@ -37,6 +46,9 @@
 "devices.stale" = "meldet sich nicht";
 "devices.stale.help" = "Seit über 90 Minuten keine Meldung. Solange das so ist, sind die Zahlen oben unvollständig — nicht unbedingt tief.";
 "devices.never" = "hat sich noch nie gemeldet";
+"devices.revoke" = "Verbindung trennen";
+"devices.revoke.body" = "Dieses Handy hört sofort auf zu melden. Die bisher gesammelten Zahlen bleiben.";
+"devices.revoke.confirm" = "Ja, trennen";
 
 "help.title" = "Wie Schirmziit funktioniert";
 "help.intro" = "Schirmziit zeigt, wie lange und wann das Handy deines Kindes benutzt wird. Nichts davon ist geheim: das Kind sieht dieselben Zahlen auf seinem Handy.";

@@ -135,3 +135,27 @@ async fn a_revoked_device_cannot_read_its_child(pool: PgPool) {
         "a revoked device keeps no read either"
     );
 }
+
+/// Another family's child and a child that never existed must be
+/// indistinguishable — including in the error code. A separate "not yours"
+/// code would leak existence through the catalog itself, which is exactly what
+/// the 404-not-403 rule exists to prevent.
+#[sqlx::test]
+async fn a_cross_family_miss_is_coded_like_any_other_miss(pool: PgPool) {
+    let (_, child_id, b) = two_families(pool).await;
+    let query = "from=2026-08-20&to=2026-08-20&bucket=hour&tz=Europe/Zurich";
+
+    let theirs = b
+        .get(&format!("/v1/children/{child_id}/usage?{query}"))
+        .await;
+    let nobodys = b
+        .get(&format!(
+            "/v1/children/{}/usage?{query}",
+            uuid::Uuid::new_v4()
+        ))
+        .await;
+
+    assert_eq!(theirs.status, nobodys.status);
+    assert_eq!(theirs.json["code"], nobodys.json["code"]);
+    assert_eq!(theirs.json["code"], "SZ-E201");
+}

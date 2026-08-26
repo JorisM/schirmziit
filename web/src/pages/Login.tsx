@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { ApiError, api } from '../api/client'
+import { api, AppError } from '../api/client'
+import { unexpected } from '../api/errors'
+import { ErrorPanel } from '../components/ErrorPanel'
 import { LocaleSwitcher } from '../components/LocaleSwitcher'
 import { useI18n } from '../i18n'
 
@@ -7,7 +9,7 @@ export function Login({ onSignedIn }: { onSignedIn: () => void }) {
   const { t } = useI18n()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<AppError | null>(null)
   const [busy, setBusy] = useState(false)
 
   async function submit(event: React.FormEvent) {
@@ -18,11 +20,9 @@ export function Login({ onSignedIn }: { onSignedIn: () => void }) {
       await api.post('/v1/auth/login', { email, password })
       onSignedIn()
     } catch (caught) {
-      setError(
-        caught instanceof ApiError && caught.problem.status === 401
-          ? t.login.wrongCredentials
-          : t.login.unexpected,
-      )
+      // SZ-E101 already says "that email or password is wrong" in four
+      // languages, so the page no longer keeps its own sentence for it.
+      setError(caught instanceof AppError ? caught : unexpected(caught))
     } finally {
       setBusy(false)
     }
@@ -67,11 +67,7 @@ export function Login({ onSignedIn }: { onSignedIn: () => void }) {
           />
         </label>
 
-        {error && (
-          <p role="alert" style={{ color: 'var(--urgent)' }}>
-            {error}
-          </p>
-        )}
+        {error && <ErrorPanel error={error} />}
 
         <button
           type="submit"

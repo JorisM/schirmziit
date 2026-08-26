@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import useSWR from 'swr'
 import { Link } from 'react-router-dom'
-import { ApiError, api } from '../api/client'
+import { api, AppError } from '../api/client'
 import type { components } from '../api/schema'
 import { AppBars } from '../components/AppBars'
 import { BackgroundWave } from '../components/BackgroundWave'
 import { DayRibbon } from '../components/DayRibbon'
 import { DayStrip } from '../components/DayStrip'
 import { DeviceStatus } from '../components/DeviceStatus'
+import { ErrorPanel } from '../components/ErrorPanel'
 import { HeroSkeleton, RibbonSkeleton, RowsSkeleton, StripSkeleton } from '../components/Skeleton'
 import { formatDuration, useI18n } from '../i18n'
 
@@ -33,23 +34,19 @@ export function ChildDetail({ childId }: { childId: string }) {
   const [selected, setSelected] = useState(today())
   const from = daysAgo(STRIP_DAYS - 1)
 
-  const { data: strip, error: stripError } = useSWR<UsageResponse>(
+  const { data: strip, error: stripError, mutate: refreshStrip } = useSWR<UsageResponse>(
     `/v1/children/${childId}/usage?from=${from}&to=${today()}&bucket=day&tz=${localZone()}`,
     api.get,
     { refreshInterval: 60_000, shouldRetryOnError: false },
   )
-  const { data, error } = useSWR<UsageResponse>(
+  const { data, error, mutate } = useSWR<UsageResponse>(
     `/v1/children/${childId}/usage?from=${selected}&to=${selected}&bucket=hour&tz=${localZone()}`,
     api.get,
     { refreshInterval: 60_000, shouldRetryOnError: false },
   )
 
   if (error) {
-    return (
-      <p role="alert" style={{ color: 'var(--urgent)' }}>
-        {error instanceof ApiError ? error.problem.detail : t.errors.generic}
-      </p>
-    )
+    return <ErrorPanel error={error as AppError} onRetry={() => void mutate()} />
   }
   const screenTime =
     data?.series.reduce(
@@ -90,15 +87,24 @@ export function ChildDetail({ childId }: { childId: string }) {
       </header>
 
       <section className="card p-6">
-        {stripError ? (
+        {strip ? (
+          <>
+            {/* A failed refresh leaves the fortnight the parent is looking at
+                exactly where it was, with a banner saying it is stale. */}
+            {stripError && (
+              <ErrorPanel
+                error={stripError as AppError}
+                variant="banner"
+                onRetry={() => void refreshStrip()}
+              />
+            )}
+            <DayStrip series={strip.series} from={from} to={today()} selected={selected} onSelect={setSelected} />
+          </>
+        ) : stripError ? (
           // Never zero-fill in place of a failed fetch: fourteen grey bars read as a
           // genuinely quiet fortnight, which is exactly the "lost day" this app promises
           // never to show.
-          <p role="alert" style={{ color: 'var(--urgent)' }}>
-            {t.child.historyError}
-          </p>
-        ) : strip ? (
-          <DayStrip series={strip.series} from={from} to={today()} selected={selected} onSelect={setSelected} />
+          <ErrorPanel error={stripError as AppError} onRetry={() => void refreshStrip()} />
         ) : (
           <StripSkeleton />
         )}

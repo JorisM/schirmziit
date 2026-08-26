@@ -19,8 +19,6 @@ export const de: Strings = {
     password: 'Passwort',
     submit: 'Anmelden',
     working: 'Einen Moment…',
-    wrongCredentials: 'E-Mail oder Passwort stimmt nicht.',
-    unexpected: 'Das hat nicht funktioniert. Versuch es nochmals.',
   },
 
   children: {
@@ -66,7 +64,6 @@ export const de: Strings = {
     tableView: 'Als Tabelle',
     historyTitle: 'Die letzten 14 Tage',
     historyHelp: 'Jeder Balken ist ein Tag. Tippe einen an, um ihn genauer anzuschauen.',
-    historyError: 'Die letzten 14 Tage konnten nicht geladen werden. Versuch es gleich nochmal.',
     today: 'Heute',
     selectedHeading: 'Ausgewählter Tag',
   },
@@ -165,11 +162,6 @@ export const de: Strings = {
     reference: 'Fehlercode und Referenz',
   },
 
-  errors: {
-    generic: 'Da ist etwas schiefgelaufen.',
-    notFound: 'Nicht gefunden.',
-    offline: 'Keine Verbindung zum Server.',
-  },
 
   units: { hoursShort: 'h', minutesShort: 'min', secondsShort: 's' },
 }

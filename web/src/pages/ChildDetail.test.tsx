@@ -5,7 +5,8 @@ import { SWRConfig } from 'swr'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ChildDetail, localToday } from './ChildDetail'
 import { LocaleProvider, locales } from '../i18n'
-import { ApiError, api } from '../api/client'
+import { api } from '../api/client'
+import { fromProblem } from '../api/errors'
 
 const usage = (bucket: string, from: string, to: string) => ({
   child_id: 'kid', from, to, bucket, tz: 'Europe/Zurich',
@@ -142,21 +143,69 @@ describe('ChildDetail', () => {
     resolveSecondDay(usage('hour', localToday(), localToday()))
   })
 
-  it('shows an error instead of a fortnight of zero bars when the strip request fails', async () => {
+  const stripFails = () =>
     vi.spyOn(api, 'get').mockImplementation(async (path: string) => {
       const url = new URL(path, 'http://x')
       const bucket = url.searchParams.get('bucket')!
       if (bucket === 'day')
-        throw new ApiError({ type: 'about:blank', title: 'error', status: 502, detail: 'bad gateway' })
+        throw fromProblem(
+          {
+            type: 't',
+            title: 't',
+            status: 502,
+            detail: 'bad gateway',
+            code: 'SZ-E901',
+            ref: 'aa11bb',
+          },
+          { endpoint: path, httpStatus: 502 },
+        )
       return usage(bucket, url.searchParams.get('from')!, url.searchParams.get('to')!) as never
     })
 
+  it('shows an error instead of a fortnight of zero bars when the strip request fails', async () => {
+    stripFails()
     renderPage()
 
-    await waitFor(() => expect(screen.getByText(locales.en.child.historyError)).toBeInTheDocument())
+    // The code and the reference are on screen, so a screenshot is a report.
+    await waitFor(() => expect(screen.getByText(/SZ-E901 · aa11bb/)).toBeInTheDocument())
     // A fortnight of zero-height bars must never render in place of the error —
     // that is indistinguishable from a genuinely quiet fortnight.
     expect(screen.queryByText(locales.en.child.historyTitle)).not.toBeInTheDocument()
+  })
+
+  it('keeps the loaded strip on screen when a refresh fails', async () => {
+    // The banner case: SWR keeps the last good data while `error` is set, so the
+    // parent keeps the fortnight they were looking at and is told it is stale.
+    // Blanking it would lose a day at the presentation layer.
+    const to = localToday()
+    const from = new Date(`${to}T00:00:00Z`)
+    from.setUTCDate(from.getUTCDate() - 13)
+    const fromDay = from.toISOString().slice(0, 10)
+    const zone = Intl.DateTimeFormat().resolvedOptions().timeZone
+    const stripKey = `/v1/children/kid/usage?from=${fromDay}&to=${to}&bucket=day&tz=${zone}`
+
+    stripFails()
+
+    render(
+      <MemoryRouter>
+        <LocaleProvider>
+          <SWRConfig
+            value={{
+              provider: () => new Map(),
+              dedupingInterval: 0,
+              // Stands in for "this already loaded once": SWR treats it as the
+              // current data while the revalidation above fails.
+              fallback: { [stripKey]: usage('day', fromDay, to) },
+            }}
+          >
+            <ChildDetail childId="kid" />
+          </SWRConfig>
+        </LocaleProvider>
+      </MemoryRouter>,
+    )
+
+    await waitFor(() => expect(screen.getByText(/SZ-E901 · aa11bb/)).toBeInTheDocument())
+    expect(screen.getByText(locales.en.child.historyTitle)).toBeInTheDocument()
   })
 })
 

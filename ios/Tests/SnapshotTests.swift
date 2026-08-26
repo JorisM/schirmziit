@@ -41,6 +41,18 @@ final class SnapshotTests: XCTestCase {
             let wrapped = view
                 .environment(\.locale, Locale(identifier: locale))
                 .frame(width: 393, height: 852)
+                // The offscreen host has no live display link, so a real
+                // `.animation(...)` transition (the ribbon fill, the strip's
+                // and app rows' entry stagger) commits its `onAppear`-triggered
+                // state change but never advances past frame zero of the
+                // interpolation — captured as invisible content, not settled
+                // content, no matter how long `.wait` below runs for. Disabling
+                // transactions for the capture is what reduced motion already
+                // gets for free (`Motion.animation` returns `nil`): the target
+                // value applies instantly, so every screen's still image shows
+                // what a user sees once the motion has finished, which is the
+                // only thing a still image can faithfully represent anyway.
+                .transaction { $0.disablesAnimations = true }
             withSnapshotTesting(record: recordMode) {
             assertSnapshot(
                 of: wrapped,
@@ -272,6 +284,33 @@ final class SnapshotTests: XCTestCase {
             )
         }
         assert(DayRibbonView(totals: totals).padding(), named: "day-ribbon")
+    }
+
+    /// The reduced-motion path must land on the finished layout on frame one.
+    ///
+    /// Deliberately asserted against `day-ribbon` — the reference the normal
+    /// render already produced. A reduced-motion capture with its own name would
+    /// only ever prove it matches itself; sharing the name is what makes this a
+    /// test that a screen is not animating when it was asked not to.
+    func testDayRibbonUnderReducedMotionIsTheSettledImage() {
+        let minutes = [0, 0, 0, 0, 0, 0, 0, 12, 34, 8, 0, 0, 41, 55, 22, 6, 0, 0, 63, 48, 19, 4, 0, 0]
+        let totals = minutes.enumerated().map { hour, value in
+            DeviceTotal(
+                start: String(format: "2026-08-22T%02d:00:00+02:00", hour),
+                screenOnMs: value * 60_000,
+                unlockCount: value > 0 ? 3 : 0
+            )
+        }
+        assert(
+            DayRibbonView(totals: totals)
+                .padding()
+                // `\.accessibilityReduceMotion` is get-only on this SDK — it mirrors
+                // the system setting, not something a test can inject. The
+                // underscored sibling is the actual writable storage SwiftUI reads
+                // it from, and is the only lever a snapshot test has for this.
+                .environment(\._accessibilityReduceMotion, true),
+            named: "day-ribbon"
+        )
     }
 
     func testAppRowsFoldTheSubMinuteGlances() {

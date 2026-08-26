@@ -16,6 +16,7 @@
 "children.title" = "Children";
 "children.empty" = "No child yet";
 "children.empty.hint" = "Add a child in the dashboard, then connect their phone.";
+"children.todayTotal" = "today";
 
 "child.total" = "Screen time today";
 "child.unlocks %lld" = "%lld times unlocked";

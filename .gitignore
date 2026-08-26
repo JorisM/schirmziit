@@ -34,3 +34,7 @@ web/tsconfig.tsbuildinfo
 .direnv/
 result
 result-*
+
+# Brainstorming and planning artifacts: written per task, useful while the work
+# is in flight, stale the moment it lands. They stay local.
+docs/superpowers/

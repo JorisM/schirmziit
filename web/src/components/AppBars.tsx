@@ -136,7 +136,10 @@ export function AppBars({ series }: { series: UsageResponse['series'] }) {
               </td>
             </tr>
           )}
-          {briefOpen && brief.map((app, index) => row(app, apps.length + index))}
+          {/* Its own stagger, from 0 — continuing `apps.length + index` pushed
+              every delay past the visible list length, so opening this showed
+              nothing for the length of that gap. */}
+          {briefOpen && brief.map((app, index) => row(app, index))}
         </tbody>
       </table>
     </section>

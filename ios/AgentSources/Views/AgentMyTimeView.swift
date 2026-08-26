@@ -6,6 +6,9 @@ import SwiftUI
 /// that this screen and the parent's dashboard never disagree.
 struct AgentMyTimeView: View {
     let model: AgentModel
+    // Owned here, not by DayRibbonView, so a List row recycle during scroll
+    // doesn't replay the fill flourish — see DayRibbonView.filledOverride.
+    @State private var ribbonFilled = false
 
     private var today: String { ISO8601DateFormatter.dayOnly.string(from: Date()) }
 
@@ -92,7 +95,8 @@ struct AgentMyTimeView: View {
                 }
 
                 Section {
-                    DayRibbonView(totals: hourlyTotals).padding(.vertical, 4)
+                    DayRibbonView(totals: hourlyTotals, filledOverride: $ribbonFilled)
+                        .padding(.vertical, 4)
                 }
 
                 if !day.apps.isEmpty {

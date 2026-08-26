@@ -8,9 +8,26 @@ import SwiftUI
 /// screen does not have.
 struct DayRibbonView: View {
     let totals: [DeviceTotal]
+    /// Owned by the enclosing screen when supplied. A `List` can drop and
+    /// recreate this view's own `@State` as a row scrolls off-screen and back,
+    /// which replayed the fill flourish on every recycle; state that lives on
+    /// the screen above the list survives that and plays the flourish only
+    /// once per screen appearance. Defaults to a local fallback so call sites
+    /// that don't need this (previews, snapshot tests) are unaffected.
+    var filledOverride: Binding<Bool>?
     @State private var selected: Int?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var filled = false
+    @State private var filledFallback = false
+
+    private var filled: Bool { filledOverride?.wrappedValue ?? filledFallback }
+
+    private func markFilled() {
+        if let filledOverride {
+            filledOverride.wrappedValue = true
+        } else {
+            filledFallback = true
+        }
+    }
 
     private var perHour: [Int] { Formatting.hoursFromTotals(totals) }
 
@@ -55,7 +72,7 @@ struct DayRibbonView: View {
                         .onTapGesture { selected = selected == hour ? nil : hour }
                 }
             }
-            .onAppear { filled = true }
+            .onAppear { markFilled() }
 
             HStack {
                 ForEach([0, 6, 12, 18], id: \.self) { hour in

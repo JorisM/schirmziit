@@ -54,7 +54,9 @@ android-bindings:
         --language kotlin --out-dir android/app/src/main/kotlin
     # JVM unit tests load the core through JNA, which needs a HOST build in an
     # <os>-<arch> resource dir. On an Intel Mac use darwin-x86-64; on Linux CI,
-    # linux-x86-64 with the .so.
+    # linux-x86-64 with the .so. The build re-jars that dir (testNativeLibs):
+    # AGP drops **/*.so from the merged test resource dir, so only the jar puts
+    # a .so on the unit test classpath.
     cargo build -p schirmziit-core --release
     mkdir -p android/app/src/test/resources/darwin-aarch64
     cp target/release/libschirmziit_core.dylib android/app/src/test/resources/darwin-aarch64/

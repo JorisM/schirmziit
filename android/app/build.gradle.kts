@@ -41,6 +41,26 @@ android {
 
 kotlin { jvmToolchain(21) }
 
+// JVM unit tests load the host build of the core (and any other JNA consumer
+// ships its natives) from an <os>-<arch>/lib<name> resource directory. CI
+// copies it into src/test/resources/linux-x86-64/, but AGP's java-resource
+// merge silently drops **/*.so from that output — a .so in resources is
+// "a native lib in the wrong pipeline" and belongs in jniLibs — while a mac's
+// .dylib sails through. That is why the tests load fine locally and die on CI
+// with "Native library (linux-x86-64/libschirmziit_core.so) not found in
+// resource path".
+//
+// JNA's classpath loader reads exactly this layout from jar entries too —
+// that is how jna.jar itself ships libjnidispatch — and a jar is an ordinary
+// classpath file the resource merge never inspects. So the build re-packages
+// the host natives into one and puts it on the unit test classpath.
+val testNativeLibs by tasks.registering(Jar::class) {
+    archiveFileName.set("schirmziit-test-natives.jar")
+    from(layout.projectDirectory.dir("src/test/resources")) {
+        include("**/*.so", "**/*.dylib")
+    }
+}
+
 // Roborazzi is used as a plain library: its Gradle plugin (1.53) still asks AGP
 // for `TestedExtension`, which AGP 9 removed. The plugin only adds convenience
 // tasks, and the library reads these system properties directly.
@@ -95,6 +115,13 @@ dependencies {
     testImplementation(libs.compose.ui.test.junit4)
     // JVM tests load the desktop build of the core through JNA.
     testImplementation(libs.jna)
+    // The host build copied into src/test/resources by `just android-bindings`
+    // (or CI) reaches the tests through this jar, because the merged resource
+    // dir above never contains a .so.
+    // `files(...)` and not the provider itself: a dependency notation has to be
+    // a FileCollection, and this form also carries the task dependency, so the
+    // jar is built before the tests run.
+    testRuntimeOnly(files(testNativeLibs))
 
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.junit)

@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# The child agent's apk. Regenerates the UniFFI bindings first, because a stale
+# Kotlin binding against a changed core is the one failure that compiles.
+source "$(dirname "${BASH_SOURCE[0]}")/_lib.sh"
+need_dev_shell "$@"
+
+variant="${1:-debug}"
+case "$variant" in
+  debug)   task=assembleDebug ;;
+  release) task=assembleRelease ;;
+  *) die "usage: bin/android-build [debug|release]" ;;
+esac
+
+say "generating the core bindings"
+just --justfile "$root/justfile" --working-directory "$root" android-bindings
+
+say "gradle $task"
+cd "$root/android" && ./gradlew "$task"
+
+apk="$(find "$root/android/app/build/outputs/apk/$variant" -name '*.apk' | head -1)"
+[ -n "$apk" ] || die "gradle reported success but produced no apk"
+bold "→ $apk"

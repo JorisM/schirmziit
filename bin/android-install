@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Build, install on the connected phone, and launch it.
+source "$(dirname "${BASH_SOURCE[0]}")/_lib.sh"
+need_dev_shell "$@"
+
+serial="${ANDROID_SERIAL:-$(one_android_device)}"
+export ANDROID_SERIAL="$serial"
+say "device $serial ($(adb -s "$serial" shell getprop ro.product.model | tr -d '\r'))"
+
+"$root/bin/android-build" "${1:-debug}"
+
+say "installing"
+cd "$root/android" && ./gradlew "installDebug"
+
+# Launching matters: the agent asks for the usage-access grant on first open, and
+# an installed-but-never-opened app records nothing at all.
+package=ch.jorisda.schirmziit.agent
+say "launching $package"
+adb -s "$serial" shell am start -n "$package/.ui.MainActivity" >/dev/null
+bold "→ installed and launched on $serial"

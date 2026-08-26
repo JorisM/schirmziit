@@ -29,3 +29,8 @@ node_modules
 
 # tsc build cache — regenerated locally, dirty in every checkout
 web/tsconfig.tsbuildinfo
+
+# nix / direnv
+.direnv/
+result
+result-*

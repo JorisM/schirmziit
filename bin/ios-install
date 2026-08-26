@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# Build and install: a connected iPhone if there is exactly one, otherwise the
+# booted simulator.
+#
+# A physical install needs the Family Controls entitlement to be signable, which
+# means a paid team. It also needs the two extensions to declare an NSExtension
+# dictionary — without it installd rejects the whole app, naming the appex.
+source "$(dirname "${BASH_SOURCE[0]}")/_lib.sh"
+need_dev_shell "$@"
+need_xcode
+
+bundle=ch.jorisda.schirmziit
+
+# `devicectl list devices` lists simulators alongside real hardware, and a
+# booted simulator's row says "connected" too — matching that picks a simulator
+# and then fails with "The specified device was not found". So: rows marked
+# `physical`, and the UUID-shaped column, found by its shape rather than by a
+# position that moves when a device name contains a space.
+devices="$(apple_tool xcrun devicectl list devices 2>/dev/null | awk '
+  /physical/ && (/available/ || /connected/) {
+    for (i = 1; i <= NF; i++)
+      if ($i ~ /^[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}$/) print $i
+  }' || true)"
+count="$(printf '%s' "$devices" | grep -c . || true)"
+
+if [ "$count" = 1 ]; then
+  udid="$(printf '%s' "$devices")"
+  "$root/bin/ios-build" --device
+  app="$(find "$root/build/ios/Build/Products/Debug-iphoneos" -maxdepth 1 -name 'Schirmziit.app' | head -1)"
+  say "installing on $udid"
+  apple_tool xcrun devicectl device install app --device "$udid" "$app"
+  # A locked phone refuses the launch and nothing is wrong with the build, so
+  # say that in one line instead of letting Apple's error blob read as a failure.
+  say "launching"
+  if apple_tool xcrun devicectl device process launch --device "$udid" "$bundle" >/dev/null 2>&1; then
+    bold "→ installed and launched on $udid"
+  else
+    bold "→ installed on $udid"
+    warn "could not launch it — unlock the phone and open Schirmziit yourself"
+  fi
+  exit 0
+fi
+
+[ "$count" -gt 1 ] && warn "$count devices connected — using the simulator instead"
+
+booted="$(apple_tool xcrun simctl list devices booted | awk -F'[()]' '/Booted/ { print $2; exit }')"
+if [ -z "$booted" ]; then
+  say "no booted simulator — booting one"
+  open -a Simulator
+  for _ in $(seq 1 60); do
+    booted="$(apple_tool xcrun simctl list devices booted | awk -F'[()]' '/Booted/ { print $2; exit }')"
+    [ -n "$booted" ] && break
+    sleep 1
+  done
+  [ -n "$booted" ] || die "no simulator booted — open one from Xcode and retry"
+fi
+
+"$root/bin/ios-build" --sim
+app="$(find "$root/build/ios/Build/Products/Debug-iphonesimulator" -maxdepth 1 -name 'Schirmziit.app' | head -1)"
+say "installing on simulator $booted"
+apple_tool xcrun simctl install "$booted" "$app"
+apple_tool xcrun simctl launch "$booted" "$bundle" >/dev/null
+
+# Say it rather than let it look broken: the extensions are the product on iOS,
+# and a simulator cannot host them.
+warn "on a simulator the Family Controls extensions cannot run — child mode will show its unavailable state"
+bold "→ installed and launched on simulator $booted"

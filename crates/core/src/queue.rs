@@ -64,12 +64,14 @@ mod tests {
             computed_at: Utc.with_ymd_and_hms(2026, 8, 21, 23, 0, 0).unwrap(),
             screen_on_ms: 1000,
             unlock_count: 1,
+            background_measured: false,
             apps: (0..apps)
                 .map(|i| IngestApp {
                     package: format!("com.a{i}"),
                     label: format!("App {i}"),
                     foreground_ms: 1000,
                     launch_count: 1,
+                    background_ms: 0,
                 })
                 .collect(),
         }

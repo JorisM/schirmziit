@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT h.hour_start,\n                      SUM(h.screen_on_ms)::bigint AS \"screen_on_ms!\",\n                      SUM(h.unlock_count)::int    AS \"unlock_count!\"\n               FROM device_hours h\n               JOIN devices d ON d.id = h.device_id\n               WHERE d.child_id = $1 AND h.hour_start >= $2 AND h.hour_start < $3\n               GROUP BY h.hour_start ORDER BY h.hour_start",
+  "query": "SELECT h.hour_start,\n                      SUM(h.screen_on_ms)::bigint AS \"screen_on_ms!\",\n                      SUM(h.unlock_count)::int    AS \"unlock_count!\",\n                      bool_or(h.background_measured) AS \"background_measured!\"\n               FROM device_hours h\n               JOIN devices d ON d.id = h.device_id\n               WHERE d.child_id = $1 AND h.hour_start >= $2 AND h.hour_start < $3\n               GROUP BY h.hour_start ORDER BY h.hour_start",
   "describe": {
     "columns": [
       {
@@ -25,6 +25,12 @@
         "name": "unlock_count!",
         "type_info": "Int4",
         "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
+        "name": "background_measured!",
+        "type_info": "Bool",
+        "origin": "Expression"
       }
     ],
     "parameters": {
@@ -37,8 +43,9 @@
     "nullable": [
       false,
       null,
+      null,
       null
     ]
   },
-  "hash": "832f805e4ef3f1ea6ed70c1f360ca05ff2382bc04e46051228f2913dc350dc76"
+  "hash": "3ae39c5a9fb365d5391b2fff03e5e19ca6e9520dec3ca1182207274c6417ea34"
 }

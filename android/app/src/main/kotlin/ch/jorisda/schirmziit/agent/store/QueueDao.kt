@@ -27,6 +27,19 @@ data class CarryOverRow(
     val sinceMillis: Long,
 )
 
+/**
+ * Playback state when the last window closed: what was playing, whether the
+ * screen was off, and when the current background stretch began. Exactly one
+ * row, same shape and same reason as [CarryOverRow].
+ */
+@Entity(tableName = "playback_carry")
+data class PlaybackCarryRow(
+    @PrimaryKey val id: Int = 0,
+    val playing: String?,
+    val screenOff: Boolean,
+    val sinceMillis: Long?,
+)
+
 /** Debug-only ring buffer. Never uploaded; pruned to 7 days. */
 @Entity(tableName = "raw_events")
 data class RawEventRow(
@@ -69,4 +82,13 @@ interface QueueDao {
 
     @Query("SELECT COUNT(*) FROM raw_events")
     fun rawCount(): Int
+
+    @Query("SELECT * FROM playback_carry WHERE id = 0")
+    fun playbackCarry(): PlaybackCarryRow?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun setPlaybackCarry(row: PlaybackCarryRow)
+
+    @Query("DELETE FROM playback_carry")
+    fun clearPlaybackCarry()
 }

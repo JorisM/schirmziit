@@ -6,6 +6,7 @@ class FakeAgentSettings(
     override var deviceToken: String? = null,
     override var lastSyncMillis: Long = 0L,
     override var lastError: String? = null,
+    override var backgroundCardDismissed: Boolean = false,
 ) : AgentSettings {
     override fun unpair() {
         baseUrl = null

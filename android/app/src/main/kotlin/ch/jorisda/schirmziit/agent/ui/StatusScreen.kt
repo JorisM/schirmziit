@@ -48,6 +48,10 @@ fun StatusScreen(
     onSendNow: () -> Unit,
     onAllowBackground: () -> Unit,
     onOpenMyTime: () -> Unit,
+    backgroundGranted: Boolean = true,
+    backgroundCardDismissed: Boolean = true,
+    onAllowBackgroundListening: () -> Unit = {},
+    onDismissBackgroundCard: () -> Unit = {},
 ) {
     var helpOpen by remember { mutableStateOf(false) }
 
@@ -159,6 +163,35 @@ fun StatusScreen(
                     )
                     FilledTonalButton(onClick = onAllowBackground) {
                         Text(stringResource(R.string.battery_action))
+                    }
+                }
+            }
+        }
+
+        // Optional, and shown once. An extra grant that keeps asking is a nag,
+        // and declining this one is a supported end state, not a broken setup.
+        if (!backgroundGranted && !backgroundCardDismissed) {
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                ),
+            ) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(
+                        stringResource(R.string.background_card_title),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(
+                        stringResource(R.string.background_card_body),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FilledTonalButton(onClick = onAllowBackgroundListening) {
+                            Text(stringResource(R.string.background_card_action))
+                        }
+                        TextButton(onClick = onDismissBackgroundCard) {
+                            Text(stringResource(R.string.background_card_dismiss))
+                        }
                     }
                 }
             }

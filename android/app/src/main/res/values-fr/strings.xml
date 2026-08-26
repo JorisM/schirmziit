@@ -91,4 +91,13 @@
     <string name="notification_problem">Problème d’envoi : %1$s</string>
     <string name="notification_last_sent">Dernier envoi %1$s</string>
     <string name="permission_revoked">L’accès aux données d’utilisation a été désactivé</string>
+    <string name="playback_service_label">Écoute en arrière-plan</string>
+    <string name="background_card_title">Compter aussi l\'écoute quand l\'écran est éteint ?</string>
+    <string name="background_card_body">La musique, les podcasts et les livres audio qui jouent pendant que l\'écran est éteint ne sont pas du temps d\'écran, ils ne sont donc pas comptés aujourd\'hui. Pour les compter, Schirmziit a besoin de l\'accès aux notifications — c\'est la seule façon dont Android laisse une app voir quelle app joue. Schirmziit ne lit jamais tes notifications, ni ce qui joue, seulement que quelque chose joue.</string>
+    <string name="background_card_action">Ouvrir les réglages</string>
+    <string name="background_card_dismiss">Pas maintenant</string>
+    <string name="mytime_background">Écouté en arrière-plan</string>
+    <string name="mytime_background_help">Musique, podcasts ou livres audio qui jouaient pendant que ton écran était éteint.</string>
+    <string name="mytime_background_not_measured">L\'écoute avec l\'écran éteint n\'est pas comptée sur ce téléphone.</string>
+    <string name="mytime_background_empty">Rien n\'a joué avec l\'écran éteint ce jour-là.</string>
 </resources>

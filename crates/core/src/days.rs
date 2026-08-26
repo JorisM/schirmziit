@@ -49,6 +49,7 @@ mod tests {
             hour_start: Utc.with_ymd_and_hms(2026, 8, 21, h, 0, 0).unwrap(),
             foreground_ms: ms,
             launch_count: launches,
+            background_ms: 0,
         }
     }
 

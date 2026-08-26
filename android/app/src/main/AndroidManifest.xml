@@ -50,5 +50,20 @@
                 <data android:scheme="schirmziit" android:host="sync" />
             </intent-filter>
         </activity>
+        <!-- Notification access is the only public route to MediaSessionManager,
+             which is the only way to attribute background audio to an app.
+             Notifications themselves are never read: both callbacks are empty
+             and scripts/check-no-content.sh fails the build if that changes.
+             Entirely optional — a family that declines simply reports
+             background_measured = false, which reads as "not measured". -->
+        <service
+            android:name=".agent.playback.PlaybackListener"
+            android:exported="true"
+            android:label="@string/playback_service_label"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
     </application>
 </manifest>

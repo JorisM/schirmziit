@@ -35,6 +35,10 @@ class AgentStore(context: Context) : AgentSettings {
         get() = prefs.getString(KEY_LAST_ERROR, null)
         set(value) = prefs.edit().putString(KEY_LAST_ERROR, value).apply()
 
+    override var backgroundCardDismissed: Boolean
+        get() = prefs.getBoolean(KEY_BACKGROUND_DISMISSED, false)
+        set(value) = prefs.edit().putBoolean(KEY_BACKGROUND_DISMISSED, value).apply()
+
     override fun unpair() {
         prefs.edit().remove(KEY_BASE_URL).remove(KEY_TOKEN).apply()
     }
@@ -44,5 +48,6 @@ class AgentStore(context: Context) : AgentSettings {
         const val KEY_TOKEN = "device_token"
         const val KEY_LAST_SYNC = "last_sync"
         const val KEY_LAST_ERROR = "last_error"
+        const val KEY_BACKGROUND_DISMISSED = "background_card_dismissed"
     }
 }

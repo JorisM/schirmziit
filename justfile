@@ -60,6 +60,7 @@ android-bindings:
     cp target/release/libschirmziit_core.dylib android/app/src/test/resources/darwin-aarch64/
 
 android-check: android-bindings
+    bash scripts/check-no-content.sh
     cd android && ./gradlew test
 
 # ─── iOS ─────────────────────────────────────────────────────────────

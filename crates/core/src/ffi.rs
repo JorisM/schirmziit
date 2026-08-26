@@ -8,7 +8,7 @@ use crate::error::CoreError;
 use crate::events::{EventKind, RawEvent};
 use crate::queue::{apply_result, plan_sync};
 use crate::selfusage::{day_detail, day_strip};
-use crate::sessions::{OpenApp, Session, stitch};
+use crate::sessions::{OpenApp, PlaybackCarry, Session, stitch};
 use crate::wire::{IngestApp, IngestHour, IngestRequest, IngestResponse, SCHEMA_VERSION};
 use chrono::{DateTime, TimeZone, Utc};
 use std::collections::HashMap;
@@ -35,7 +35,10 @@ pub enum EventKindFfi {
     Resumed { package: String },
     Paused { package: String },
     ScreenOff,
+    ScreenOn,
     Unlock,
+    PlaybackStarted { package: String },
+    PlaybackStopped { package: String },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
@@ -57,11 +60,24 @@ pub struct SessionFfi {
     pub end_millis: i64,
 }
 
+/// Playback state at a window boundary. Persist it and hand it back on the
+/// next call, exactly like [`OpenAppFfi`], or a stretch spanning two syncs is
+/// lost.
+#[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
+pub struct PlaybackCarryFfi {
+    pub playing: Option<String>,
+    pub screen_off: bool,
+    pub since_millis: Option<i64>,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
 pub struct StitchOutcome {
     pub closed: Vec<SessionFfi>,
     pub open: Option<OpenAppFfi>,
     pub unlock_millis: Vec<i64>,
+    /// Media playing with the screen off. Never overlaps `closed`.
+    pub background: Vec<SessionFfi>,
+    pub playback: PlaybackCarryFfi,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
@@ -70,6 +86,7 @@ pub struct PendingAppFfi {
     pub label: String,
     pub foreground_ms: i64,
     pub launch_count: i32,
+    pub background_ms: i64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
@@ -79,6 +96,9 @@ pub struct PendingHourFfi {
     pub computed_at_millis: i64,
     pub screen_on_ms: i64,
     pub unlock_count: i32,
+    /// False means this device could not observe background playback at all —
+    /// not that nothing played.
+    pub background_measured: bool,
     pub apps: Vec<PendingAppFfi>,
 }
 
@@ -97,6 +117,7 @@ fn to_utc(millis: i64) -> DateTime<Utc> {
 #[uniffi::export]
 pub fn stitch_events(
     prev_open: Option<OpenAppFfi>,
+    prev_playback: Option<PlaybackCarryFfi>,
     events: Vec<RawEventFfi>,
     window_end_millis: i64,
 ) -> StitchOutcome {
@@ -112,12 +133,21 @@ pub fn stitch_events(
                 EventKindFfi::Resumed { package } => EventKind::Resumed { package },
                 EventKindFfi::Paused { package } => EventKind::Paused { package },
                 EventKindFfi::ScreenOff => EventKind::ScreenOff,
+                EventKindFfi::ScreenOn => EventKind::ScreenOn,
                 EventKindFfi::Unlock => EventKind::Unlock,
+                EventKindFfi::PlaybackStarted { package } => EventKind::PlaybackStarted { package },
+                EventKindFfi::PlaybackStopped { package } => EventKind::PlaybackStopped { package },
             },
         })
         .collect();
 
-    let result = stitch(prev, &mapped, to_utc(window_end_millis));
+    let carry = prev_playback.map(|p| PlaybackCarry {
+        playing: p.playing,
+        screen_off: p.screen_off,
+        since: p.since_millis.map(to_utc),
+    });
+
+    let result = stitch(prev, carry, &mapped, to_utc(window_end_millis));
     StitchOutcome {
         closed: result
             .sessions
@@ -137,28 +167,48 @@ pub fn stitch_events(
             .iter()
             .map(|u| u.timestamp_millis())
             .collect(),
+        background: result
+            .background
+            .into_iter()
+            .map(|s| SessionFfi {
+                package: s.package,
+                start_millis: s.start.timestamp_millis(),
+                end_millis: s.end.timestamp_millis(),
+            })
+            .collect(),
+        playback: PlaybackCarryFfi {
+            playing: result.playback.playing,
+            screen_off: result.playback.screen_off,
+            since_millis: result.playback.since.map(|s| s.timestamp_millis()),
+        },
     }
 }
 
 #[uniffi::export]
 pub fn bucket_sessions(
     sessions: Vec<SessionFfi>,
+    background: Vec<SessionFfi>,
     unlock_millis: Vec<i64>,
     tz: String,
     labels: HashMap<String, String>,
+    background_measured: bool,
     computed_at_millis: i64,
 ) -> Result<Vec<PendingHourFfi>, FfiError> {
-    let mapped: Vec<Session> = sessions
-        .into_iter()
-        .map(|s| Session {
-            package: s.package,
-            start: to_utc(s.start_millis),
-            end: to_utc(s.end_millis),
-        })
-        .collect();
+    fn to_sessions(raw: Vec<SessionFfi>) -> Vec<Session> {
+        raw.into_iter()
+            .map(|s| Session {
+                package: s.package,
+                start: to_utc(s.start_millis),
+                end: to_utc(s.end_millis),
+            })
+            .collect()
+    }
+
+    let mapped = to_sessions(sessions);
+    let background = to_sessions(background);
     let unlocks: Vec<DateTime<Utc>> = unlock_millis.into_iter().map(to_utc).collect();
 
-    let buckets = bucket_hours(&mapped, &unlocks, &tz)?;
+    let buckets = bucket_hours(&mapped, &background, &unlocks, &tz)?;
 
     // One PendingHourFfi per hour: join the per-app rows with the device row.
     let mut out: Vec<PendingHourFfi> = Vec::new();
@@ -177,6 +227,7 @@ pub fn bucket_sessions(
                     .unwrap_or_else(|| a.package.clone()),
                 foreground_ms: a.foreground_ms,
                 launch_count: a.launch_count,
+                background_ms: a.background_ms,
             })
             .collect();
 
@@ -186,6 +237,7 @@ pub fn bucket_sessions(
             computed_at_millis,
             screen_on_ms: device.screen_on_ms,
             unlock_count: device.unlock_count,
+            background_measured,
             apps,
         });
     }
@@ -199,6 +251,7 @@ fn to_wire(hour: &PendingHourFfi) -> IngestHour {
         computed_at: to_utc(hour.computed_at_millis),
         screen_on_ms: hour.screen_on_ms,
         unlock_count: hour.unlock_count,
+        background_measured: hour.background_measured,
         apps: hour
             .apps
             .iter()
@@ -207,6 +260,7 @@ fn to_wire(hour: &PendingHourFfi) -> IngestHour {
                 label: a.label.clone(),
                 foreground_ms: a.foreground_ms,
                 launch_count: a.launch_count,
+                background_ms: a.background_ms,
             })
             .collect(),
     }
@@ -280,6 +334,7 @@ pub fn apply_ingest_result(
 pub struct DayTotalFfi {
     pub day: String,
     pub foreground_ms: i64,
+    pub background_ms: i64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
@@ -287,6 +342,7 @@ pub struct AppTotalFfi {
     pub package: String,
     pub label: String,
     pub foreground_ms: i64,
+    pub background_ms: i64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
@@ -295,6 +351,11 @@ pub struct DayDetailFfi {
     pub unlock_count: i32,
     pub hours: Vec<i64>,
     pub apps: Vec<AppTotalFfi>,
+    pub background_ms: i64,
+    pub background_hours: Vec<i64>,
+    /// False means no device reporting this day could observe background
+    /// playback. Render it as "not measured", never as a zero.
+    pub background_measured: bool,
 }
 
 #[uniffi::export]
@@ -304,6 +365,7 @@ pub fn parse_day_strip(json: String) -> Result<Vec<DayTotalFfi>, FfiError> {
         .map(|d| DayTotalFfi {
             day: d.day,
             foreground_ms: d.foreground_ms,
+            background_ms: d.background_ms,
         })
         .collect())
 }
@@ -315,6 +377,9 @@ pub fn parse_day_detail(json: String) -> Result<DayDetailFfi, FfiError> {
         total_ms: detail.total_ms,
         unlock_count: detail.unlock_count,
         hours: detail.hours,
+        background_ms: detail.background_ms,
+        background_hours: detail.background_hours,
+        background_measured: detail.background_measured,
         apps: detail
             .apps
             .into_iter()
@@ -322,6 +387,7 @@ pub fn parse_day_detail(json: String) -> Result<DayDetailFfi, FfiError> {
                 package: a.package,
                 label: a.label,
                 foreground_ms: a.foreground_ms,
+                background_ms: a.background_ms,
             })
             .collect(),
     })
@@ -360,6 +426,7 @@ mod tests {
             computed_at_millis: h,
             screen_on_ms: 0,
             unlock_count: 0,
+            background_measured: false,
             apps: vec![],
         }
     }
@@ -367,6 +434,7 @@ mod tests {
     #[test]
     fn stitch_round_trips_through_millis() {
         let out = stitch_events(
+            None,
             None,
             vec![resumed(NOON, "com.a"), paused(NOON + 300_000, "com.a")],
             NOON + HOUR,
@@ -379,12 +447,13 @@ mod tests {
 
     #[test]
     fn carry_over_survives_the_ffi_boundary() {
-        let first = stitch_events(None, vec![resumed(NOON, "com.a")], NOON + 1_800_000);
+        let first = stitch_events(None, None, vec![resumed(NOON, "com.a")], NOON + 1_800_000);
         let open = first.open.clone().expect("app still in foreground");
         assert_eq!(open.since_millis, NOON);
 
         let second = stitch_events(
             Some(open),
+            None,
             vec![paused(NOON + HOUR, "com.a")],
             NOON + HOUR + 60_000,
         );
@@ -404,9 +473,11 @@ mod tests {
         let labels = HashMap::from([("com.a".to_string(), "App A".to_string())]);
         let hours = bucket_sessions(
             sessions,
+            vec![],
             vec![NOON],
             "Europe/Zurich".into(),
             labels,
+            false,
             NOON + HOUR,
         )
         .unwrap();
@@ -429,15 +500,117 @@ mod tests {
             start_millis: NOON,
             end_millis: NOON + 1000,
         }];
-        let hours = bucket_sessions(sessions, vec![], "UTC".into(), HashMap::new(), NOON).unwrap();
+        let hours = bucket_sessions(
+            sessions,
+            vec![],
+            vec![],
+            "UTC".into(),
+            HashMap::new(),
+            false,
+            NOON,
+        )
+        .unwrap();
         assert_eq!(hours[0].apps[0].label, "com.unknown");
     }
 
     #[test]
     fn an_unknown_timezone_is_an_ffi_error() {
-        let err = bucket_sessions(vec![], vec![], "Mars/Olympus".into(), HashMap::new(), NOON)
-            .unwrap_err();
+        let err = bucket_sessions(
+            vec![],
+            vec![],
+            vec![],
+            "Mars/Olympus".into(),
+            HashMap::new(),
+            false,
+            NOON,
+        )
+        .unwrap_err();
         assert!(matches!(err, FfiError::UnknownTimezone { .. }));
+    }
+
+    #[test]
+    fn ingest_body_carries_background_fields_through_the_ffi_boundary() {
+        let hours = bucket_sessions(
+            vec![],
+            vec![SessionFfi {
+                package: "com.abs".into(),
+                start_millis: NOON,
+                end_millis: NOON + 1_800_000,
+            }],
+            vec![],
+            "UTC".into(),
+            HashMap::new(),
+            true,
+            NOON + 1_800_000,
+        )
+        .unwrap();
+        assert_eq!(hours.len(), 1);
+        assert!(hours[0].background_measured);
+        assert_eq!(hours[0].apps[0].background_ms, 1_800_000);
+        assert_eq!(hours[0].apps[0].foreground_ms, 0);
+        assert_eq!(hours[0].screen_on_ms, 0);
+
+        let body = ingest_body(hours, NOON + 1_800_000).unwrap();
+        assert!(body.contains("\"background_ms\":1800000"));
+        assert!(body.contains("\"background_measured\":true"));
+    }
+
+    #[test]
+    fn a_device_without_the_grant_reports_not_measured() {
+        let hours = bucket_sessions(
+            vec![SessionFfi {
+                package: "com.a".into(),
+                start_millis: NOON,
+                end_millis: NOON + 60_000,
+            }],
+            vec![],
+            vec![],
+            "UTC".into(),
+            HashMap::new(),
+            false,
+            NOON + 60_000,
+        )
+        .unwrap();
+        assert!(!hours[0].background_measured);
+    }
+
+    #[test]
+    fn playback_carry_round_trips_through_millis() {
+        let first = stitch_events(
+            None,
+            None,
+            vec![
+                RawEventFfi {
+                    at_millis: NOON,
+                    kind: EventKindFfi::ScreenOff,
+                },
+                RawEventFfi {
+                    at_millis: NOON + 60_000,
+                    kind: EventKindFfi::PlaybackStarted {
+                        package: "com.abs".into(),
+                    },
+                },
+            ],
+            NOON + 120_000,
+        );
+        assert_eq!(first.playback.since_millis, Some(NOON + 60_000));
+        assert_eq!(first.playback.playing.as_deref(), Some("com.abs"));
+        assert!(first.playback.screen_off);
+
+        let second = stitch_events(
+            None,
+            Some(first.playback),
+            vec![RawEventFfi {
+                at_millis: NOON + 600_000,
+                kind: EventKindFfi::PlaybackStopped {
+                    package: "com.abs".into(),
+                },
+            }],
+            NOON + 700_000,
+        );
+        assert_eq!(second.background.len(), 1);
+        assert_eq!(second.background[0].start_millis, NOON + 60_000);
+        assert_eq!(second.background[0].end_millis, NOON + 600_000);
     }
 
     #[test]
@@ -448,11 +621,13 @@ mod tests {
             computed_at_millis: NOON + HOUR,
             screen_on_ms: 1000,
             unlock_count: 2,
+            background_measured: false,
             apps: vec![PendingAppFfi {
                 package: "com.a".into(),
                 label: "App A".into(),
                 foreground_ms: 1000,
                 launch_count: 1,
+                background_ms: 0,
             }],
         };
         let body = ingest_body(vec![h], NOON + HOUR).unwrap();

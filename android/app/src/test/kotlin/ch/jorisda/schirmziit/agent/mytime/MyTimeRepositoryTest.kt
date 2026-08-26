@@ -9,8 +9,8 @@ import org.junit.Test
 
 class MyTimeRepositoryTest {
 
-    private val strip = listOf(DayTotalFfi("2026-08-20", 60_000L))
-    private val detail = DayDetailFfi(60_000L, 3, List(24) { 0L }, emptyList())
+    private val strip = listOf(DayTotalFfi("2026-08-20", 60_000L, 0L))
+    private val detail = DayDetailFfi(60_000L, 3, List(24) { 0L }, emptyList(), 0L, List(24) { 0L }, false)
 
     @Test
     fun `loads the strip and the selected day`() {

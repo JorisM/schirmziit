@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { ApiError, api } from '../api/client'
 import type { components } from '../api/schema'
 import { AppBars } from '../components/AppBars'
+import { BackgroundWave } from '../components/BackgroundWave'
 import { DayRibbon } from '../components/DayRibbon'
 import { DayStrip } from '../components/DayStrip'
 import { DeviceStatus } from '../components/DeviceStatus'
@@ -56,6 +57,16 @@ export function ChildDetail({ childId }: { childId: string }) {
     0,
   )
   const unlocks = data.device_totals.reduce((sum, total) => sum + total.unlock_count, 0)
+  // Deliberately not part of `screenTime`: media playing with the screen off
+  // is a separate measure, and adding it would inflate every screen-time
+  // number the parent reads.
+  const backgroundTime = data.series.reduce(
+    (sum, entry) => sum + entry.points.reduce((inner, point) => inner + point.background_ms, 0),
+    0,
+  )
+  // Not "no background time" — "no device reporting this day could observe
+  // it". An iPhone, or an Android phone whose family declined the grant.
+  const backgroundMeasured = data.device_totals.some((total) => total.background_measured)
   const stamps = data.series.flatMap((entry) => entry.points.map((point) => point.start)).sort()
   const clock = (iso: string | undefined) =>
     iso ? new Date(iso).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }) : '—'
@@ -109,6 +120,14 @@ export function ChildDetail({ childId }: { childId: string }) {
             <dt style={{ color: 'var(--ink-faint)' }}>{t.child.unlocks}</dt>
             <dd className="tabular text-lg">{unlocks}</dd>
           </div>
+          {backgroundMeasured && (
+            <div>
+              <dt style={{ color: 'var(--ink-faint)' }}>{t.child.backgroundTotal}</dt>
+              <dd className="tabular text-lg" style={{ color: 'var(--background-wave)' }}>
+                {formatDuration(backgroundTime, t)}
+              </dd>
+            </div>
+          )}
           <div>
             <dt style={{ color: 'var(--ink-faint)' }}>{t.child.firstActivity}</dt>
             <dd className="tabular text-lg">{clock(stamps[0])}</dd>
@@ -131,6 +150,7 @@ export function ChildDetail({ childId }: { childId: string }) {
 
       <section className="card p-6">
         <DayRibbon totals={data.device_totals} />
+        <BackgroundWave series={data.series} measured={backgroundMeasured} />
       </section>
 
       <section className="card p-6">

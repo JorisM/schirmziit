@@ -47,6 +47,14 @@ export const it: Strings = {
     ribbonQuiet: 'tranquillo',
     ribbonBusy: 'intenso',
     ribbonNight: 'notte',
+    backgroundTitle: 'Ascolto in sottofondo',
+    backgroundHelp:
+      'Musica, podcast o audiolibri riprodotti mentre lo schermo era spento. Si conta a parte — non è tempo di schermo e non viene mai sommato.',
+    backgroundTotal: 'Ascoltato in sottofondo',
+    backgroundNotMeasured:
+      'L’ascolto in sottofondo non può essere misurato sui telefoni di questo bambino. Gli iPhone non lo segnalano e su Android serve un’impostazione non attiva.',
+    backgroundEmpty: 'Quel giorno non è stato riprodotto nulla a schermo spento.',
+    backgroundHour: 'ascoltato in sottofondo',
     appsTitle: 'App',
     appsHelp:
       'Quanto tempo ogni app è rimasta in primo piano, sommato su tutti i dispositivi del bambino.',

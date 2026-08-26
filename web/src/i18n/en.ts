@@ -47,6 +47,14 @@ export const en: Strings = {
     ribbonQuiet: 'quiet',
     ribbonBusy: 'busy',
     ribbonNight: 'night',
+    backgroundTitle: 'Background listening',
+    backgroundHelp:
+      'Music, podcasts or audiobooks that played while the screen was off. This is counted on its own — it is not screen time and is never added to it.',
+    backgroundTotal: 'Listened in the background',
+    backgroundNotMeasured:
+      'Background listening cannot be measured on this child’s phones. iPhones do not report it, and on Android it needs a setting that has not been turned on.',
+    backgroundEmpty: 'Nothing played with the screen off on this day.',
+    backgroundHour: 'listened in the background',
     appsTitle: 'Apps',
     appsHelp: 'How long each app was in the foreground, added up across all of this child’s devices.',
     appColumn: 'App',

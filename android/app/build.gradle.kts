@@ -48,6 +48,16 @@ kotlin { jvmToolchain(21) }
 //   ./gradlew test                          verify against the committed images
 //   ./gradlew test -Precord.snapshots       re-record them, deliberately
 tasks.withType<Test>().configureEach {
+    // CI prints one line per failure and links an HTML report that is never
+    // uploaded, so a red build says "UnsatisfiedLinkError" and nothing about
+    // which library or why. Print the whole thing instead.
+    testLogging {
+        events("failed")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        showStackTraces = true
+        showCauses = true
+    }
+
     val recording = project.hasProperty("record.snapshots")
     // Real Compose rendering; the default stub graphics produce blank images.
     systemProperty("robolectric.graphicsMode", "NATIVE")

@@ -78,12 +78,17 @@ extension PendingHour {
             computedAtMillis: computedAtMillis,
             screenOnMs: screenOnMs,
             unlockCount: unlockCount,
+            // Always false on iPhone: Screen Time counts foreground only, and
+            // no third-party API exposes another app's background playback. It
+            // means "not observable here", never "nothing played".
+            backgroundMeasured: false,
             apps: apps.map {
                 PendingAppFfi(
                     package: $0.package,
                     label: $0.label,
                     foregroundMs: $0.foregroundMs,
-                    launchCount: $0.launchCount
+                    launchCount: $0.launchCount,
+                    backgroundMs: 0
                 )
             }
         )

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import {
   AppError,
   clearErrorLog,
+  copyDetails,
   fromProblem,
   fromTransport,
   recentErrors,
@@ -68,5 +69,58 @@ describe('AppError', () => {
     })
     expect(error.endpoint).toBe('/v1/children')
     expect(error.code).toBe('SZ-E707')
+  })
+})
+
+describe('copyDetails', () => {
+  beforeEach(() => clearErrorLog())
+
+  it('leads with the code and reference, exactly as they appear on screen', () => {
+    const error = fromProblem(
+      { type: 't', title: 't', status: 502, detail: 'bad gateway', code: 'SZ-E504', ref: '7f3a9c' },
+      { endpoint: '/v1/children', httpStatus: 502 },
+    )
+    const [first] = copyDetails(error).split('\n')
+    expect(first).toBe('SZ-E504 · 7f3a9c')
+  })
+
+  it('carries the version, the surface, the endpoint and the status', () => {
+    const error = fromProblem(
+      { type: 't', title: 't', status: 502, detail: 'x', code: 'SZ-E504', ref: '7f3a9c' },
+      { endpoint: '/v1/children', httpStatus: 502 },
+    )
+    const text = copyDetails(error)
+    expect(text).toContain('web')
+    expect(text).toContain('GET /v1/children → 502')
+  })
+
+  it('never carries the host, an email or a child name', () => {
+    const error = fromProblem(
+      {
+        type: 't',
+        title: 't',
+        status: 404,
+        detail: 'anna@example.ch asked for Mia',
+        code: 'SZ-E201',
+        ref: 'abc123',
+      },
+      { endpoint: 'https://home.example.ch/v1/children/mia-id', httpStatus: 404 },
+    )
+    const text = copyDetails(error)
+    expect(text).not.toContain('home.example.ch')
+    expect(text).not.toContain('anna@example.ch')
+    expect(text).not.toContain('Mia')
+  })
+
+  it('lists what failed before it, because "it has been failing all morning" is the useful part', () => {
+    fromTransport(new TypeError('a'), { endpoint: '/v1/one' })
+    fromTransport(new TypeError('b'), { endpoint: '/v1/two' })
+    const latest = fromTransport(new TypeError('c'), { endpoint: '/v1/three' })
+
+    const text = copyDetails(latest)
+    expect(text).toContain('/v1/one')
+    expect(text).toContain('/v1/two')
+    // The newest is the header block, not a repeat in the list.
+    expect(text.match(/\/v1\/three/g)).toHaveLength(1)
   })
 })

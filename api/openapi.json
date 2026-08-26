@@ -668,6 +668,32 @@
           }
         ]
       }
+    },
+    "/v1/waitlist": {
+      "post": {
+        "tags": [
+          "waitlist"
+        ],
+        "operationId": "join",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WaitlistRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "On the list — also the answer when the address was already on it"
+          },
+          "422": {
+            "description": "Not an email address, or a language the site does not speak"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1280,6 +1306,22 @@
           },
           "tz": {
             "type": "string"
+          }
+        }
+      },
+      "WaitlistRequest": {
+        "type": "object",
+        "required": [
+          "email",
+          "locale"
+        ],
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string",
+            "description": "One of `de`, `fr`, `it`, `en`."
           }
         }
       }

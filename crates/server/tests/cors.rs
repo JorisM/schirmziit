@@ -148,3 +148,92 @@ async fn more_than_one_origin_can_be_allowed(pool: PgPool) {
         Some(old),
     );
 }
+
+const SITE: &str = "https://www.schirmziit.ch";
+
+fn waitlist_preflight(origin: &str) -> Request<Body> {
+    Request::builder()
+        .method("OPTIONS")
+        .uri("/v1/waitlist")
+        .header(header::ORIGIN, origin)
+        .header(header::ACCESS_CONTROL_REQUEST_METHOD, "POST")
+        .header(header::ACCESS_CONTROL_REQUEST_HEADERS, "content-type")
+        .body(Body::empty())
+        .unwrap()
+}
+
+fn waitlist_post(origin: &str) -> Request<Body> {
+    Request::builder()
+        .method("POST")
+        .uri("/v1/waitlist")
+        .header(header::ORIGIN, origin)
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(
+            serde_json::json!({ "email": "parent@example.com", "locale": "de" }).to_string(),
+        ))
+        .unwrap()
+}
+
+#[sqlx::test]
+async fn the_waiting_list_is_open_to_any_origin_but_never_with_credentials(pool: PgPool) {
+    // The marketing site is a third origin, and it must never join
+    // DASHBOARD_ORIGINS: that list grants a credentialed read of a signed-in
+    // parent's family, and a page that shows nobody's data has no business
+    // holding it. A public write with no cookie can take `*` instead.
+    let response = app(state(pool, &[DASHBOARD]))
+        .oneshot(waitlist_preflight(SITE))
+        .await
+        .unwrap();
+
+    assert!(response.status().is_success(), "{:?}", response.status());
+    let headers = response.headers();
+    assert_eq!(
+        headers
+            .get(header::ACCESS_CONTROL_ALLOW_ORIGIN)
+            .map(|v| v.to_str().unwrap()),
+        Some("*"),
+    );
+    assert!(
+        headers
+            .get(header::ACCESS_CONTROL_ALLOW_CREDENTIALS)
+            .is_none(),
+        "a wildcard origin plus credentials is exactly the pairing that would \
+         make this dangerous — and browsers refuse it anyway"
+    );
+}
+
+#[sqlx::test]
+async fn the_wildcard_does_not_leak_onto_a_data_route(pool: PgPool) {
+    let response = app(state(pool, &[DASHBOARD]))
+        .oneshot(get("/v1/me", SITE))
+        .await
+        .unwrap();
+
+    assert!(
+        response
+            .headers()
+            .get(header::ACCESS_CONTROL_ALLOW_ORIGIN)
+            .is_none(),
+        "the site's origin is allowed to sign up for the waiting list, nothing else"
+    );
+}
+
+#[sqlx::test]
+async fn the_waiting_list_answers_with_exactly_one_grant(pool: PgPool) {
+    // Two CORS layers over one route send two Access-Control-Allow-Origin
+    // headers, and a browser treats that as no grant at all.
+    let response = app(state(pool, &[DASHBOARD]))
+        .oneshot(waitlist_post(SITE))
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::CREATED);
+    assert_eq!(
+        response
+            .headers()
+            .get_all(header::ACCESS_CONTROL_ALLOW_ORIGIN)
+            .iter()
+            .count(),
+        1,
+    );
+}

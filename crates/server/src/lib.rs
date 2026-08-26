@@ -90,7 +90,32 @@ fn build(state: AppState, rate_limit: bool) -> Router {
         auth::routes::router()
     };
 
-    Router::new()
+    // The waiting list is the only write on this API that no account owns, so a
+    // per-IP limiter is the only thing standing between it and a script. One
+    // address every 20 seconds after a burst of five: a rejected typo spends a
+    // token too, and somebody correcting their address twice must not be locked
+    // out for a minute. Three a minute sustained is still useless for filling a
+    // table.
+    let waitlist_routes = if rate_limit {
+        let public = Arc::new(
+            GovernorConfigBuilder::default()
+                .period(std::time::Duration::from_secs(20))
+                .burst_size(5)
+                .key_extractor(SmartIpKeyExtractor)
+                .finish()
+                .expect("valid governor config"),
+        );
+        routes::waitlist::router().layer(GovernorLayer { config: public })
+    } else {
+        routes::waitlist::router()
+    };
+
+    // Everything a family's data flows through, behind the credentialed
+    // allow-list. `Router::layer` wraps only what is already on the router, so
+    // the waiting list merged afterwards keeps its own, different grant — and
+    // gets exactly one, instead of two `Access-Control-Allow-Origin` headers
+    // that a browser reads as none.
+    let family_routes = Router::new()
         .route("/healthz", get(healthz))
         .merge(auth_routes)
         .merge(routes::children::router())
@@ -99,7 +124,10 @@ fn build(state: AppState, rate_limit: bool) -> Router {
         .merge(routes::usage::router())
         .merge(routes::purge::router())
         .fallback(static_files::handler)
-        .layer(cors_layer(&state.config.dashboard_origins))
+        .layer(cors_layer(&state.config.dashboard_origins));
+
+    family_routes
+        .merge(waitlist_routes.layer(waitlist_cors_layer()))
         .with_state(state)
 }
 
@@ -122,6 +150,20 @@ fn cors_layer(origins: &[String]) -> CorsLayer {
         .allow_credentials(true)
         .allow_methods([Method::GET, Method::POST, Method::DELETE, Method::OPTIONS])
         .allow_headers([header::CONTENT_TYPE, header::AUTHORIZATION])
+}
+
+/// The grant for the public waiting list, and only for it.
+///
+/// `Any` is safe here precisely because there are no credentials: the route
+/// reads no cookie, no bearer token, and returns nothing about anyone. The
+/// alternative — putting the marketing site into `DASHBOARD_ORIGINS` — would
+/// hand a page that shows nobody's data a credentialed read of every family's,
+/// which is a bad trade for one form.
+fn waitlist_cors_layer() -> CorsLayer {
+    CorsLayer::new()
+        .allow_origin(AllowOrigin::any())
+        .allow_methods([Method::POST, Method::OPTIONS])
+        .allow_headers([header::CONTENT_TYPE])
 }
 
 async fn healthz() -> Json<serde_json::Value> {

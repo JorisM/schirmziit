@@ -42,7 +42,9 @@ codes remain for when the parent is not there to sign in.
    child only, no id in the path — and a device must never read anything else
    (`/v1/children` with a bearer token is 401 and there is a test for it). Every other
    parent route still returns 401 for a device token, and `crates/server/tests/tenancy.rs`
-   proves it.
+   proves it. `POST /v1/waitlist` is the one route no family owns at all: a public
+   write, no session, nothing readable back, and its own wildcard CORS grant so the
+   marketing site never has to join `DASHBOARD_ORIGINS`.
 3. **Nothing that can lose a day.** The queue only drops an hour the server accepted or
    permanently rejected; an unparseable response (captcha, proxy page) must throw, never
    read as "all accepted". A recomputed hour never replaces a fuller one — that bug
@@ -184,4 +186,4 @@ is its budget.
 | `ios/` | One app, two roles; everything testable lives in `SchirmziitKit` |
 | `site/` | Astro product and docs site |
 | `e2e/` | Maestro journeys + `seed.nu` for a throwaway instance |
-| `deploy/` | docker-compose for self-hosters |
+| `deploy/` | docker-compose for self-hosters, change into ../home-network to run deploy commands |

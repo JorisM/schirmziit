@@ -10,6 +10,7 @@ export const de: Strings = {
     help: 'Wie funktioniert das?',
     signOut: 'Abmelden',
     language: 'Sprache',
+    cancel: 'Abbrechen',
   },
 
   login: {
@@ -29,6 +30,10 @@ export const de: Strings = {
     addPlaceholder: 'Name, z. B. Lena',
     todayTotal: 'heute',
     openChild: 'Details ansehen',
+    remove: 'Entfernen',
+    removeBody:
+      'Das Handy hört sofort auf zu melden, und die Zahlen werden nicht mehr angezeigt. Das kannst du nicht rückgängig machen.',
+    removeConfirm: 'Ja, entfernen',
   },
 
   child: {
@@ -77,6 +82,9 @@ export const de: Strings = {
     neverReported: 'hat sich noch nie gemeldet',
     lastSeen: 'Zuletzt gemeldet',
     revoke: 'Verbindung trennen',
+    revokeBody:
+      'Dieses Handy hört sofort auf zu melden. Die bisher gesammelten Zahlen bleiben.',
+    revokeConfirm: 'Ja, trennen',
     revoked: 'getrennt',
     addDevice: 'Handy verbinden',
     pairTitle: 'Handy verbinden',

@@ -65,6 +65,9 @@ struct AgentMyTimeView: View {
                         L(model.mySelectedDay == today ? "child.total" : "child.selected")
                             .font(.subheadline)
                             .foregroundStyle(Palette.inkMuted)
+                        // Deliberately not a count-up: the parent's list celebrates
+                        // the habit of looking, but a number racing upward reads as a
+                        // score to the child it describes.
                         Text(verbatim: Formatting.duration(Int(truncatingIfNeeded: day.totalMs)))
                             .font(.system(size: 40, weight: .bold, design: .rounded))
                             .monospacedDigit()

@@ -16,6 +16,7 @@
 "children.title" = "Kinder";
 "children.empty" = "Noch kein Kind";
 "children.empty.hint" = "Lege in der Übersicht ein Kind an und verbinde dann dessen Handy.";
+"children.todayTotal" = "heute";
 
 "child.total" = "Bildschirmzeit heute";
 "child.unlocks %lld" = "%lld Mal entsperrt";

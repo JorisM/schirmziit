@@ -6,6 +6,8 @@ struct DayStripView: View {
     let days: [(day: String, ms: Int)]
     let selected: String
     let onSelect: (String) -> Void
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var grown = false
 
     private var busiest: Int { days.map(\.ms).max() ?? 0 }
 
@@ -14,7 +16,7 @@ struct DayStripView: View {
             L("child.history.title").font(.headline)
 
             HStack(alignment: .bottom, spacing: 3) {
-                ForEach(days, id: \.day) { entry in
+                ForEach(Array(days.enumerated()), id: \.element.day) { index, entry in
                     let share = busiest > 0 ? Double(entry.ms) / Double(busiest) : 0
                     Button { onSelect(entry.day) } label: {
                         VStack(spacing: 4) {
@@ -27,6 +29,14 @@ struct DayStripView: View {
                                     RoundedRectangle(cornerRadius: 3, style: .continuous)
                                         .strokeBorder(entry.day == selected ? Palette.inkMuted : .clear, lineWidth: 2)
                                 )
+                                .scaleEffect(y: grown ? 1 : 0.2, anchor: .bottom)
+                                .animation(
+                                    reduceMotion
+                                        ? nil
+                                        : .easeOut(duration: Motion.base)
+                                            .delay(Motion.staggerDelay(index)),
+                                    value: grown
+                                )
                             Text(verbatim: String(entry.day.suffix(2)))
                                 .font(.caption2.monospaced())
                                 .foregroundStyle(Palette.inkFaint)
@@ -38,6 +48,7 @@ struct DayStripView: View {
                     .accessibilityAddTraits(entry.day == selected ? [.isSelected] : [])
                 }
             }
+            .onAppear { grown = true }
 
             L("child.history.help").font(.caption).foregroundStyle(Palette.inkMuted)
         }

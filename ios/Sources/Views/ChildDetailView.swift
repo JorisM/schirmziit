@@ -9,6 +9,9 @@ struct ChildDetailView: View {
     @State var stripError: String?
     @State private var selected = ISO8601DateFormatter.dayOnly.string(from: Date())
     @State private var errorText: String?
+    // Owned here, not by DayRibbonView, so a List row recycle during scroll
+    // doesn't replay the fill flourish — see DayRibbonView.filledOverride.
+    @State private var ribbonFilled = false
 
     private static let stripDays = 14
 
@@ -78,7 +81,13 @@ struct ChildDetailView: View {
                 }
 
                 Section {
-                    DayRibbonView(totals: usage.deviceTotals).padding(.vertical, 4)
+                    // This screen's one flourish is the ribbon fill; on web the
+                    // equivalent slot is the background-listening wave
+                    // (web/src/components/DayRibbon.tsx explains that side) —
+                    // whoever brings background listening to iOS should not
+                    // also animate this ribbon at the same time, or both lose.
+                    DayRibbonView(totals: usage.deviceTotals, filledOverride: $ribbonFilled)
+                        .padding(.vertical, 4)
                 }
 
                 if !usage.series.isEmpty {
@@ -122,7 +131,9 @@ struct ChildDetailView: View {
             }
         }
         .navigationTitle(child.displayName)
-        .refreshable { await load() }
+        // resetting: false — pull-to-refresh must keep the loaded numbers on
+        // screen while it re-fetches, not blank a loaded day back to skeletons.
+        .refreshable { await load(resetting: false) }
         .task { await loadStrip() }
         // id: selected — selecting a day re-issues the day request and nothing
         // else. The strip is fourteen days of rows; re-fetching it on every tap
@@ -134,11 +145,13 @@ struct ChildDetailView: View {
     // main-actor callers) rather than leaving the isolation inferred: both
     // methods assign into `@State`, which SwiftUI expects touched from there.
     @MainActor
-    func load() async {
+    func load(resetting: Bool = true) async {
         // The previous day's numbers must not sit under a new day's heading while
         // the request is in flight: tapping Tuesday and reading Monday's total is
-        // a wrong number on screen, not merely a slow one.
-        usage = nil
+        // a wrong number on screen, not merely a slow one. Pull-to-refresh is a
+        // different case — it re-fetches the same day, so blanking here would
+        // reset a loaded day back to skeletons for no reason.
+        if resetting { usage = nil }
         switch await Self.fetchUsage(client: client, childId: child.id, from: selected, to: selected, bucket: "hour") {
         case .success(let response):
             usage = response

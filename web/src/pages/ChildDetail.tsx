@@ -8,7 +8,7 @@ import { BackgroundWave } from '../components/BackgroundWave'
 import { DayRibbon } from '../components/DayRibbon'
 import { DayStrip } from '../components/DayStrip'
 import { DeviceStatus } from '../components/DeviceStatus'
-import { RibbonSkeleton, RowsSkeleton, StripSkeleton } from '../components/Skeleton'
+import { HeroSkeleton, RibbonSkeleton, RowsSkeleton, StripSkeleton } from '../components/Skeleton'
 import { formatDuration, useI18n } from '../i18n'
 
 type UsageResponse = components['schemas']['UsageResponse']
@@ -142,7 +142,7 @@ export function ChildDetail({ childId }: { childId: string }) {
             </dl>
           </>
         ) : (
-          <RowsSkeleton />
+          <HeroSkeleton />
         )}
       </section>
 

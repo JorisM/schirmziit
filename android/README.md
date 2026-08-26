@@ -36,6 +36,48 @@ lands so a stale response from an earlier tap is dropped rather than
 overwriting a newer selection, and retry re-issues the load for whichever day
 is still `pendingDay`.
 
+## Background listening
+
+Media playing **while the screen is off**, per app, per hour. A second measure
+next to screen time, never folded into it: `background_ms` on each app row,
+`background_measured` on each hour.
+
+**Why MediaSession, behind a grant.** `MediaSessionManager.getActiveSessions()`
+is the only public API that says *which app* is playing, and it requires the
+notification-listener grant the user makes in Settings. The alternatives were
+tried on paper and rejected: `UsageEvents.FOREGROUND_SERVICE_START/STOP` needs
+no new grant but carries no service *type*, so a 40-minute podcast and a
+40-minute backup are indistinguishable; `AudioManager.getActivePlaybackConfigurations()`
+keeps `getClientUid()` as `@SystemApi`, so a normal app learns that audio is
+playing and never whose.
+
+`PlaybackListener` is a `NotificationListenerService` because the *system* binds
+and restarts it — no foreground service of ours, no battery budget spent keeping
+a process alive. On `onListenerConnected` it snapshots what is already playing,
+or an audiobook that started before a rebind would never be counted.
+
+**Notifications are never read.** `onNotificationPosted` and
+`onNotificationRemoved` are empty overrides, and `PlaybackReader`'s type surface
+is `(package, playing)` — there is no field a track title could travel in.
+`PlaybackReaderTest` asserts that field list, and `scripts/check-no-content.sh`
+(wired into `just android-check`) fails the build if any main source reaches for
+`MediaMetadata`, notification content, or lets either callback stop being empty.
+
+**Declining is a supported end state**, not a broken setup. One dismissible card
+on the status screen explains the grant; say no and the phone reports
+`background_measured = false` forever, which every surface renders as "not
+counted here" rather than as a zero. iPhones report the same false: Screen Time
+counts foreground only and no third-party API exposes another app's playback.
+
+**Screen state.** `EventMapper` maps `SCREEN_INTERACTIVE` to `ScreenOn` purely
+for this: `KEYGUARD_HIDDEN` does not fire when the screen wakes already
+unlocked, so without it a stretch would never close. It is inert for foreground
+sessions — a `RESUMED` always follows — and there is a core test pinning that.
+
+The stretch itself is stitched in `crates/core`, not in Kotlin, and its state at
+a window boundary is carried in `playback_carry` (Room v2) exactly as the open
+foreground app is carried in `carry_over`.
+
 ## Toolchain (pinned, as installed 2026-08-21)
 
 | Tool | Version | Install |

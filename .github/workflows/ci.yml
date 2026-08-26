@@ -70,7 +70,10 @@ jobs:
       - run: cargo install cargo-ndk
       - run: cargo ndk -t arm64-v8a -t x86_64 -o android/app/src/main/jniLibs build -p schirmziit-core --release
       - run: cargo run --quiet --bin uniffi-bindgen -- generate --library target/aarch64-linux-android/release/libschirmziit_core.so --language kotlin --out-dir android/app/src/main/kotlin
-      # JVM tests load the core through JNA and need a host build.
+      # JVM tests load the core through JNA and need a host build. The build
+      # re-jars src/test/resources (testNativeLibs in app/build.gradle.kts):
+      # AGP drops **/*.so from the merged resource dir, so only the jar puts
+      # the .so on the unit test classpath.
       - run: cargo build -p schirmziit-core --release
       - run: mkdir -p android/app/src/test/resources/linux-x86-64 && cp target/release/libschirmziit_core.so android/app/src/test/resources/linux-x86-64/
       - name: Show the host library JNA has to load

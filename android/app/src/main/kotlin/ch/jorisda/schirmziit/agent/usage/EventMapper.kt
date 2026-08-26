@@ -18,6 +18,10 @@ object EventMapper {
             packageName?.let { RawEvent(atMillis, EventKind.Paused(it)) }
 
         UsageEvents.Event.SCREEN_NON_INTERACTIVE -> RawEvent(atMillis, EventKind.ScreenOff)
+        // Needed for background listening: KEYGUARD_HIDDEN does not fire when
+        // the screen wakes already unlocked, so without this a stretch would
+        // never close. Inert for foreground sessions — a RESUMED always follows.
+        UsageEvents.Event.SCREEN_INTERACTIVE -> RawEvent(atMillis, EventKind.ScreenOn)
         UsageEvents.Event.KEYGUARD_HIDDEN -> RawEvent(atMillis, EventKind.Unlock)
         else -> null
     }

@@ -6,7 +6,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class AppSplitTest {
-    private fun app(label: String, ms: Long) = AppTotalFfi(label, label, ms)
+    private fun app(label: String, ms: Long) = AppTotalFfi(label, label, ms, 0L)
 
     @Test
     fun `separates the apps under a minute from the ones above it`() {

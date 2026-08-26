@@ -2,9 +2,12 @@ package ch.jorisda.schirmziit.agent.sync
 
 import ch.jorisda.schirmziit.agent.core.CoreBridge
 import ch.jorisda.schirmziit.agent.core.OpenApp
+import ch.jorisda.schirmziit.agent.core.PlaybackCarry
+import ch.jorisda.schirmziit.agent.playback.PlaybackReader
 import ch.jorisda.schirmziit.agent.store.AgentSettings
 import ch.jorisda.schirmziit.agent.store.CarryOverRow
 import ch.jorisda.schirmziit.agent.store.PendingHourRow
+import ch.jorisda.schirmziit.agent.store.PlaybackCarryRow
 import ch.jorisda.schirmziit.agent.store.QueueDao
 import ch.jorisda.schirmziit.agent.store.RawEventRow
 import ch.jorisda.schirmziit.agent.usage.UsageSource
@@ -23,6 +26,12 @@ class Collector(
     private val source: UsageSource,
     private val dao: QueueDao,
     private val store: AgentSettings,
+    /**
+     * Null when background listening is not wired up at all (older builds and
+     * tests). Absent or ungranted both mean the same thing on the wire:
+     * background_measured = false, which reads as "we do not know".
+     */
+    private val playback: PlaybackReader? = null,
     private val nowMillis: () -> Long = System::currentTimeMillis,
     private val tz: () -> String = { java.util.TimeZone.getDefault().id },
 ) {
@@ -43,18 +52,26 @@ class Collector(
         dao.appendRaw(events.map { RawEventRow(atMillis = it.atMillis, json = it.kind.toString()) })
         dao.pruneRawBefore(now - RAW_RETENTION_MS)
 
+        val playbackCarry = dao.playbackCarry()
         val stitched = bridge.stitch(
             prevOpen = carry?.let { OpenApp(it.packageName, it.sinceMillis) },
+            prevPlayback = playbackCarry?.let {
+                PlaybackCarry(it.playing, it.screenOff, it.sinceMillis)
+            },
             events = events,
             windowEndMillis = now,
         )
 
-        val labels = source.labels(stitched.closed.map { it.packageName }.toSet())
+        val labels = source.labels(
+            (stitched.closed + stitched.background).map { it.packageName }.toSet(),
+        )
         val hours = bridge.bucket(
             sessions = stitched.closed,
+            background = stitched.background,
             unlockMillis = stitched.unlockMillis,
             tz = tz(),
             labels = labels,
+            backgroundMeasured = playback?.hasPermission() == true,
             computedAtMillis = now,
         )
 
@@ -74,6 +91,17 @@ class Collector(
         } else {
             dao.clearCarryOver()
         }
+
+        // Persisted even when nothing is playing: `screenOff` is state too, and
+        // losing it means the next window starts assuming the screen is on and
+        // silently skips a stretch that was already running.
+        dao.setPlaybackCarry(
+            PlaybackCarryRow(
+                playing = stitched.playback.playing,
+                screenOff = stitched.playback.screenOff,
+                sinceMillis = stitched.playback.sinceMillis,
+            ),
+        )
 
         return hours.size
     }
@@ -115,6 +143,7 @@ class Collector(
             computedAtMillis = java.time.Instant.parse(hour.getString("computed_at")).toEpochMilli(),
             screenOnMs = hour.getLong("screen_on_ms"),
             unlockCount = hour.getInt("unlock_count"),
+            backgroundMeasured = hour.optBoolean("background_measured", false),
             apps = (0 until apps.length()).map { index ->
                 val app = apps.getJSONObject(index)
                 PendingAppFfi(
@@ -122,6 +151,7 @@ class Collector(
                     label = app.getString("label"),
                     foregroundMs = app.getLong("foreground_ms"),
                     launchCount = app.getInt("launch_count"),
+                    backgroundMs = app.optLong("background_ms", 0L),
                 )
             },
         )

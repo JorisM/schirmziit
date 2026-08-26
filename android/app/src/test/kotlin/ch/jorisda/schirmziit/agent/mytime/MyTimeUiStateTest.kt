@@ -9,8 +9,8 @@ import org.junit.Test
 
 class MyTimeUiStateTest {
 
-    private val goodStrip = listOf(DayTotalFfi("2026-08-20", 60_000L))
-    private val goodDetail = DayDetailFfi(60_000L, 3, List(24) { 0L }, emptyList())
+    private val goodStrip = listOf(DayTotalFfi("2026-08-20", 60_000L, 0L))
+    private val goodDetail = DayDetailFfi(60_000L, 3, List(24) { 0L }, emptyList(), 0L, List(24) { 0L }, false)
     private val good = MyTime(goodStrip, goodDetail, "2026-08-20", failed = false)
     private val failure = MyTime(emptyList(), null, "2026-08-21", failed = true)
 

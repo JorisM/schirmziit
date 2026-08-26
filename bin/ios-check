@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# The iOS gate: unit tests and snapshot images, on a simulator, unsigned.
+#
+#   bin/ios-check
+#
+# There is a wrapper for this and not only `just ios-check` for the same reason
+# every other bin/* exists: outside the dev shell Homebrew's rust shadows rustup
+# and carries no iOS std, so `just ios-check` dies inside `ios-core` with
+# "can't find crate for `core` … the aarch64-apple-ios target may not be
+# installed" while `rustup target list --installed` lists that target. The dev
+# shell's toolchain has it. `bin/check ios` runs the same gate as part of the
+# whole set; this is the one gate on its own.
+source "$(dirname "${BASH_SOURCE[0]}")/_lib.sh"
+need_dev_shell "$@"
+need_xcode
+
+# The simulator name lives in the justfile, so recipe and precheck cannot drift.
+sim="$(just --justfile "$root/justfile" --working-directory "$root" --evaluate ios_sim)"
+
+# Check it before spending three minutes on the Rust core: a `-destination` that
+# names no installed simulator makes xcodebuild print every runtime it has and
+# call that an error, which reads like a broken project rather than a missing
+# device. The trailing " (" anchors the match to the whole name — without it
+# "iPhone 17" would match "iPhone 17 Pro".
+if ! apple_tool xcrun simctl list devices available | grep -qF -- "$sim ("; then
+  warn "no simulator named \"$sim\". Installed iPhones:"
+  apple_tool xcrun simctl list devices available \
+    | sed -n 's/^ *\(iPhone[^(]*[^ (]\) *(.*/    \1/p' | sort -u >&2
+  die "add it in Xcode (Window → Devices and Simulators → + ), or pick one of the above:
+    SCHIRMZIIT_IOS_SIM='iPhone 17' bin/ios-check"
+fi
+
+say "iOS gate on $sim"
+just --justfile "$root/justfile" --working-directory "$root" ios-check
+bold "→ iOS gate green"

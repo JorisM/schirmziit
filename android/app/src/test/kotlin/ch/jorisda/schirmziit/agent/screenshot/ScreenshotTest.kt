@@ -7,6 +7,7 @@ import ch.jorisda.schirmziit.agent.power.BatteryHint
 import ch.jorisda.schirmziit.agent.store.FakeAgentSettings
 import ch.jorisda.schirmziit.agent.ui.MyTimeScreen
 import ch.jorisda.schirmziit.agent.ui.StatusScreen
+import ch.jorisda.schirmziit.agent.ui.UnpairDialog
 import ch.jorisda.schirmziit.agent.ui.theme.SchirmziitTheme
 import ch.jorisda.schirmziit.core.AppTotalFfi
 import ch.jorisda.schirmziit.core.DayDetailFfi
@@ -91,6 +92,21 @@ class ScreenshotTest {
         shoot("status-background-de-light") {
             statusScreen(backgroundGranted = false, backgroundCardDismissed = false)
         }
+    }
+
+    // The dialog that stops this phone reporting. Two languages and both themes:
+    // it holds the longest sentence in the app above two text fields, which is
+    // the shape that overflows first.
+    @Test
+    @Config(qualifiers = LIGHT_DE)
+    fun `unpair dialog in german`() {
+        shoot("unpair-de-light") { UnpairDialog(onDismiss = {}, onUnpair = { _, _ -> error("not called") }, onUnpaired = {}) }
+    }
+
+    @Test
+    @Config(qualifiers = DARK_DE)
+    fun `unpair dialog in german dark`() {
+        shoot("unpair-de-dark") { UnpairDialog(onDismiss = {}, onUnpair = { _, _ -> error("not called") }, onUnpaired = {}) }
     }
 
     @Composable

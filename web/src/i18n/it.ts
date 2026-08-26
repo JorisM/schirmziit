@@ -18,8 +18,6 @@ export const it: Strings = {
     password: 'Password',
     submit: 'Accedi',
     working: 'Un momento…',
-    wrongCredentials: 'Questa e-mail o password non è corretta.',
-    unexpected: 'Non ha funzionato. Riprova.',
   },
 
   children: {
@@ -66,7 +64,6 @@ export const it: Strings = {
     tableView: 'Come tabella',
     historyTitle: 'Gli ultimi 14 giorni',
     historyHelp: 'Ogni barra è un giorno. Tocca una barra per vedere quel giorno nel dettaglio.',
-    historyError: 'Non è stato possibile caricare gli ultimi 14 giorni. Riprova tra poco.',
     today: 'Oggi',
     selectedHeading: 'Giorno selezionato',
   },
@@ -157,11 +154,14 @@ export const it: Strings = {
     ],
   },
 
-  errors: {
-    generic: 'Qualcosa è andato storto.',
-    notFound: 'Non trovato.',
-    offline: 'Nessuna connessione al server.',
+  errorPanel: {
+    retry: 'Riprova',
+    details: 'Dettagli',
+    copy: 'Copia i dettagli',
+    copied: 'Copiato',
+    reference: 'Codice di errore e riferimento',
   },
+
 
   units: { hoursShort: 'h', minutesShort: 'min', secondsShort: 's' },
 }

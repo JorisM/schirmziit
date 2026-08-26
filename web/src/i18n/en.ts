@@ -18,8 +18,6 @@ export const en: Strings = {
     password: 'Password',
     submit: 'Sign in',
     working: 'One moment…',
-    wrongCredentials: 'That email or password is not right.',
-    unexpected: 'That did not work. Try again.',
   },
 
   children: {
@@ -65,7 +63,6 @@ export const en: Strings = {
     tableView: 'As a table',
     historyTitle: 'The last 14 days',
     historyHelp: 'Each bar is one day. Tap a bar to look at that day.',
-    historyError: 'Could not load the last 14 days. Try again in a moment.',
     today: 'Today',
     selectedHeading: 'Selected day',
   },
@@ -156,11 +153,14 @@ export const en: Strings = {
     ],
   },
 
-  errors: {
-    generic: 'Something went wrong.',
-    notFound: 'Not found.',
-    offline: 'No connection to the server.',
+  errorPanel: {
+    retry: 'Try again',
+    details: 'Details',
+    copy: 'Copy details',
+    copied: 'Copied',
+    reference: 'Error code and reference',
   },
+
 
   units: { hoursShort: 'h', minutesShort: 'min', secondsShort: 's' },
 }

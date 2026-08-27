@@ -12,6 +12,12 @@ check: rust-check web-check
 renovate-check:
     bash scripts/check-renovate.sh
 
+# release-please writes the version into four files. This proves each of them is
+# still a place it can write to. Cheap and offline, unlike renovate-check, but
+# kept beside it because it is the same class of silent failure.
+release-check:
+    bash scripts/check-release-please.sh
+
 rust-check:
     cargo fmt --check
     cargo clippy --all-targets -- -D warnings

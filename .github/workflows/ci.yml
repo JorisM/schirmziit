@@ -47,6 +47,14 @@ jobs:
       # dependencies keep looking current because nothing reads them any more.
       - run: scripts/check-renovate.sh
 
+  release-config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      # Not that the config parses: that each of the four version strings it
+      # rewrites is still where it says it is, and that all of them agree.
+      - run: scripts/check-release-please.sh
+
   web:
     runs-on: ubuntu-latest
     steps:

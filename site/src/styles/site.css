@@ -166,6 +166,55 @@ main { padding: 3rem 0 4rem; }
 .yes li::marker { color: var(--ok); }
 .no li::marker { color: var(--urgent); }
 
+/*
+ * What-runs-where table. The glyph carries the status at a glance and the word
+ * next to it carries the same status for a screen reader and for anyone who
+ * does not read a tilde as "partly" — the word is hidden on narrow screens
+ * only, never removed.
+ */
+.matrix { overflow-x: auto; margin: 1rem 0 0.5rem; }
+.matrix table { border-collapse: collapse; width: 100%; min-width: 34rem; font-size: 0.92rem; }
+.matrix th, .matrix td { text-align: left; padding: 0.55rem 0.7rem; vertical-align: top; }
+.matrix thead th {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+  border-bottom: 1px solid var(--hairline);
+  font-weight: 600;
+}
+.matrix tbody tr.group th {
+  padding-top: 1.2rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.matrix tbody tr:not(.group) { border-top: 1px solid var(--hairline); transition: background 120ms ease; }
+.matrix tbody tr:not(.group):hover { background: var(--sunken); }
+.matrix tbody th[scope='row'] { font-weight: 500; max-width: 22rem; }
+.matrix .note {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--ink-muted);
+  font-weight: 400;
+  font-size: 0.85rem;
+}
+.matrix td.status { white-space: nowrap; }
+.matrix .mark { font-weight: 700; font-family: ui-monospace, monospace; }
+.matrix td.yes .mark, .legend .mark.yes { color: var(--ok); }
+.matrix td.partial .mark, .legend .mark.partial { color: var(--accent); }
+.matrix td.no .mark, .legend .mark.no { color: var(--urgent); }
+.matrix td.none .mark, .legend .mark.none { color: var(--ink-faint); }
+.matrix .word { color: var(--ink-muted); margin-left: 0.4rem; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 1rem; color: var(--ink-muted); font-size: 0.85rem; }
+.legend .mark { font-family: ui-monospace, monospace; }
+
+@media (max-width: 46rem) {
+  .matrix .word { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+}
+
 ol.steps { padding-left: 0; list-style: none; counter-reset: step; }
 ol.steps li { counter-increment: step; display: flex; gap: 0.9rem; margin-bottom: 0.9rem; }
 ol.steps li::before {

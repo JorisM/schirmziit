@@ -69,10 +69,55 @@ export const en: Site = {
     platformsBody: 'What works today — and what does not.',
     androidLabel: 'Android',
     androidBody:
-      'Complete: per-app time per hour, unlocks, the shape of the day. Android 8 and newer.',
+      'Complete: per-app time per hour, unlocks, the shape of the day. Android 8 and newer. Installed as an APK today, not in the Play Store yet.',
     iosLabel: 'iPhone',
     iosBody:
-      'Both roles work on iPhone now — a dashboard for parents, and now a view for the child too. Measuring screen time directly on an iPhone still needs an Apple entitlement we do not have — for now, only Android can be the phone being measured. We will say so here the moment that changes.',
+      'Both roles run on iPhone: the dashboard for parents, and now a view for the child too. An iPhone is measured as well — for that the app needs Apple’s Screen Time access, which Apple grants per app. It holds for our own test devices; for distribution through TestFlight or the App Store the approval is still outstanding. iOS 17 and newer.',
+    matrix: {
+      title: 'What runs where',
+      lead:
+        'Today’s state, row by row. “Not yet” means planned or blocked — the note says which.',
+      featureHeader: 'Feature',
+      columns: { android: 'Android phone', ios: 'iPhone', web: 'Dashboard in the browser' },
+      groups: { measure: 'Measuring on the child’s phone', view: 'Looking at it' },
+      legend: { yes: 'works', partial: 'partly', no: 'not yet' },
+      notApplicable: 'not intended here',
+      rows: {
+        appHours: { label: 'Per-app time, per hour' },
+        timeOfDay: { label: 'What time of day the phone was used' },
+        unlocks: {
+          label: 'Unlocks',
+          note: 'iOS has no unlock count. What is counted is how often the phone was picked up — the closest honest equivalent.',
+        },
+        background: {
+          label: 'Audio in the background, screen off',
+          note: 'On Android only if you allow notification access; iOS does not expose it. This time is never counted as screen time.',
+        },
+        appNames: {
+          label: 'App names instead of package names',
+          note: 'iOS withholds some names, and then the app’s identifier is shown.',
+        },
+        offline: { label: 'With no internet the figures wait on the phone' },
+        install: {
+          label: 'Installable without a developer machine',
+          note: 'Android: an APK today, no Play Store yet. iPhone: TestFlight and the App Store need Apple’s approval for distribution, which is still outstanding.',
+        },
+        roles: {
+          label: 'Parent and child role in one app',
+          note: 'The Android app is for the child’s phone only.',
+        },
+        overview14: { label: 'The last fourteen days at a glance' },
+        dayDetail: { label: 'One day, hour by hour' },
+        childOwnNumbers: { label: 'The child sees the same numbers on their own phone' },
+        manageChildren: { label: 'Add and remove a child' },
+        revokeDevice: { label: 'Disconnect a phone' },
+        helpLinks: {
+          label: 'Help and the Swiss advice services',
+          note: 'On iPhone the child’s side is still missing the link to Counselling 147.',
+        },
+        languages: { label: 'German, French, Italian, English' },
+      },
+    },
 
     openTitle: 'Free and checkable',
     openBody:

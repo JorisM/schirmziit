@@ -1,0 +1,59 @@
+---
+/**
+ * The what-runs-where table. Statuses come from `matrix.ts`, words from the
+ * locale — so this file decides only how a status looks.
+ *
+ * The glyph is decorative (`aria-hidden`); every cell carries the status in
+ * words for a screen reader, and the whole table scrolls inside its own box so
+ * a narrow phone never scrolls the page sideways.
+ */
+import { matrix, matrixColumns, type MatrixGroup, type MatrixStatus } from '../content/matrix'
+import { sites, type Locale } from '../content'
+
+interface Props { locale: Locale }
+const { locale } = Astro.props
+const t = sites[locale].home.matrix
+
+const glyph: Record<MatrixStatus, string> = { yes: '✓', partial: '~', no: '·' }
+const groups: MatrixGroup[] = ['measure', 'view']
+---
+<div class="reveal matrix">
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">{t.featureHeader}</th>
+        {matrixColumns.map((column) => <th scope="col" class="status">{t.columns[column]}</th>)}
+      </tr>
+    </thead>
+    {groups.map((group) => (
+      <tbody>
+        <tr class="group">
+          <th scope="colgroup" colspan={matrixColumns.length + 1}>{t.groups[group]}</th>
+        </tr>
+        {matrix.filter((row) => row.group === group).map((row) => (
+          <tr>
+            <th scope="row">
+              {t.rows[row.key].label}
+              {t.rows[row.key].note && <span class="note">{t.rows[row.key].note}</span>}
+            </th>
+            {matrixColumns.map((column) => {
+              const status = row.status[column]
+              return (
+                <td class:list={['status', status ?? 'none']}>
+                  <span class="mark" aria-hidden="true">{status ? glyph[status] : '–'}</span>
+                  <span class="word">{status ? t.legend[status] : t.notApplicable}</span>
+                </td>
+              )
+            })}
+          </tr>
+        ))}
+      </tbody>
+    ))}
+  </table>
+</div>
+<p class="legend">
+  {(['yes', 'partial', 'no'] as const).map((status) => (
+    <span><b class:list={['mark', status]} aria-hidden="true">{glyph[status]}</b> {t.legend[status]}</span>
+  ))}
+  <span><b class="mark none" aria-hidden="true">–</b> {t.notApplicable}</span>
+</p>

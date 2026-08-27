@@ -70,10 +70,55 @@ export const de: Site = {
     platformsBody: 'Was heute geht — und was nicht.',
     androidLabel: 'Android',
     androidBody:
-      'Vollständig: Nutzungszeit pro App und Stunde, Entsperrungen, Tagesverlauf. Ab Android 8.',
+      'Vollständig: Nutzungszeit pro App und Stunde, Entsperrungen, Tagesverlauf. Ab Android 8. Heute als APK installiert, noch nicht im Play Store.',
     iosLabel: 'iPhone',
     iosBody:
-      'Beide Rollen funktionieren jetzt auf dem iPhone — eine Übersicht für Eltern, und neu auch eine Ansicht fürs Kind selbst. Bildschirmzeit direkt auf einem iPhone zu messen braucht weiterhin eine Apple-Bewilligung, die wir noch nicht haben — vorerst kann nur ein Android-Handy gemessen werden. Wir sagen es hier, sobald sich das ändert.',
+      'Beide Rollen laufen auf dem iPhone: die Übersicht für Eltern, und neu auch eine Ansicht fürs Kind selbst. Gemessen wird auf dem iPhone ebenfalls — dafür braucht die App Apples Bildschirmzeit-Zugriff, den Apple pro App bewilligt. Für unsere eigenen Testgeräte gilt er, für die Verteilung über TestFlight oder den App Store steht die Bewilligung noch aus. Ab iOS 17.',
+    matrix: {
+      title: 'Was wo läuft',
+      lead:
+        'Der Stand von heute, Zeile für Zeile. «Noch nicht» heisst geplant oder blockiert — die Notiz sagt, woran es liegt.',
+      featureHeader: 'Funktion',
+      columns: { android: 'Android-Handy', ios: 'iPhone', web: 'Übersicht im Browser' },
+      groups: { measure: 'Messen auf dem Kinderhandy', view: 'Anschauen' },
+      legend: { yes: 'läuft', partial: 'teilweise', no: 'noch nicht' },
+      notApplicable: 'nicht vorgesehen',
+      rows: {
+        appHours: { label: 'Nutzungszeit pro App und Stunde' },
+        timeOfDay: { label: 'Wann am Tag das Handy benutzt wurde' },
+        unlocks: {
+          label: 'Entsperrungen',
+          note: 'iOS zählt keine Entsperrungen. Gezählt wird, wie oft das Handy zur Hand genommen wurde — die nächstliegende ehrliche Entsprechung.',
+        },
+        background: {
+          label: 'Ton im Hintergrund, bei dunklem Bildschirm',
+          note: 'Auf Android nur, wenn du den Benachrichtigungszugriff erlaubst; iOS gibt diese Zeit nicht her. Sie wird nie zur Bildschirmzeit gezählt.',
+        },
+        appNames: {
+          label: 'App-Namen statt Paketnamen',
+          note: 'iOS gibt manche Namen nicht heraus, dann steht die Kennung der App da.',
+        },
+        offline: { label: 'Ohne Internet warten die Werte auf dem Handy' },
+        install: {
+          label: 'Ohne Entwickler-Rechner installierbar',
+          note: 'Android: heute eine APK, noch kein Play Store. iPhone: TestFlight und App Store brauchen Apples Bewilligung für die Verteilung, die noch aussteht.',
+        },
+        roles: {
+          label: 'Eltern- und Kind-Rolle in einer App',
+          note: 'Die Android-App ist nur für das Kinderhandy.',
+        },
+        overview14: { label: 'Übersicht über 14 Tage' },
+        dayDetail: { label: 'Ein Tag, Stunde für Stunde' },
+        childOwnNumbers: { label: 'Das Kind sieht auf seinem Handy dieselben Zahlen' },
+        manageChildren: { label: 'Kind anlegen und entfernen' },
+        revokeDevice: { label: 'Ein Handy trennen' },
+        helpLinks: {
+          label: 'Hilfe und Schweizer Beratungsstellen',
+          note: 'Auf dem iPhone fehlt im Kinder-Bereich noch der Link auf die Beratung 147.',
+        },
+        languages: { label: 'Deutsch, Französisch, Italienisch, Englisch' },
+      },
+    },
 
     openTitle: 'Frei und überprüfbar',
     openBody:

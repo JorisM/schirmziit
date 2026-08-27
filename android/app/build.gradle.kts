@@ -61,9 +61,11 @@ val testNativeLibs by tasks.registering(Jar::class) {
     }
 }
 
-// Roborazzi is used as a plain library: its Gradle plugin (1.53) still asks AGP
-// for `TestedExtension`, which AGP 9 removed. The plugin only adds convenience
-// tasks, and the library reads these system properties directly.
+// Roborazzi is used as a plain library: its Gradle plugin asked AGP for
+// `TestedExtension` up to 1.53, which AGP 9 removed. 1.73 no longer does, so
+// adopting the plugin is possible again — a separate change, since it moves
+// record and verify off these system properties. The library reads them
+// directly.
 //
 //   ./gradlew test                          verify against the committed images
 //   ./gradlew test -Precord.snapshots       re-record them, deliberately
@@ -83,6 +85,17 @@ tasks.withType<Test>().configureEach {
     systemProperty("robolectric.graphicsMode", "NATIVE")
     systemProperty("roborazzi.test.record", recording.toString())
     systemProperty("roborazzi.test.verify", (!recording).toString())
+
+    // The goldens are read from the filesystem at runtime, not off the
+    // classpath, so Gradle saw no input change when one was edited: the task
+    // stayed UP-TO-DATE and the comparison never ran — a green gate on an image
+    // nothing had looked at. Declaring the directory is what re-runs the check.
+    // Not while recording: then it is the output, not the input.
+    if (!recording) {
+        inputs.dir(layout.projectDirectory.dir("src/test/snapshots"))
+            .withPropertyName("roborazziGoldens")
+            .withPathSensitivity(PathSensitivity.RELATIVE)
+    }
 }
 
 dependencies {

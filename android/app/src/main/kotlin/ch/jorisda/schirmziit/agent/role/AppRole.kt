@@ -23,6 +23,33 @@ class InMemoryRoleStore(private var role: AppRole? = null) : RoleStore {
     override fun clear() { role = null }
 }
 
+/**
+ * What this phone is, answering from what it already holds when nobody has been
+ * asked yet.
+ *
+ * The migration this exists for: every phone enrolled before the role question
+ * shipped has a device token and no stored role. Asking such a phone would put a
+ * child that is already reporting one tap away from *My phone*, and
+ * [adoptRole] would then do exactly what it is supposed to do — destroy the
+ * device token — leaving the child silently not reporting and needing to be
+ * enrolled again. An enrolled phone has already answered the question by being
+ * enrolled.
+ *
+ * The answer is written down rather than re-inferred each launch, so the phone
+ * behaves identically after it is later unpaired: without persisting it, an
+ * unpaired child phone would fall back to the role question, which is right
+ * exactly once and confusing thereafter.
+ *
+ * A stored role always wins. A parent phone holds no device token, so inference
+ * alone would call it a child — but only ever in the absence of an answer.
+ */
+fun resolveRole(store: RoleStore, agent: AgentSettings): AppRole? {
+    store.load()?.let { return it }
+    if (!agent.isPaired) return null
+    store.save(AppRole.Child)
+    return AppRole.Child
+}
+
 /** Where the app goes once the role is known. */
 sealed interface Destination {
     data object RoleChoice : Destination

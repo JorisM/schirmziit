@@ -76,4 +76,59 @@ class RoleGateTest {
         assertNull(agent.deviceToken)
         assertNull(parent.cookie)
     }
+
+    // ─── upgrading a phone that was already reporting ─────────────────────
+
+    @Test
+    fun `a phone that is already enrolled is a child phone, and is not asked`() {
+        // The upgrade path. Every phone installed before the role question
+        // existed has a device token and no stored role, so asking would put a
+        // working child phone one tap away from `adoptRole(Parent)` — which
+        // calls `unpair()` and destroys that token. The child then stops
+        // reporting silently and has to be enrolled again.
+        val agent = FakeAgentSettings(baseUrl = "https://api.example.ch", deviceToken = "tok")
+        val store = InMemoryRoleStore(null)
+
+        assertEquals(AppRole.Child, resolveRole(store, agent))
+    }
+
+    @Test
+    fun `resolving the role writes it down, so the question is asked once at most`() {
+        val agent = FakeAgentSettings(baseUrl = "https://api.example.ch", deviceToken = "tok")
+        val store = InMemoryRoleStore(null)
+
+        resolveRole(store, agent)
+
+        assertEquals(
+            "an inferred role has to persist, or every launch re-infers it",
+            AppRole.Child,
+            store.load(),
+        )
+    }
+
+    @Test
+    fun `a fresh install is still asked what it is`() {
+        // Nothing to infer from: no token, no role. This is the only case the
+        // role question is for.
+        assertNull(resolveRole(InMemoryRoleStore(null), FakeAgentSettings()))
+    }
+
+    @Test
+    fun `a stored role always wins over what is inferred`() {
+        // A parent phone holds no device token, so inference would say "child"
+        // for one — but only in the absence of an answer. An explicit choice is
+        // never second-guessed.
+        assertEquals(
+            AppRole.Parent,
+            resolveRole(InMemoryRoleStore(AppRole.Parent), FakeAgentSettings()),
+        )
+        // And a half-migrated phone that somehow holds both does not flip back.
+        assertEquals(
+            AppRole.Parent,
+            resolveRole(
+                InMemoryRoleStore(AppRole.Parent),
+                FakeAgentSettings(baseUrl = "https://x", deviceToken = "tok"),
+            ),
+        )
+    }
 }

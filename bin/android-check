@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# The Android gate: the no-content scan, then the JVM unit tests and the
+# Roborazzi screenshots. Robolectric, so no emulator and no phone.
+#
+#   bin/android-check
+#
+# There is a wrapper for this and not only `just android-check` because the gate
+# needs four things off the host: rustup's Android std (Homebrew's rust shadows
+# it and `cargo ndk` then dies on "can't find crate for `core`" while
+# `rustup target list` swears the target is installed), the NDK, the SDK, and a
+# jdk. The dev shell has all four; a bare terminal has whatever the shell rc set
+# up years ago. `bin/check android` runs the same gate as part of the whole set;
+# this is the one gate on its own.
+source "$(dirname "${BASH_SOURCE[0]}")/_lib.sh"
+need_dev_shell "$@"
+
+[ $# -eq 0 ] || die "usage: bin/android-check
+    To run one test class, or to re-record, go through gradle directly:
+      cd android && ./gradlew test --tests '*HourStoreTest'
+      bin/record android"
+
+say "Android gate"
+just --justfile "$root/justfile" --working-directory "$root" android-check
+bold "→ Android gate green"

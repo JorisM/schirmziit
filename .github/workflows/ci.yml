@@ -82,3 +82,10 @@ jobs:
           file android/app/src/test/resources/linux-x86-64/libschirmziit_core.so
       - run: ./gradlew testDebugUnitTest
         working-directory: android
+      # A screenshot failure is unreadable without the image. Keep the compare
+      # PNGs from a red build so the diff can be looked at, not guessed at.
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: roborazzi
+          path: android/app/build/outputs/roborazzi/

@@ -81,13 +81,34 @@ export type Strings = {
     revokeBody: string
     revokeConfirm: string
     revoked: string
-    addDevice: string
     pairTitle: string
     pairStep1: string
     pairStep2: string
     pairStep3: string
     codeExpires: string
     codeLabel: string
+    pairCreateCode: string
+    pairWorking: string
+    pairNewCode: string
+    pairServerLabel: string
+    pairServerHint: string
+    pairExpired: string
+  }
+
+  /**
+   * Deleting a child's data. The privacy page promises it and the help screen
+   * repeats it, so the dashboard has to be able to do it.
+   */
+  data: {
+    title: string
+    body: string
+    delete: string
+    deleteBody: string
+    deleteConfirm: string
+    deleted: string
+    deletedHours: string
+    deletedDeviceHours: string
+    deletedDays: string
   }
 
   help: {

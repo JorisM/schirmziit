@@ -111,9 +111,16 @@ export const fr: Site = {
         childOwnNumbers: { label: 'L’enfant voit les mêmes chiffres sur son téléphone' },
         manageChildren: { label: 'Ajouter et retirer un enfant' },
         revokeDevice: { label: 'Déconnecter un téléphone' },
+        pairingCode: {
+          label: 'Créer un code de connexion pour le téléphone d’un enfant',
+          note: 'Dans le tableau de bord du navigateur. Pas encore dans le mode parent sur iPhone — là, tu connectes le téléphone de l’enfant avec ton login parent, sans code.',
+        },
+        deleteData: {
+          label: 'Supprimer les chiffres enregistrés d’un enfant',
+          note: 'Supprime les chiffres horaires et les totaux journaliers et indique combien de lignes ont disparu. L’enfant reste connecté et continue d’envoyer. Pas encore dans le mode parent sur iPhone.',
+        },
         helpLinks: {
           label: 'Aide et services de conseil suisses',
-          note: 'Sur iPhone, le côté enfant n’a pas encore le lien vers le Conseil 147.',
         },
         languages: { label: 'Allemand, français, italien, anglais' },
       },

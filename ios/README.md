@@ -80,6 +80,14 @@ of reading as an empty day. A `myTimeBusy` guard drops an overlapping call, and
 a failed load keeps whatever numbers are already on screen — only the error
 line and a retry button appear alongside them.
 
+**The child's side links Beratung 147.** `AgentHelpView`'s last section carries
+the same wording the Android agent has always had, in all four languages, with
+the link out to 147.ch — the one number on a child's phone that does not report
+back to the parents. It is the last section of a `List`, so it sits below the
+fold: `screens.child-help-*` show nothing of it, and
+`AgentLocalizationTests.testEveryLanguageOffersHelpOutsideTheFamily` is what
+holds the copy in place instead.
+
 **What Apple still has to grant.** Family Controls is an entitlement Apple
 grants per bundle id. A paid Apple Developer Program membership signs the
 **Development** variant — and App Groups — so on our own devices the child role

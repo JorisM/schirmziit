@@ -39,18 +39,20 @@ measured only by someone who builds and installs the app themselves.
 | Add and remove a child | `–` | ✓ `ChildrenView` | ✓ `Children` |
 | Disconnect a device | `–` | ✓ `ChildDetailView.revokeDevice` | ✓ `ChildDetail` |
 | Enrol a child phone without typing a code | ✓ `ParentSetup` | ✓ parent session → device token | `–` |
-| Help and the four Swiss services | ✓ incl. Beratung 147 | `~` parent `HelpView` yes; the child side has **no 147 link yet** | ✓ `Help` |
+| Mint a pairing code for a child phone | `–` | `·` | ✓ `PairDevice` |
+| Delete a child's stored figures | `–` | `·` | ✓ `PurgeData` |
+| Help and the four Swiss services | ✓ incl. Beratung 147 | ✓ parent `HelpView`; child `AgentHelpView` incl. 147 | ✓ `Help` |
 | de/fr/it/en | ✓ | ✓ | ✓ |
 
 ## Gaps worth naming
 
-- **No 147 link in the iOS child view.** The Android child app carries
-  `help_support` → 147.ch; nothing under `ios/` mentions 147. The copy rule says
-  the child-facing app links it, so `AgentMyTimeView`/`AgentStatusView` owe four
-  strings.
-- **`POST /v1/children/{id}/enrollments` has no caller.** Both child apps can
-  *type* a pairing code, and `agent.pairing.code.hint` says the code "is shown in
-  the dashboard" — but neither the dashboard nor the iPhone parent view mints
-  one. Today the code path only works if someone calls the API by hand.
-- **`DELETE /v1/children/{id}/data` has no caller either.** Deleting a child's
-  data is a promise on the privacy page and an API route; it is in no interface.
+- **The pairing code is typed, not scanned.** `mint_enrollment` returns a
+  `schirmziit://enroll?url=…&code=…` payload meant for a camera, and `PairDevice`
+  shows the code and the server address as text instead: rendering a QR needs an
+  encoder, and no dependency here has one. Until that lands, `pairStep2` says
+  "type" in all four languages — the copy follows the code, not the intention.
+- **The iPhone parent mode mints no code and deletes no data.** Both now exist in
+  the dashboard (`PairDevice`, `PurgeData`); `ChildrenView`/`ChildDetailView` owe
+  the same two controls.
+- **Nothing reads `/v1/children/{id}/summary`.** The route is in `openapi.json`
+  and no client calls it.

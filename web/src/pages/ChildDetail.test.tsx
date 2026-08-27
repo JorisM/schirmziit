@@ -87,6 +87,34 @@ describe('ChildDetail', () => {
     expect(daily, 'selecting a day must not re-fetch the strip').toHaveLength(1)
   })
 
+  it('offers a pairing code and a data delete on the day it is showing', async () => {
+    vi.spyOn(api, 'get').mockImplementation(async (path: string) => {
+      const url = new URL(path, 'http://x')
+      return usage(url.searchParams.get('bucket')!, url.searchParams.get('from')!, url.searchParams.get('to')!) as never
+    })
+    const post = vi.spyOn(api, 'post').mockResolvedValue({
+      code: 'K7MPQ2XY',
+      expires_at: new Date(Date.now() + 900_000).toISOString(),
+      qr_payload: 'schirmziit://enroll?url=https://schirmziit.example.ch&code=K7MPQ2XY',
+    } as never)
+    const del = vi.spyOn(api, 'del').mockResolvedValue({
+      deleted_usage_hours: 3, deleted_device_hours: 1, deleted_usage_days: 1,
+    } as never)
+
+    renderPage()
+    await waitFor(() => expect(screen.getByText(locales.en.devices.pairTitle)).toBeTruthy())
+
+    await userEvent.click(screen.getByRole('button', { name: locales.en.devices.pairCreateCode }))
+    await waitFor(() => expect(post).toHaveBeenCalledWith('/v1/children/kid/enrollments'))
+
+    await userEvent.click(screen.getByRole('button', { name: locales.en.data.delete }))
+    await userEvent.click(screen.getByRole('button', { name: locales.en.data.deleteConfirm }))
+
+    // The child in the path, not a name or an index: the route this page is
+    // looking at is the only child whose data it may delete.
+    await waitFor(() => expect(del).toHaveBeenCalledWith('/v1/children/kid/data'))
+  })
+
   it('names the day, not "today", when an empty past day is selected', async () => {
     vi.spyOn(api, 'get').mockImplementation(async (path: string) => {
       const url = new URL(path, 'http://x')

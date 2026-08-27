@@ -141,6 +141,10 @@
 "agent.help.where" = "Sul server della tua famiglia. Nessuna azienda in mezzo e niente a terzi.";
 "agent.help.yousee.title" = "Vedi tutto";
 "agent.help.yousee" = "Puoi aprire questa app quando vuoi e vedere cosa è stato inviato. Se scolleghi il telefono, gli invii si fermano — lo vedranno anche i tuoi genitori.";
+"agent.help.support.title" = "Se è troppo da gestire";
+"agent.help.support" = "Parlare con qualcuno fuori dalla famiglia spesso aiuta. La consulenza 147 è gratuita, 24 ore su 24, per telefono, chat o SMS — e non dice niente ai tuoi genitori.";
+"agent.help.support.link" = "147.ch";
+"agent.help.support.url" = "https://www.147.ch/";
 "agent.help.swiss" = "Sviluppato in Svizzera. Gratuito e open source.";
 
 /* ── Which phone is this ──────────────────────────────────── */

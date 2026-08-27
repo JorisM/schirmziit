@@ -141,6 +141,10 @@
 "agent.help.where" = "On your family's own server. No company in between and nothing passed to third parties.";
 "agent.help.yousee.title" = "You can see everything";
 "agent.help.yousee" = "Open this app any time to see what has been sent. If you disconnect the phone, reporting stops — your parents will see that too.";
+"agent.help.support.title" = "If this is a lot to deal with";
+"agent.help.support" = "Talking to someone outside the family can help. Counselling 147 is free, around the clock, by phone, chat or SMS — and they do not tell your parents.";
+"agent.help.support.link" = "147.ch";
+"agent.help.support.url" = "https://www.147.ch/";
 "agent.help.swiss" = "Made in Switzerland. Free and open source.";
 
 /* ── Which phone is this ──────────────────────────────────── */

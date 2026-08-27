@@ -57,4 +57,17 @@ final class AgentLocalizationTests: XCTestCase {
             XCTAssertNotNil(strings["agent.help.yousee"], "\(language) must keep the 'you can see everything' line")
         }
     }
+
+    /// The copy rule the child's side of this app owes: someone outside the
+    /// family to talk to, in every language, and a number that does not report
+    /// back to the parents. The Android agent has carried this since it shipped.
+    func testEveryLanguageOffersHelpOutsideTheFamily() throws {
+        for language in ["en"] + languages {
+            let strings = try strings(language)
+            let body = try XCTUnwrap(strings["agent.help.support"], "\(language) is missing the 147 line")
+            XCTAssertTrue(body.contains("147"), "\(language): the support line must name 147")
+            XCTAssertNotNil(strings["agent.help.support.title"], "\(language) support heading")
+            XCTAssertEqual(strings["agent.help.support.url"], "https://www.147.ch/", "\(language) support link")
+        }
+    }
 }

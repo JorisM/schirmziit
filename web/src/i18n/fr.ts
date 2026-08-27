@@ -86,13 +86,33 @@ export const fr: Strings = {
       'Ce téléphone arrête aussitôt d’envoyer. Les chiffres déjà collectés restent.',
     revokeConfirm: 'Oui, déconnecter',
     revoked: 'déconnecté',
-    addDevice: 'Connecter un téléphone',
     pairTitle: 'Connecter un téléphone',
     pairStep1: 'Ouvre Schirmziit sur le téléphone de l’enfant.',
-    pairStep2: 'Scanne ce code — ou saisis les huit caractères.',
+    pairStep2: 'Saisis-y les huit caractères, ainsi que l’adresse du serveur ci-dessous.',
     pairStep3: 'C’est fait. Le téléphone envoie ensuite ses données environ toutes les 30 minutes.',
     codeExpires: 'Valable jusqu’à',
     codeLabel: 'Code',
+    pairCreateCode: 'Créer un code',
+    pairWorking: 'Création du code…',
+    pairNewCode: 'Créer un nouveau code',
+    pairServerLabel: 'Adresse du serveur',
+    pairServerHint:
+      'C’est exactement cette adresse que le téléphone de l’enfant doit pouvoir joindre — sinon il se connecte une fois et n’envoie plus rien ensuite.',
+    pairExpired: 'Ce code a expiré. Crée un nouveau code.',
+  },
+
+  data: {
+    title: 'Données de cet enfant',
+    body:
+      'Supprime tous les chiffres horaires et totaux journaliers enregistrés pour cet enfant. L’enfant et ses téléphones restent connectés et continuent d’envoyer — seuls les chiffres déjà collectés disparaissent.',
+    delete: 'Supprimer les données',
+    deleteBody:
+      'Tous les chiffres horaires et totaux journaliers de cet enfant seront supprimés. C’est irréversible et il n’y a pas d’archive.',
+    deleteConfirm: 'Oui, supprimer les données',
+    deleted: 'Supprimé.',
+    deletedHours: 'Chiffres horaires par application',
+    deletedDeviceHours: 'Heures d’appareil',
+    deletedDays: 'Totaux journaliers',
   },
 
   help: {

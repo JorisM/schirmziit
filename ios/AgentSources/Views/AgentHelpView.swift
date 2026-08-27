@@ -32,6 +32,18 @@ struct AgentHelpView: View {
 
                 Section(header: L("agent.help.where.title")) { L("agent.help.where").font(.callout) }
                 Section(header: L("agent.help.yousee.title")) { L("agent.help.yousee").font(.callout) }
+
+                // The one link on the child's side that does not lead back to
+                // the parents, and the reason it is here rather than only in
+                // the parent app: the person being measured is owed someone
+                // outside the family to talk to. The Android agent has carried
+                // this line since it shipped.
+                Section(header: L("agent.help.support.title")) {
+                    L("agent.help.support").font(.callout)
+                    if let url = URL(string: S("agent.help.support.url")) {
+                        Link(S("agent.help.support.link"), destination: url)
+                    }
+                }
                 Section { L("agent.help.swiss").font(.footnote).foregroundStyle(Palette.inkMuted) }
             }
             .navigationTitle(L("agent.help.title"))

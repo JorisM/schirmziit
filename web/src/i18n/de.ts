@@ -86,13 +86,33 @@ export const de: Strings = {
       'Dieses Handy hört sofort auf zu melden. Die bisher gesammelten Zahlen bleiben.',
     revokeConfirm: 'Ja, trennen',
     revoked: 'getrennt',
-    addDevice: 'Handy verbinden',
     pairTitle: 'Handy verbinden',
     pairStep1: 'Öffne Schirmziit auf dem Handy des Kindes.',
-    pairStep2: 'Scanne diesen Code — oder tippe die acht Zeichen ein.',
+    pairStep2: 'Tippe dort die acht Zeichen ein, dazu die Serveradresse unten.',
     pairStep3: 'Fertig. Das Handy meldet sich danach etwa alle 30 Minuten.',
     codeExpires: 'Gültig bis',
     codeLabel: 'Code',
+    pairCreateCode: 'Code erzeugen',
+    pairWorking: 'Code wird erzeugt …',
+    pairNewCode: 'Neuen Code erzeugen',
+    pairServerLabel: 'Serveradresse',
+    pairServerHint:
+      'Genau diese Adresse muss das Kinderhandy erreichen — sonst verbindet es sich einmal und meldet danach nie wieder.',
+    pairExpired: 'Dieser Code ist abgelaufen. Erzeuge einen neuen.',
+  },
+
+  data: {
+    title: 'Daten dieses Kindes',
+    body:
+      'Löscht alle gespeicherten Stundenwerte und Tagessummen dieses Kindes. Das Kind und seine Handys bleiben verbunden und melden weiter — nur die bisherigen Zahlen sind weg.',
+    delete: 'Daten löschen',
+    deleteBody:
+      'Alle Stundenwerte und Tagessummen dieses Kindes werden gelöscht. Das ist nicht rückgängig zu machen, und es gibt kein Archiv.',
+    deleteConfirm: 'Ja, Daten löschen',
+    deleted: 'Gelöscht.',
+    deletedHours: 'Stundenwerte pro App',
+    deletedDeviceHours: 'Gerätestunden',
+    deletedDays: 'Tagessummen',
   },
 
   help: {

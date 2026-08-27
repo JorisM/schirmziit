@@ -111,9 +111,16 @@ export const en: Site = {
         childOwnNumbers: { label: 'The child sees the same numbers on their own phone' },
         manageChildren: { label: 'Add and remove a child' },
         revokeDevice: { label: 'Disconnect a phone' },
+        pairingCode: {
+          label: 'Create a connect code for a child’s phone',
+          note: 'In the dashboard in the browser. Not in the iPhone parent mode yet — there you connect a child’s phone with your parent login instead, no code.',
+        },
+        deleteData: {
+          label: 'Delete a child’s stored figures',
+          note: 'Deletes hourly figures and daily totals and says how many rows went. The child stays connected and keeps reporting. Not in the iPhone parent mode yet.',
+        },
         helpLinks: {
           label: 'Help and the Swiss advice services',
-          note: 'On iPhone the child’s side is still missing the link to Counselling 147.',
         },
         languages: { label: 'German, French, Italian, English' },
       },

@@ -77,6 +77,7 @@ android-bindings:
 
 android-check: android-bindings
     bash scripts/check-no-content.sh
+    cd android && ./gradlew -p buildSrc test
     cd android && ./gradlew test
 
 # ─── iOS ─────────────────────────────────────────────────────────────

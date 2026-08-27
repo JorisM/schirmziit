@@ -91,6 +91,11 @@ jobs:
         run: |
           ls -l android/app/src/test/resources/linux-x86-64/
           file android/app/src/test/resources/linux-x86-64/libschirmziit_core.so
+      # buildSrc is a separate build; Gradle builds it on demand and does not run
+      # its tests as part of the app's. versionCodeOf is the one piece of build
+      # logic that can silently publish an unreplaceable release.
+      - run: ./gradlew -p buildSrc test
+        working-directory: android
       - run: ./gradlew testDebugUnitTest
         working-directory: android
       # A screenshot failure is unreadable without the image. Keep the compare

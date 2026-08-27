@@ -4,6 +4,11 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+// The one place a version is written on Android. release-please rewrites this
+// string on release — see release-please-config.json — and versionCode is
+// computed from it in buildSrc, so the two cannot drift apart.
+val appVersion = "0.1.0" // x-release-please-version
+
 android {
     namespace = "ch.jorisda.schirmziit.agent"
     compileSdk = 37
@@ -12,8 +17,8 @@ android {
         applicationId = "ch.jorisda.schirmziit.agent"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = versionCodeOf(appVersion)
+        versionName = appVersion
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
     }

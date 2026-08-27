@@ -39,6 +39,7 @@ import ch.jorisda.schirmziit.agent.role.RoleStore
 import ch.jorisda.schirmziit.agent.role.adoptRole
 import ch.jorisda.schirmziit.agent.role.destination
 import ch.jorisda.schirmziit.agent.role.forgetRole
+import ch.jorisda.schirmziit.agent.role.resolveRole
 import ch.jorisda.schirmziit.agent.store.AgentDatabase
 import ch.jorisda.schirmziit.agent.store.AgentSettings
 import ch.jorisda.schirmziit.agent.store.AgentStore
@@ -191,7 +192,11 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    var role by remember { mutableStateOf(roleStore.load()) }
+                    // `resolveRole`, not `roleStore.load()`: a phone enrolled
+                    // before the role question existed has a token and no stored
+                    // role, and must not be asked — one tap on "My phone" would
+                    // unpair a child that is reporting fine.
+                    var role by remember { mutableStateOf(resolveRole(roleStore, settings)) }
 
                     // What this phone is, asked before any password. The child
                     // branch below is the app as it always was; the parent

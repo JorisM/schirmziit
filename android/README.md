@@ -20,6 +20,13 @@ family, so one phone must never hold both. It is reachable by an ordinary route,
 too: a phone that was a child's and gets handed on becomes a parent phone, and
 nobody reinstalls the app first. `RoleGateTest` is what holds it.
 
+**A phone that is already enrolled is never asked.** `resolveRole` answers from
+the device token when no role has been stored yet, because every phone installed
+before the role question existed is in exactly that state — and asking would put
+a child that is reporting fine one tap away from *My phone*, where `adoptRole`
+would do its job and destroy the token. The inferred answer is written down, so
+the phone behaves the same after it is later unpaired.
+
 The two credentials live in **separate encrypted files** — `AgentStore`
 (`schirmziit-agent`) for the device token, `EncryptedParentSession`
 (`schirmziit-parent`) for the session cookie — rather than as four fields on one

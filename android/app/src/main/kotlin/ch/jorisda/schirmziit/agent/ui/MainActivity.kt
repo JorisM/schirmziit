@@ -30,12 +30,23 @@ import ch.jorisda.schirmziit.agent.playback.MediaSessionPlaybackReader
 import ch.jorisda.schirmziit.agent.pair.EnrollPayloadParser
 import ch.jorisda.schirmziit.agent.pair.ParentSetup
 import ch.jorisda.schirmziit.agent.pair.PairingScreen
+import ch.jorisda.schirmziit.agent.parent.EncryptedParentSession
+import ch.jorisda.schirmziit.agent.parent.ParentSessionStore
 import ch.jorisda.schirmziit.agent.power.AndroidPowerStatus
+import ch.jorisda.schirmziit.agent.role.AppRole
+import ch.jorisda.schirmziit.agent.role.Destination
+import ch.jorisda.schirmziit.agent.role.RoleStore
+import ch.jorisda.schirmziit.agent.role.adoptRole
+import ch.jorisda.schirmziit.agent.role.destination
+import ch.jorisda.schirmziit.agent.role.forgetRole
 import ch.jorisda.schirmziit.agent.store.AgentDatabase
 import ch.jorisda.schirmziit.agent.store.AgentSettings
 import ch.jorisda.schirmziit.agent.store.AgentStore
+import ch.jorisda.schirmziit.agent.store.PrefsRoleStore
 import ch.jorisda.schirmziit.agent.sync.SchirmziitClient
 import ch.jorisda.schirmziit.agent.sync.SyncWorker
+import ch.jorisda.schirmziit.agent.ui.parent.ParentApp
+import ch.jorisda.schirmziit.agent.ui.parent.RoleChoiceScreen
 import ch.jorisda.schirmziit.agent.ui.theme.SchirmziitTheme
 import ch.jorisda.schirmziit.agent.usage.AndroidUsageSource
 import kotlinx.coroutines.Dispatchers
@@ -53,6 +64,14 @@ class MainActivity : ComponentActivity() {
         // screen cannot tell that background listening was switched on.
         val playback = MediaSessionPlaybackReader(this)
         val settings: AgentSettings? = runCatching { AgentStore(this) }.getOrNull()
+        // The role decides which of the two credential stores this launch may
+        // even touch. Both are constructed either way — they are cheap — but
+        // `adoptRole` destroys the one that does not belong to the chosen role,
+        // so a phone handed on from a child to a parent cannot keep reporting
+        // from the parent's own pocket.
+        val roleStore: RoleStore = PrefsRoleStore(this)
+        val parentSession: ParentSessionStore? =
+            runCatching { EncryptedParentSession(this) }.getOrNull()
         // Hoisted rather than built per load: this screen is designed around
         // repeated tapping (one day, then another), and a fresh OkHttpClient
         // per call would each own its own connection pool and thread pool.
@@ -170,6 +189,49 @@ class MainActivity : ComponentActivity() {
                                 myTimeLoading = false
                             }
                         }
+                    }
+
+                    var role by remember { mutableStateOf(roleStore.load()) }
+
+                    // What this phone is, asked before any password. The child
+                    // branch below is the app as it always was; the parent
+                    // branch never touches `settings`, and vice versa.
+                    val where = destination(
+                        role = role,
+                        // The parent branch runs its own `GET /v1/me` check, so
+                        // merely holding a cookie is enough to send it there.
+                        parentSignedIn = parentSession?.cookie != null,
+                    )
+
+                    if (where is Destination.RoleChoice) {
+                        RoleChoiceScreen(
+                            onChoose = { chosen ->
+                                parentSession?.let { adoptRole(chosen, settings, it) }
+                                roleStore.save(chosen)
+                                role = chosen
+                                refresh()
+                            },
+                        )
+                        return@Surface
+                    }
+
+                    if (role == AppRole.Parent) {
+                        if (parentSession == null) {
+                            // The keystore refused. Say so rather than offering a
+                            // sign-in form whose session could never be kept.
+                            Text(stringResource(R.string.status_off))
+                            return@Surface
+                        }
+                        ParentApp(
+                            session = parentSession,
+                            httpClient = httpClient,
+                            onSignedOut = {},
+                            onLeaveRole = {
+                                forgetRole(roleStore, settings, parentSession)
+                                role = null
+                            },
+                        )
+                        return@Surface
                     }
 
                     when {

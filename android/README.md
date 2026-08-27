@@ -1,4 +1,72 @@
-# schirmziit android agent
+# schirmziit android
+
+## One app, two roles
+
+The app asks what the phone is before it asks for a password — the same first
+question iOS asks, and for the same reason: what a phone is decides everything
+else it does.
+
+| Choice | What happens |
+|---|---|
+| *My phone* | The parent signs in and reads the numbers. Nothing is measured here, and no usage-access permission is asked for. |
+| *My child's phone* | The parent signs in once, picks the child, and the app trades that session for a device token — then ends the session. The phone reports from then on. |
+
+`role/AppRole.kt` holds the enum, the gate (`destination`), and the two functions
+that matter more than either: **`adoptRole` destroys the other role's
+credential**, and `forgetRole` destroys both. That is the on-device half of the
+rule `crates/server/tests/tenancy.rs` proves on the server — a device token is a
+write credential for one child's data and a parent session reads the whole
+family, so one phone must never hold both. It is reachable by an ordinary route,
+too: a phone that was a child's and gets handed on becomes a parent phone, and
+nobody reinstalls the app first. `RoleGateTest` is what holds it.
+
+The two credentials live in **separate encrypted files** — `AgentStore`
+(`schirmziit-agent`) for the device token, `EncryptedParentSession`
+(`schirmziit-parent`) for the session cookie — rather than as four fields on one
+store. Two stores cannot be mixed up by a careless `edit()`.
+
+### The parent screens
+
+`ui/parent/`, driven by `ParentApp`. Everything decidable is a plain function in
+`parent/` with tests (`ParentUiStateTest`, `PairingStateTest`); the composables
+only render it. Same split as `MyTimeRepository`/`mergeMyTimeResult` on the child
+side, and for the same reason — the rules about never losing a day are worth
+asserting without a server or an emulator.
+
+**The numbers come from `crates/core`.** `ChildDetailScreen` renders
+`parseDayStrip`/`parseDayDetail` — the same two functions the child's own
+`MyTimeScreen` calls. iOS decodes the parent side by hand into `UsageResponse`;
+this does not, so a parent and a child looking at the same day cannot be shown
+different totals, and a captcha page throws instead of reading as an empty day.
+Only the `devices` array, which the core ignores, is parsed in Kotlin
+(`ParentClient.devices`).
+
+**Errors come from the catalog.** `ui/parent/ErrorPanel` reads the generated
+`error_copy.xml` (`copy/errors.toml` → `just gen-copy`), which had existed in
+four languages on Android for a while with nothing reading it. Every failure
+carries `SZ-Ennn` and a six-character reference, so a photographed screen
+identifies itself. The child agent's own screens still hand-write their
+sentences and owe the same treatment.
+
+**Motion.** The parent screens meet the full bar — entry motion, press feedback,
+one flourish each (the count-up on the children list, the ribbon fill on a
+child's day), skeletons shaped like the content. `ui/parent/Motion.kt` holds the
+tokens and `rememberReducedMotion()` reads
+`Settings.Global.ANIMATOR_DURATION_SCALE`. **The child agent stays motion-free** —
+it is a background collector and battery is its budget, which is why these live
+under `ui.parent` rather than next to the theme.
+
+`ParentScreenshotTest` records every parent screen with animations switched off
+at the system level. That is deliberate twice over: it makes the goldens
+deterministic, and it captures the *reduced-motion* path, so a bar at 20 % height
+in one of those images is a bug rather than a timing artefact.
+
+### What the parent mode does not do yet
+
+Deleting a child's stored figures — the dashboard's `PurgeData` — has no screen
+on either phone. And the pairing code is shown as **text**, not as a QR: Android
+is the one place that could render one, since zxing is already a dependency here
+for the child app's scanner. `docs/platform-matrix.md` tracks both.
 
 ## Two ways to connect a phone
 
@@ -12,7 +80,11 @@ parent session.
 **Pairing codes still work** (QR or six characters typed), for the case where
 the parent is not standing there. That is the only reason the code path exists.
 
-The parent dashboard itself is web and iOS for now; this app is the child side.
+A typed code is six characters (`ENROLL_CODE_LENGTH`, mirroring the server's
+`ENROLL_LEN`). It is a named constant and a function because the Connect button
+used to compare against `8` inline, after the server had moved to six — so the
+button could never be pressed on any phone, and no test could see it. That is
+`EnrollCodeTest` now.
 
 ## My time
 

@@ -228,7 +228,7 @@ fun PairingScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
             Button(
-                enabled = manualCode.length == 8,
+                enabled = enrollCodeComplete(manualCode),
                 onClick = {
                     val payload = EnrollPayloadParser.parse(
                         "schirmziit://enroll?url=${server.trim()}&code=${manualCode.trim()}",

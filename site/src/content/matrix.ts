@@ -55,14 +55,14 @@ export const matrix: MatrixRow[] = [
   { key: 'install', group: 'measure', status: { android: 'partial', ios: 'no', web: null } },
 
   // What someone looks at.
-  { key: 'roles', group: 'view', status: { android: 'no', ios: 'yes', web: null } },
-  { key: 'overview14', group: 'view', status: { android: null, ios: 'yes', web: 'yes' } },
-  { key: 'dayDetail', group: 'view', status: { android: null, ios: 'yes', web: 'yes' } },
+  { key: 'roles', group: 'view', status: { android: 'yes', ios: 'yes', web: null } },
+  { key: 'overview14', group: 'view', status: { android: 'yes', ios: 'yes', web: 'yes' } },
+  { key: 'dayDetail', group: 'view', status: { android: 'yes', ios: 'yes', web: 'yes' } },
   { key: 'childOwnNumbers', group: 'view', status: { android: 'yes', ios: 'yes', web: null } },
-  { key: 'manageChildren', group: 'view', status: { android: null, ios: 'yes', web: 'yes' } },
-  { key: 'revokeDevice', group: 'view', status: { android: null, ios: 'yes', web: 'yes' } },
-  { key: 'pairingCode', group: 'view', status: { android: null, ios: 'yes', web: 'yes' } },
-  { key: 'deleteData', group: 'view', status: { android: null, ios: 'no', web: 'yes' } },
+  { key: 'manageChildren', group: 'view', status: { android: 'yes', ios: 'yes', web: 'yes' } },
+  { key: 'revokeDevice', group: 'view', status: { android: 'yes', ios: 'yes', web: 'yes' } },
+  { key: 'pairingCode', group: 'view', status: { android: 'no', ios: 'no', web: 'yes' } },
+  { key: 'deleteData', group: 'view', status: { android: 'no', ios: 'no', web: 'yes' } },
   { key: 'helpLinks', group: 'view', status: { android: 'yes', ios: 'yes', web: 'yes' } },
   { key: 'languages', group: 'view', status: { android: 'yes', ios: 'yes', web: 'yes' } },
 ]

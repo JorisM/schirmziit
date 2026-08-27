@@ -60,11 +60,30 @@ final class ContractTests: XCTestCase {
 
     func testDecodesProblemJson() throws {
         let problem = try decode(
-            #"{"type":"https://schirmziit.ch/problems/not-found","title":"not-found","status":404,"detail":"not found"}"#,
+            #"{"type":"https://schirmziit.ch/problems/not-found","title":"not-found","status":404,"detail":"not found","code":"SZ-E201","ref":"7f3a9c"}"#,
             as: ApiProblem.self
         )
         XCTAssertEqual(problem.status, 404)
         XCTAssertEqual(problem.detail, "not found")
+        XCTAssertEqual(problem.code, "SZ-E201")
+        XCTAssertEqual(problem.ref, "7f3a9c")
+    }
+
+    /// A self-hoster upgrades their server when they get round to it, so an app
+    /// newer than the server is normal. This body is what a server from before
+    /// the catalog sends; refusing to decode it would report a healthy old
+    /// server as a captive portal.
+    func testDecodesAProblemFromAServerOlderThanTheCatalog() throws {
+        let problem = try decode(
+            #"{"type":"https://schirmziit.ch/problems/not-found","title":"not-found","status":404,"detail":"not found"}"#,
+            as: ApiProblem.self
+        )
+        XCTAssertNil(problem.code)
+        XCTAssertNil(problem.ref)
+
+        let error = AppError(problem: problem, endpoint: "/v1/children")
+        XCTAssertEqual(error.code.wire, "SZ-E901")
+        XCTAssertEqual(error.ref.count, 6, "a local reference stands in for the one the server never sent")
     }
 
     func testDecodesMe() throws {

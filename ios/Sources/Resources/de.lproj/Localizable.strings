@@ -11,8 +11,6 @@
 "signin.password" = "Passwort";
 "signin.submit" = "Anmelden";
 "signin.working" = "Melde an…";
-"signin.wrong" = "E-Mail oder Passwort stimmt nicht.";
-"signin.bad.server" = "Diese Server-Adresse sieht nicht richtig aus.";
 
 "children.title" = "Kinder";
 "children.empty" = "Noch kein Kind";
@@ -22,7 +20,6 @@
 "children.add.title" = "Neues Kind";
 "children.add.placeholder" = "Name, z. B. Lena";
 "children.add.save" = "Hinzufügen";
-"children.add.empty" = "Gib dem Kind zuerst einen Namen.";
 "children.remove" = "Entfernen";
 "children.remove.body" = "Das Handy hört sofort auf zu melden, und die Zahlen werden nicht mehr angezeigt. Das kannst du nicht rückgängig machen.";
 "children.remove.confirm" = "Ja, entfernen";
@@ -75,7 +72,6 @@
 "help.notacontrol" = "Schirmziit sperrt nichts und filtert nichts. Es ist eine Grundlage für ein Gespräch, keine Fernsteuerung.";
 "help.swiss" = "Entwickelt in der Schweiz. Frei und Open Source.";
 
-"error.offline" = "Keine Verbindung zum Server.";
 
 "unit.hour" = "h";
 "unit.minute" = "min";
@@ -96,9 +92,6 @@
 "agent.pairing.label.placeholder" = "Mein iPhone";
 "agent.pairing.submit" = "Verbinden";
 "agent.pairing.working" = "Verbinde…";
-"agent.pairing.badserver" = "Diese Server-Adresse sieht nicht richtig aus.";
-"agent.pairing.badcode" = "Dieser Code ist unbekannt, schon benutzt oder abgelaufen.";
-"agent.pairing.failed" = "Der Server ist nicht erreichbar.";
 
 "agent.status.queue" = "Warteschlange";
 "agent.status.pending" = "Wartende Stunden";
@@ -118,7 +111,6 @@
 "agent.status.syncing" = "Sende…";
 "agent.status.sync.nothing" = "Noch nichts zu senden — dieses Handy hat noch keine Stunden erfasst.";
 "agent.status.sync.done" = "Gesendet.";
-"agent.status.sync.failed" = "Senden fehlgeschlagen. Die Zahlen bleiben auf dem Handy und gehen später raus.";
 "agent.status.unpair" = "Dieses Handy trennen";
 "agent.status.unpair.confirm" = "Meldungen stoppen und den Server vergessen?";
 
@@ -163,8 +155,6 @@
 "agent.setup.parentaccount" = "Dein Konto";
 "agent.setup.continue" = "Anmelden";
 "agent.setup.cancel" = "Abbrechen";
-"agent.setup.badlogin" = "E-Mail oder Passwort stimmt nicht.";
-"agent.setup.nochildren" = "Die Kinder auf diesem Server konnten nicht gelesen werden.";
 "agent.setup.whose" = "Wessen Handy ist das?";
 "agent.setup.whose.hint" = "Wenn die Liste leer ist, lege das Kind zuerst in der Übersicht an.";
 "agent.setup.finish" = "Von diesem Handy melden";
@@ -172,4 +162,9 @@
 "agent.unlock.body" = "Die Meldungen zu stoppen braucht das Eltern-Passwort dieses Kontos.";
 "agent.unlock.submit" = "Meldungen stoppen";
 "agent.unlock.cancel" = "Weiter melden";
-"agent.unlock.wrong" = "Dieses Passwort stimmt nicht.";
+
+/* The error panel's own chrome; the per-code copy is generated. */
+"errorpanel.retry" = "Nochmal versuchen";
+"errorpanel.copy" = "Details kopieren";
+"errorpanel.copied" = "Kopiert";
+"errorpanel.reference" = "Fehlercode und Referenz";

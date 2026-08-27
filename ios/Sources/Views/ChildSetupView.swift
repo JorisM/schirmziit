@@ -22,11 +22,7 @@ struct ChildSetupView: View {
                 }
 
                 if let error = model.lastError {
-                    Section {
-                        Label(error, systemImage: "exclamationmark.triangle.fill")
-                            .foregroundStyle(Palette.urgent)
-                            .font(.footnote)
-                    }
+                    Section { ErrorView(error: error) }
                 }
             }
             .schirmziitList()

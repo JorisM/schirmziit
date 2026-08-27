@@ -97,3 +97,17 @@ final class InMemoryCredentialStore: CredentialStore, @unchecked Sendable {
         lock.withLock { stored = nil }
     }
 }
+
+extension CredentialStoreError {
+    /// A keychain failure is not a network failure, and a parent shown "check
+    /// your connection" for one will go and check a connection that works.
+    ///
+    /// `save` and `clear` are both writes. A read failure surfaces as `nil`
+    /// credentials instead, and is handled where the absence is noticed —
+    /// see `AgentModel.leaveChildMode`.
+    var code: ErrorCode {
+        switch self {
+        case .keychain: .keychainWriteFailed
+        }
+    }
+}

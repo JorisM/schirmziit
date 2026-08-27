@@ -38,7 +38,7 @@ final class ChildWritesTests: XCTestCase {
     }
 
     private let problemBody = Data(
-        #"{"type":"about:blank","title":"error","status":502,"detail":"bad gateway"}"#.utf8
+        #"{"type":"about:blank","title":"error","status":502,"detail":"bad gateway","code":"SZ-E901","ref":"aa11bb"}"#.utf8
     )
 
     private let createdBody = Data(
@@ -57,12 +57,19 @@ final class ChildWritesTests: XCTestCase {
         XCTAssertEqual(Self.sent.all.first?.path, "/v1/children")
     }
 
-    func testAddingAChildReportsTheServersOwnWords() async {
+    /// The code, not the server's English `detail`: that sentence is for the log
+    /// and the copy-details block, and the parent reads the catalog's wording in
+    /// their own language.
+    func testAddingAChildReportsTheServersCode() async {
         let client = await stubbedClient(status: 502, body: problemBody)
 
         let outcome = await ChildrenView.create(client: client, name: "Lena")
 
-        XCTAssertEqual(outcome, .failed("bad gateway"))
+        guard case .failed(let error) = outcome else {
+            return XCTFail("a 502 must be a failure, got \(outcome)")
+        }
+        XCTAssertEqual(error.code.wire, "SZ-E901")
+        XCTAssertEqual(error.ref, "aa11bb")
     }
 
     /// The button is disabled on a blank field, so this is the second line of
@@ -99,11 +106,14 @@ final class ChildWritesTests: XCTestCase {
         XCTAssertEqual(outcome, .ok)
     }
 
-    func testAFailedRemoveCarriesTheProblemDetail() async {
+    func testAFailedRemoveCarriesTheProblemCode() async {
         let client = await stubbedClient(status: 502, body: problemBody)
 
         let outcome = await ChildrenView.remove(client: client, childId: "kid")
-        XCTAssertEqual(outcome, .failed("bad gateway"))
+        guard case .failed(let error) = outcome else {
+            return XCTFail("a 502 must be a failure, got \(outcome)")
+        }
+        XCTAssertEqual(error.code.wire, "SZ-E901")
     }
 
     func testAnUnreachableServerIsAFailureNotASilentSuccess() async {
@@ -130,10 +140,13 @@ final class ChildWritesTests: XCTestCase {
         )
     }
 
-    func testAFailedRevokeCarriesTheProblemDetail() async {
+    func testAFailedRevokeCarriesTheProblemCode() async {
         let client = await stubbedClient(status: 502, body: problemBody)
 
         let outcome = await ChildDetailView.revokeDevice(client: client, deviceId: "dev-1")
-        XCTAssertEqual(outcome, .failed("bad gateway"))
+        guard case .failed(let error) = outcome else {
+            return XCTFail("a 502 must be a failure, got \(outcome)")
+        }
+        XCTAssertEqual(error.code.wire, "SZ-E901")
     }
 }

@@ -203,4 +203,14 @@
     <string name="devices_pair_create">Crea un codice</string>
     <string name="devices_pair_working">Creazione del codice…</string>
     <string name="devices_pair_new">Crea un nuovo codice</string>
+    <string name="data_title">Dati di questo bambino</string>
+    <string name="data_body">Cancella tutti i valori orari e i totali giornalieri salvati per questo bambino. Il bambino e i suoi telefoni restano collegati e continuano a inviare — spariscono solo i numeri raccolti finora.</string>
+    <string name="data_delete">Cancella i dati</string>
+    <string name="data_delete_body">Tutti i valori orari e i totali giornalieri di questo bambino verranno cancellati. Non è reversibile e non esiste un archivio.</string>
+    <string name="data_delete_confirm">Sì, cancella i dati</string>
+    <string name="data_delete_working">Cancellazione…</string>
+    <string name="data_deleted">Cancellato.</string>
+    <string name="data_deleted_hours">Valori orari per app</string>
+    <string name="data_deleted_device_hours">Ore del dispositivo</string>
+    <string name="data_deleted_days">Totali giornalieri</string>
 </resources>

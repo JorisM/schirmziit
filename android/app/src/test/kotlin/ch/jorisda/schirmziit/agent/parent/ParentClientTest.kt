@@ -256,6 +256,59 @@ class ParentClientTest {
     }
 
     @Test
+    fun `deleting a child's figures reports what the server actually removed`() {
+        // The counts are not decoration: "deleted" with nothing behind it is
+        // exactly the claim a family has no way to check. They come from the
+        // server's own `rows_affected`.
+        val server = MockWebServer().apply {
+            enqueue(
+                MockResponse().setBody(
+                    """{"deleted_usage_hours":42,"deleted_device_hours":17,"deleted_usage_days":3}""",
+                ),
+            )
+            start()
+        }
+
+        val purged = client(server, InMemoryParentSession(cookie = "schirmziit_session=abc"))
+            .purgeData("c1")
+
+        assertEquals(42L, purged.usageHours)
+        assertEquals(17L, purged.deviceHours)
+        assertEquals(3L, purged.usageDays)
+        val request = server.takeRequest()
+        // The figures, not the child: `DELETE /v1/children/{id}` removes the
+        // child themselves, which is a different and much larger act.
+        assertEquals("/v1/children/c1/data", request.path)
+        assertEquals("DELETE", request.method)
+        server.shutdown()
+    }
+
+    @Test
+    fun `a delete answered by something other than the server is never read as deleted`() {
+        // A captcha page with a 200 on it. Reading it as a purge would tell a
+        // parent their child's figures are gone while they are all still there.
+        val server = MockWebServer().apply {
+            enqueue(MockResponse().setBody("<html><body>Sign in to the guest network</body></html>"))
+            start()
+        }
+
+        val thrown = assertThrows(ApiException::class.java) {
+            client(server, InMemoryParentSession(cookie = "schirmziit_session=abc")).purgeData("c1")
+        }
+
+        assertEquals(ErrorCode.BAD_RESPONSE_BODY, thrown.failure.code)
+        server.shutdown()
+    }
+
+    @Test
+    fun `a purge without a session never reaches the network`() {
+        val thrown = assertThrows(ApiException::class.java) {
+            ParentClient("https://api.example.ch", OkHttpClient(), InMemoryParentSession()).purgeData("c1")
+        }
+        assertEquals(ErrorCode.UNAUTHENTICATED, thrown.failure.code)
+    }
+
+    @Test
     fun `devices are read off the usage body, including one that never reported`() {
         val body = """{"child_id":"c1","from":"2026-08-20","to":"2026-08-20","bucket":"hour",
             "tz":"Europe/Zurich","series":[],"device_totals":[],

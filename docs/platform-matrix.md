@@ -32,15 +32,15 @@ measured only by someone who builds and installs the app themselves.
 
 | | Android app | iPhone app | Dashboard |
 |---|---|---|---|
-| Parent and child role in one app | `·` child phone only | ✓ role choice, `RoleStore` | `–` |
-| Last fourteen days | `–` | ✓ `DayStripView` | ✓ `DayStrip` |
-| One day, hour by hour | `–` | ✓ `DayRibbonView`, `AppRowsView` | ✓ `DayRibbon`, `AppBars` |
+| Parent and child role in one app | ✓ `RoleChoiceScreen`, `RoleStore` | ✓ role choice, `RoleStore` | `–` |
+| Last fourteen days | ✓ `ChildDetailScreen.DayStrip` | ✓ `DayStripView` | ✓ `DayStrip` |
+| One day, hour by hour | ✓ `HourRibbon`, `AppRows` | ✓ `DayRibbonView`, `AppRowsView` | ✓ `DayRibbon`, `AppBars` |
 | The child's own numbers on the child's phone | ✓ `MyTimeScreen` | ✓ `AgentMyTimeView` | `–` device tokens have no browser session |
-| Add and remove a child | `–` | ✓ `ChildrenView` | ✓ `Children` |
-| Disconnect a device | `–` | ✓ `ChildDetailView.revokeDevice` | ✓ `ChildDetail` |
+| Add and remove a child | ✓ `ChildrenScreen` | ✓ `ChildrenView` | ✓ `Children` |
+| Disconnect a device | ✓ `ChildDetailScreen`, long press | ✓ `ChildDetailView.revokeDevice` | ✓ `ChildDetail` |
 | Enrol a child phone without typing a code | ✓ `ParentSetup` | ✓ parent session → device token | `–` |
-| Mint a pairing code for a child phone | `–` | ✓ `PairDeviceView` | ✓ `PairDevice` |
-| Delete a child's stored figures | `–` | `·` | ✓ `PurgeData` |
+| Mint a pairing code for a child phone | ✓ `PairDeviceCard` | ✓ `PairDeviceView` | ✓ `PairDevice` |
+| Delete a child's stored figures | ✓ `PurgeDataCard` | ✓ `PurgeDataView` | ✓ `PurgeData` |
 | Help and the four Swiss services | ✓ incl. Beratung 147 | ✓ parent `HelpView`; child `AgentHelpView` incl. 147 | ✓ `Help` |
 | de/fr/it/en | ✓ | ✓ | ✓ |
 
@@ -52,10 +52,11 @@ measured only by someone who builds and installs the app themselves.
   instead: rendering a QR needs an encoder, and no dependency here has one. Until
   that lands, the second step says "type" in all four languages on both surfaces
   — the copy follows the code, not the intention.
-- **The iPhone parent mode deletes no data.** `PurgeData` exists in the dashboard
-  and `ChildDetailView` owes the same control. Minting a code is no longer on
-  this list: `PairDeviceView` sits at the foot of the same screen, deliberately
-  outside the usage load so a family whose phone never reported can still enrol
-  one.
+- **Deleting a child's figures no longer needs a browser.** All three surfaces
+  ask twice, and all three show the server's own `rows_affected` afterwards:
+  "deleted" with nothing behind it is the one claim a family has no way to
+  check. On both phones the control sits at the very foot of the child's screen,
+  deliberately outside the usage load — a day that failed to fetch is one of the
+  moments a parent is most likely to want the figures gone.
 - **Nothing reads `/v1/children/{id}/summary`.** The route is in `openapi.json`
   and no client calls it.

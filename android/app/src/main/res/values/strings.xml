@@ -208,4 +208,14 @@
     <string name="devices_pair_create">Create a code</string>
     <string name="devices_pair_working">Creating a code…</string>
     <string name="devices_pair_new">Create a new code</string>
+    <string name="data_title">This child\'s data</string>
+    <string name="data_body">Deletes every stored hourly figure and daily total for this child. The child and their phones stay connected and keep reporting — only the figures collected so far are gone.</string>
+    <string name="data_delete">Delete data</string>
+    <string name="data_delete_body">Every hourly figure and daily total for this child will be deleted. This cannot be undone and there is no archive.</string>
+    <string name="data_delete_confirm">Yes, delete the data</string>
+    <string name="data_delete_working">Deleting…</string>
+    <string name="data_deleted">Deleted.</string>
+    <string name="data_deleted_hours">Hourly figures per app</string>
+    <string name="data_deleted_device_hours">Device hours</string>
+    <string name="data_deleted_days">Daily totals</string>
 </resources>

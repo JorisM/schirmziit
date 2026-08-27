@@ -16,10 +16,11 @@ Pairing codes still exist for the case where the parent is not there to sign in;
 the parent-session path is what removes the typing for everyone else.
 
 **Parent mode manages the family, not just reads it.** The children list adds a
-child and removes one; a child's screen disconnects one of their phones and mints
-the code that connects the next one. All four go through `static func`s
-(`ChildrenView.create`/`.remove`, `ChildDetailView.revokeDevice`,
-`PairDeviceView.mintCode`), for the same reason `fetchUsage` is one: these views
+child and removes one; a child's screen disconnects one of their phones, mints
+the code that connects the next one, and deletes the figures collected so far.
+All five go through `static func`s (`ChildrenView.create`/`.remove`,
+`ChildDetailView.revokeDevice`, `PairDeviceView.mintCode`,
+`PurgeDataView.purgeData`), for the same reason `fetchUsage` is one: these views
 own no `@Observable` model, and `@State` on a view SwiftUI has not installed
 silently loses writes, so the testable part stays out of the view lifecycle. Both
 destructive actions are a swipe with `allowsFullSwipe: false` followed by a named
@@ -33,6 +34,17 @@ and is claimable once — and shows the server address from the deep link beside
 it, because a phone enrolled against the wrong host enrols once and then goes
 quiet for good. Typed, not scanned: rendering the `schirmziit://enroll?…` payload
 as a QR needs an encoder no target here has.
+
+`PurgeDataView` sits below it, outside the usage load for the same reason: a day
+that failed to fetch is one of the moments a parent is most likely to want the
+figures gone. It is the only write here that answers with a body, and the counts
+are the point — they are the server's own `rows_affected`, shown even when they
+are all zero, because "deleted" with nothing behind it is the one claim a family
+has no way to check. `ApiClient` keeps that delete separate from the 204 one so
+neither caller can land in the other's case, and a proxy page with a 200 on it
+throws rather than being read as a completed purge. Afterwards the fortnight and
+the day are blanked and re-read: everywhere else this app keeps loaded numbers
+through a refresh, but those bars describe rows that no longer exist.
 
 Removing a child also revokes that child's devices, on the server, in one
 transaction. Without it the phone keeps uploading: the device token is

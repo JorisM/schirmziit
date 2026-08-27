@@ -20,10 +20,13 @@ import ch.jorisda.schirmziit.agent.parent.PairingState
 import ch.jorisda.schirmziit.agent.parent.ParentChild
 import ch.jorisda.schirmziit.agent.parent.ParentClient
 import ch.jorisda.schirmziit.agent.parent.ParentSessionStore
+import ch.jorisda.schirmziit.agent.parent.PurgeState
 import ch.jorisda.schirmziit.agent.parent.mergeChildren
 import ch.jorisda.schirmziit.agent.parent.mergeDay
 import ch.jorisda.schirmziit.agent.parent.mergeEnrollment
+import ch.jorisda.schirmziit.agent.parent.mergePurge
 import ch.jorisda.schirmziit.agent.parent.mergeStrip
+import ch.jorisda.schirmziit.agent.parent.purgedDay
 import ch.jorisda.schirmziit.agent.parent.refreshDay
 import ch.jorisda.schirmziit.agent.parent.selectDay
 import ch.jorisda.schirmziit.agent.parent.stripWindow
@@ -62,6 +65,7 @@ fun ParentApp(
     var openChild by remember { mutableStateOf<ParentChild?>(null) }
     var day by remember { mutableStateOf<ChildDayState?>(null) }
     var pairing by remember { mutableStateOf(PairingState()) }
+    var purge by remember { mutableStateOf(PurgeState()) }
     var helpOpen by remember { mutableStateOf(false) }
 
     fun client(): ParentClient? =
@@ -107,6 +111,10 @@ fun ParentApp(
         openChild = child
         // A code minted for one child must not follow the parent to another.
         pairing = PairingState()
+        // Nor may a count of what was deleted for one child: "42 hourly figures
+        // deleted" under a second child's name is a receipt for the wrong
+        // deletion, and an open question is worse still.
+        purge = PurgeState()
         day = ChildDayState(selected = today, pending = today)
         loadStrip(child)
         loadDay(child, today)
@@ -168,6 +176,7 @@ fun ParentApp(
             child = child,
             state = currentDay,
             pairing = pairing,
+            purge = purge,
             // Recomposed whenever the pairing state changes, which is what makes
             // a code that expired while the screen was open start saying so.
             nowMillis = System.currentTimeMillis(),
@@ -211,9 +220,31 @@ fun ParentApp(
                     )
                 }
             },
+            onAskPurge = { purge = purge.copy(asking = true, failure = null) },
+            onCancelPurge = { purge = purge.copy(asking = false, failure = null) },
+            onConfirmPurge = {
+                val api = client() ?: return@ChildDetailScreen
+                purge = purge.copy(busy = true)
+                scope.launch {
+                    val outcome = withContext(Dispatchers.IO) {
+                        runCatching { api.purgeData(child.id) }
+                    }
+                    purge = mergePurge(purge, outcome)
+                    // Only on success, and only after the counts are in: the
+                    // fortnight and the day on screen describe rows the server
+                    // has just deleted, and leaving them up says the purge did
+                    // not work.
+                    if (outcome.isSuccess) {
+                        day = currentDay.let(::purgedDay)
+                        loadStrip(child)
+                        loadDay(child, currentDay.selected)
+                    }
+                }
+            },
             onBack = {
                 openChild = null
                 day = null
+                purge = PurgeState()
                 // Today's totals moved on while the parent was inside a child.
                 scope.launch { loadChildren() }
             },

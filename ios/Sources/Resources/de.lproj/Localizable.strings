@@ -185,3 +185,14 @@
 "errorpanel.copy" = "Details kopieren";
 "errorpanel.copied" = "Kopiert";
 "errorpanel.reference" = "Fehlercode und Referenz";
+
+"data.title" = "Daten dieses Kindes";
+"data.body" = "Löscht alle gespeicherten Stundenwerte und Tagessummen dieses Kindes. Das Kind und seine Handys bleiben verbunden und melden weiter — nur die bisherigen Zahlen sind weg.";
+"data.delete" = "Daten löschen";
+"data.delete.body" = "Alle Stundenwerte und Tagessummen dieses Kindes werden gelöscht. Das ist nicht rückgängig zu machen, und es gibt kein Archiv.";
+"data.delete.confirm" = "Ja, Daten löschen";
+"data.delete.working" = "Wird gelöscht…";
+"data.deleted" = "Gelöscht.";
+"data.deleted.hours" = "Stundenwerte pro App";
+"data.deleted.devicehours" = "Gerätestunden";
+"data.deleted.days" = "Tagessummen";

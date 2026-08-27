@@ -151,6 +151,90 @@ final class ChildWritesTests: XCTestCase {
         XCTAssertEqual(error.code.wire, "SZ-E901")
     }
 
+    // MARK: - Deleting a child's stored figures
+
+    private let purgedBody = Data(
+        #"{"deleted_usage_hours":412,"deleted_device_hours":168,"deleted_usage_days":14}"#.utf8
+    )
+
+    /// The figures, not the child. `DELETE /v1/children/{id}` removes the child
+    /// themselves, which is a different and much larger act — and the route
+    /// that does the smaller one differs from it by a single path segment.
+    func testPurgingDeletesTheChildsDataRouteNotTheChild() async {
+        let client = await stubbedClient(status: 200, body: purgedBody)
+
+        let outcome = await PurgeDataView.purgeData(client: client, childId: "kid")
+
+        guard case .success(let purged) = outcome else {
+            return XCTFail("a 200 must be a success, got \(outcome)")
+        }
+        XCTAssertEqual(purged.deletedUsageHours, 412)
+        XCTAssertEqual(purged.deletedDeviceHours, 168)
+        XCTAssertEqual(purged.deletedUsageDays, 14)
+        XCTAssertEqual(Self.sent.all.map(\.method), ["DELETE"])
+        XCTAssertEqual(Self.sent.all.first?.path, "/v1/children/kid/data")
+    }
+
+    /// A purge that matched nothing answers with zeros, and they have to survive
+    /// as zeros: a family whose phone has not reported yet must be able to tell
+    /// a purge that worked from one that found nothing.
+    func testAPurgeThatMatchedNothingReportsZeroRatherThanNothing() async {
+        let client = await stubbedClient(
+            status: 200,
+            body: Data(
+                #"{"deleted_usage_hours":0,"deleted_device_hours":0,"deleted_usage_days":0}"#.utf8
+            )
+        )
+
+        let outcome = await PurgeDataView.purgeData(client: client, childId: "kid")
+
+        guard case .success(let purged) = outcome else {
+            return XCTFail("a 200 must be a success, got \(outcome)")
+        }
+        XCTAssertEqual(purged.deletedUsageHours, 0)
+    }
+
+    func testAFailedPurgeCarriesTheProblemCode() async {
+        let client = await stubbedClient(status: 502, body: problemBody)
+
+        let outcome = await PurgeDataView.purgeData(client: client, childId: "kid")
+        guard case .failure(let error) = outcome else {
+            return XCTFail("a 502 must be a failure, got \(outcome)")
+        }
+        XCTAssertEqual(error.code.wire, "SZ-E901")
+        XCTAssertEqual(error.ref, "aa11bb")
+    }
+
+    /// The finding this test exists for: a captive portal or a proxy answering
+    /// 200 in the server's place must be a failure. Read as a purge it would
+    /// tell a parent their child's figures are gone while every row is still
+    /// there — the one lie an irreversible-looking button must never tell.
+    func testABodyThatIsNotAPurgeIsNeverReadAsOne() async {
+        let client = await stubbedClient(
+            status: 200,
+            body: Data("<html><body>Sign in to the guest network</body></html>".utf8)
+        )
+
+        let outcome = await PurgeDataView.purgeData(client: client, childId: "kid")
+
+        guard case .failure = outcome else {
+            return XCTFail("a proxy page must never be read as a purge, got \(outcome)")
+        }
+    }
+
+    /// A 200 whose counts are missing is not a purge of zero rows either: it is
+    /// a body this app cannot read, and a receipt built from defaults would be
+    /// a number nobody counted.
+    func testAPurgeMissingItsCountsIsAFailureNotThreeZeroes() async {
+        let client = await stubbedClient(status: 200, body: Data(#"{"deleted_usage_hours":9}"#.utf8))
+
+        let outcome = await PurgeDataView.purgeData(client: client, childId: "kid")
+
+        guard case .failure = outcome else {
+            return XCTFail("a partial body must not decode into a receipt, got \(outcome)")
+        }
+    }
+
     // MARK: - Minting a pairing code
 
     private let enrollmentBody = Data(

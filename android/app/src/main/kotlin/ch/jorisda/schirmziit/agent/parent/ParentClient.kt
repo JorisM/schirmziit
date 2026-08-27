@@ -22,6 +22,15 @@ data class ParentChild(val id: String, val displayName: String, val todayMs: Lon
  */
 data class Enrollment(val code: String, val expiresAtMillis: Long, val qrPayload: String)
 
+/**
+ * What a purge actually removed, straight from the server's `rows_affected`.
+ *
+ * Counted rather than assumed: "deleted" with nothing behind it is exactly the
+ * claim a family has no way to check, and a delete that matched nothing has to
+ * be able to say zero instead of implying a purge.
+ */
+data class Purged(val usageHours: Long, val deviceHours: Long, val usageDays: Long)
+
 data class ParentDevice(
     val id: String,
     val label: String,
@@ -147,6 +156,36 @@ class ParentClient(
      * much larger act than dropping one of their phones.
      */
     fun revokeDevice(deviceId: String) = delete("/v1/devices/$deviceId")
+
+    /**
+     * Deletes a child's stored figures and reports what went. The child and
+     * their phones stay connected and keep reporting — only the numbers
+     * collected so far are gone, which is a different and much smaller act than
+     * [removeChild].
+     *
+     * Unlike every other delete here this one answers with a body, and the body
+     * is the point: it is read strictly, so a captcha page with a 200 on it
+     * throws rather than being shown to a parent as a completed purge.
+     */
+    fun purgeData(childId: String): Purged {
+        val path = "/v1/children/$childId/data"
+        val body = execute(
+            Request.Builder().url(base + path).header("cookie", cookie(path)).delete().build(),
+            path,
+        ).use { it.body?.string().orEmpty() }
+
+        val parsed = runCatching { JSONObject(body) }.getOrNull()
+            ?: throw ApiException(ApiFailure.badResponseBody(path, 200))
+        // `getLong`, not `optLong`: a body missing a count is not a purge of
+        // zero rows, it is a body this app cannot read.
+        return runCatching {
+            Purged(
+                usageHours = parsed.getLong("deleted_usage_hours"),
+                deviceHours = parsed.getLong("deleted_device_hours"),
+                usageDays = parsed.getLong("deleted_usage_days"),
+            )
+        }.getOrElse { throw ApiException(ApiFailure.badResponseBody(path, 200)) }
+    }
 
     /**
      * The raw usage body. Returned unparsed on purpose: the numbers are read by

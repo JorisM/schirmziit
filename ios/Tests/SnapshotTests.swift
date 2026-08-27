@@ -383,6 +383,48 @@ final class SnapshotTests: XCTestCase {
         assert(pairing(expiresAt: 1_787_814_900, expired: true), named: "pair-device-expired")
     }
 
+    /// The control that deletes a child's stored figures, and the receipt it
+    /// turns into.
+    ///
+    /// Two images, because they are two different claims. The resting state has
+    /// to read as one quiet destructive button under a sentence saying what it
+    /// does — one press must not delete — and the receipt has to show the
+    /// server's own counts rather than the word "deleted" on its own.
+    private func purge(purged: PurgeResponse?) -> some View {
+        List {
+            PurgeDataView(client: ApiClient(), childId: "kid", onPurged: {}, purged: purged)
+        }
+        .schirmziitList()
+    }
+
+    func testPurgeData() {
+        assert(purge(purged: nil), named: "purge-data")
+    }
+
+    func testPurgeDataReceipt() {
+        assert(
+            purge(
+                purged: PurgeResponse(
+                    deletedUsageHours: 412,
+                    deletedDeviceHours: 168,
+                    deletedUsageDays: 14
+                )
+            ),
+            named: "purge-data-done"
+        )
+    }
+
+    /// A purge that matched nothing. Zero has to be legible as an answer, or a
+    /// parent cannot tell a purge that worked from one that found nothing.
+    func testPurgeDataReceiptWithNothingToDelete() {
+        assert(
+            purge(
+                purged: PurgeResponse(deletedUsageHours: 0, deletedDeviceHours: 0, deletedUsageDays: 0)
+            ),
+            named: "purge-data-zero"
+        )
+    }
+
     func testDayRibbon() {
         // Fixed figures: a ribbon that changes shape between runs is not a
         // snapshot test, it is a random image generator.

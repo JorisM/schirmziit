@@ -18,15 +18,15 @@ path = "src/bin/export_openapi.rs"
 [dependencies]
 schirmziit-core = { path = "../core", features = ["schema"] }
 axum = "0.8"
-axum-extra = { version = "0.10", features = ["cookie"] }
+axum-extra = { version = "0.12", features = ["cookie"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "signal", "time"] }
 tower-http = { version = "0.7", features = ["cors", "trace", "request-id"] }
-tower_governor = "0.7"
+tower_governor = "0.8"
 sqlx = { version = "0.9", default-features = false, features = ["runtime-tokio", "tls-rustls-ring", "postgres", "uuid", "chrono", "macros", "migrate"] }
 argon2 = "0.5"
 password-hash = "0.5"
 sha2 = "0.11"
-rand = "0.9"
+rand = "0.10"
 time = "0.3"
 utoipa = { version = "5", features = ["axum_extras", "chrono", "uuid"] }
 rust-embed = "8"
@@ -45,4 +45,4 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [dev-dependencies]
 tower = { version = "0.5", features = ["util"] }
-jsonschema = "0.30"
+jsonschema = "0.52"

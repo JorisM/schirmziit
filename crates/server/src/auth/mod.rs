@@ -7,7 +7,7 @@ use axum::extract::FromRequestParts;
 use axum::http::request::Parts;
 use axum_extra::extract::CookieJar;
 use password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString};
-use rand::RngCore;
+use rand::Rng;
 use sha2::{Digest, Sha256};
 use uuid::Uuid;
 
@@ -47,7 +47,7 @@ pub fn is_plausible_email(email: &str) -> bool {
 }
 
 pub fn hash_password(plain: &str) -> Result<String, ApiError> {
-    // Salt from `rand` 0.9 rather than `SaltString::generate`: that path wants
+    // Salt from `rand` 0.10 rather than `SaltString::generate`: that path wants
     // rand_core 0.6's OsRng, which would mean carrying a second RNG stack.
     let mut salt_bytes = [0u8; 16];
     rand::rng().fill_bytes(&mut salt_bytes);

@@ -6,9 +6,9 @@ struct ChildDetailView: View {
 
     @State var usage: UsageResponse?
     @State var strip: UsageResponse?
-    @State var stripError: String?
+    @State var stripError: AppError?
     @State private var selected = ISO8601DateFormatter.dayOnly.string(from: Date())
-    @State private var errorText: String?
+    @State private var error: AppError?
     // Owned here, not by DayRibbonView, so a List row recycle during scroll
     // doesn't replay the fill flourish — see DayRibbonView.filledOverride.
     @State private var ribbonFilled = false
@@ -26,30 +26,34 @@ struct ChildDetailView: View {
 
     var body: some View {
         List {
-            if let errorText {
-                Section {
-                    Label(errorText, systemImage: "exclamationmark.triangle")
-                        .foregroundStyle(Palette.urgent)
-                }
+            if let error {
+                Section { ErrorView(error: error) { Task { await load(resetting: false) } } }
             }
 
             // Independent of `usage`: it depends only on `strip`/`stripError`, never
             // on the selected day's data, so it must stay on screen — selection
             // outline included — while a newly picked day's own sections skeleton.
             Section {
-                if let stripError {
-                    // Never zero-fill in place of a failed fetch: fourteen quiet bars
-                    // read as a genuinely quiet fortnight, which is exactly the "lost
-                    // day" this app promises never to show.
-                    Label(stripError, systemImage: "exclamationmark.triangle")
-                        .foregroundStyle(Palette.urgent)
-                } else if let strip {
+                if let strip {
+                    // A refresh that failed leaves the fortnight where it is and
+                    // says it is stale. Blanking a loaded strip because a poll
+                    // failed loses a day at the presentation layer.
+                    if let stripError {
+                        ErrorView(error: stripError, placement: .banner) {
+                            Task { await loadStrip() }
+                        }
+                    }
                     DayStripView(
                         days: Formatting.dailyTotals(strip.series, from: from, to: today),
                         selected: selected,
                         onSelect: { selected = $0 }
                     )
                     .padding(.vertical, 4)
+                } else if let stripError {
+                    // Never zero-fill in place of a failed fetch: fourteen quiet bars
+                    // read as a genuinely quiet fortnight, which is exactly the "lost
+                    // day" this app promises never to show.
+                    ErrorView(error: stripError) { Task { await loadStrip() } }
                 } else {
                     StripSkeleton()
                 }
@@ -140,7 +144,7 @@ struct ChildDetailView: View {
                             .foregroundStyle(Palette.inkMuted)
                     }
                 }
-            } else if errorText == nil {
+            } else if error == nil {
                 Section { RowsSkeleton() }
                 Section { RibbonSkeleton() }
             }
@@ -185,9 +189,9 @@ struct ChildDetailView: View {
         switch await Self.fetchUsage(client: client, childId: child.id, from: selected, to: selected, bucket: "hour") {
         case .success(let response):
             usage = response
-            errorText = nil
-        case .failure(let message):
-            errorText = message
+            error = nil
+        case .failure(let failure):
+            error = failure
         }
     }
 
@@ -196,13 +200,13 @@ struct ChildDetailView: View {
         pendingRevoke = nil
         switch await Self.revokeDevice(client: client, deviceId: device.id) {
         case .ok:
-            errorText = nil
+            error = nil
             // A revoked device drops out of the usage response, so re-reading
             // the day is what removes the row — there is no local list to keep
             // in step with the server.
             await load(resetting: false)
-        case .failed(let message):
-            errorText = message
+        case .failed(let failure):
+            error = failure
         }
     }
 
@@ -212,9 +216,9 @@ struct ChildDetailView: View {
         case .success(let response):
             strip = response
             stripError = nil
-        case .failure(let message):
-            strip = nil
-            stripError = message
+        case .failure(let failure):
+            // `strip` is deliberately left alone: see the banner branch above.
+            stripError = failure
         }
     }
 
@@ -244,17 +248,17 @@ struct ChildDetailView: View {
                 as: UsageResponse.self
             )
             return .success(usage)
-        } catch let ApiError.problem(problem) {
-            return .failure(problem.detail)
+        } catch let caught as AppError {
+            return .failure(caught)
         } catch {
-            return .failure(S("error.offline"))
+            return .failure(AppError.transport(error, endpoint: "v1/children/\(childId)/usage"))
         }
     }
 }
 
 enum FetchOutcome {
     case success(UsageResponse)
-    case failure(String)
+    case failure(AppError)
 }
 
 extension ISO8601DateFormatter {

@@ -8,7 +8,7 @@ struct SignInView: View {
     @State private var email = Prefill.email
     @State private var password = Prefill.password
     @State private var busy = false
-    @State private var errorText: String?
+    @State private var error: AppError?
 
     var body: some View {
         NavigationStack {
@@ -37,11 +37,8 @@ struct SignInView: View {
                         .textContentType(.password)
                 }
 
-                if let errorText {
-                    Section {
-                        Label(errorText, systemImage: "exclamationmark.triangle")
-                            .foregroundStyle(Palette.urgent)
-                    }
+                if let error {
+                    Section { ErrorView(error: error) }
                 }
 
                 Section {
@@ -72,7 +69,8 @@ struct SignInView: View {
 
     private func signIn() async {
         guard let url = URL(string: server.trimmingCharacters(in: .whitespaces)), url.scheme != nil else {
-            errorText = S("signin.bad.server")
+            // Not a network failure: there is no address to reach yet.
+            error = AppError.local(.baseUrlNotConfigured)
             return
         }
         busy = true
@@ -87,14 +85,14 @@ struct SignInView: View {
                 body: ["email": email, "password": password],
                 as: LoginAck.self
             )
-            errorText = nil
+            error = nil
             onSignedIn(url)
-        } catch let ApiError.problem(problem) {
-            errorText = problem.status == 401
-                ? S("signin.wrong")
-                : problem.detail
+        } catch let caught as AppError {
+            // SZ-E101 already says "that email or password is wrong" in four
+            // languages, so the view keeps no sentence of its own.
+            error = caught
         } catch {
-            errorText = S("error.offline")
+            self.error = AppError.transport(error, endpoint: "v1/auth/login")
         }
     }
 }

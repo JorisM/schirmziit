@@ -86,6 +86,25 @@ final class ContractTests: XCTestCase {
         XCTAssertEqual(error.ref.count, 6, "a local reference stands in for the one the server never sent")
     }
 
+    /// Captured from `POST /v1/children/{id}/enrollments`. `expires_at` arrives
+    /// with fractional seconds here and without them elsewhere in the same API,
+    /// which is why the decoder tries both formats.
+    func testDecodesAnEnrollment() throws {
+        let enrollment = try decode(
+            #"""
+            {"code":"A2B3C4","expires_at":"2026-08-27T07:15:00.481293Z",
+             "qr_payload":"schirmziit://enroll?url=https://api.schirmziit.ch&code=A2B3C4"}
+            """#,
+            as: EnrollmentResponse.self
+        )
+        XCTAssertEqual(enrollment.code, "A2B3C4")
+        XCTAssertEqual(
+            PairDeviceView.serverAddress(from: enrollment.qrPayload),
+            "https://api.schirmziit.ch"
+        )
+        XCTAssertEqual(enrollment.expiresAt.timeIntervalSince1970, 1_787_814_900, accuracy: 1)
+    }
+
     func testDecodesMe() throws {
         let me = try decode(
             #"{"id":"p1","email":"joris@example.ch","family_id":"f1"}"#,

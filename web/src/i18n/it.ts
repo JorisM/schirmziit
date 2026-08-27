@@ -88,7 +88,7 @@ export const it: Strings = {
     revoked: 'disconnesso',
     pairTitle: 'Collega un telefono',
     pairStep1: 'Apri Schirmziit sul telefono del bambino.',
-    pairStep2: 'Digita lì gli otto caratteri e anche l’indirizzo del server qui sotto.',
+    pairStep2: 'Digita lì i sei caratteri e anche l’indirizzo del server qui sotto.',
     pairStep3: 'Fatto. Il telefono invia poi i dati circa ogni 30 minuti.',
     codeExpires: 'Valido fino a',
     codeLabel: 'Codice',

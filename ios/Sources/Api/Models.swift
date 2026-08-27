@@ -15,6 +15,18 @@ struct ChildResponse: Codable, Sendable, Identifiable {
     let todayMs: Int64
 }
 
+/// The one-shot code a child's phone is enrolled with.
+///
+/// `qrPayload` is `schirmziit://enroll?url=…&code=…`, meant for a camera: it
+/// carries the server address as well as the code, which is the half of the
+/// pairing whose failure is silent. `PairDeviceView.serverAddress` reads the
+/// address back out of it for the parent to type.
+struct EnrollmentResponse: Codable, Sendable {
+    let code: String
+    let expiresAt: Date
+    let qrPayload: String
+}
+
 struct DeviceStatus: Codable, Sendable, Identifiable {
     let id: String
     let label: String

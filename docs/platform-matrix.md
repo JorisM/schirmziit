@@ -39,7 +39,7 @@ measured only by someone who builds and installs the app themselves.
 | Add and remove a child | `–` | ✓ `ChildrenView` | ✓ `Children` |
 | Disconnect a device | `–` | ✓ `ChildDetailView.revokeDevice` | ✓ `ChildDetail` |
 | Enrol a child phone without typing a code | ✓ `ParentSetup` | ✓ parent session → device token | `–` |
-| Mint a pairing code for a child phone | `–` | `·` | ✓ `PairDevice` |
+| Mint a pairing code for a child phone | `–` | ✓ `PairDeviceView` | ✓ `PairDevice` |
 | Delete a child's stored figures | `–` | `·` | ✓ `PurgeData` |
 | Help and the four Swiss services | ✓ incl. Beratung 147 | ✓ parent `HelpView`; child `AgentHelpView` incl. 147 | ✓ `Help` |
 | de/fr/it/en | ✓ | ✓ | ✓ |
@@ -47,12 +47,15 @@ measured only by someone who builds and installs the app themselves.
 ## Gaps worth naming
 
 - **The pairing code is typed, not scanned.** `mint_enrollment` returns a
-  `schirmziit://enroll?url=…&code=…` payload meant for a camera, and `PairDevice`
-  shows the code and the server address as text instead: rendering a QR needs an
-  encoder, and no dependency here has one. Until that lands, `pairStep2` says
-  "type" in all four languages — the copy follows the code, not the intention.
-- **The iPhone parent mode mints no code and deletes no data.** Both now exist in
-  the dashboard (`PairDevice`, `PurgeData`); `ChildrenView`/`ChildDetailView` owe
-  the same two controls.
+  `schirmziit://enroll?url=…&code=…` payload meant for a camera, and both
+  `PairDevice` and `PairDeviceView` show the code and the server address as text
+  instead: rendering a QR needs an encoder, and no dependency here has one. Until
+  that lands, the second step says "type" in all four languages on both surfaces
+  — the copy follows the code, not the intention.
+- **The iPhone parent mode deletes no data.** `PurgeData` exists in the dashboard
+  and `ChildDetailView` owes the same control. Minting a code is no longer on
+  this list: `PairDeviceView` sits at the foot of the same screen, deliberately
+  outside the usage load so a family whose phone never reported can still enrol
+  one.
 - **Nothing reads `/v1/children/{id}/summary`.** The route is in `openapi.json`
   and no client calls it.

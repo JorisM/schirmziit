@@ -148,6 +148,13 @@ struct ChildDetailView: View {
                 Section { RowsSkeleton() }
                 Section { RibbonSkeleton() }
             }
+
+            // Outside `if let usage` deliberately, and last: a parent arrives
+            // here to read numbers, and connecting another phone is the rarer
+            // errand — but it must not wait on today's figures. Hiding it behind
+            // a failed usage fetch is how a family ends up unable to enrol the
+            // very phone whose absence is the gap they are looking at.
+            PairDeviceView(client: client, childId: child.id)
         }
         .navigationTitle(child.displayName)
         .confirmationDialog(

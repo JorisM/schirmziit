@@ -349,6 +349,40 @@ final class SnapshotTests: XCTestCase {
         )
     }
 
+    /// The card a parent reads six characters off, and the state it turns into
+    /// fifteen minutes later.
+    ///
+    /// Fixed instants and an explicit zone: `Text(date, format:)` follows the
+    /// environment, so a wall-clock expiry would render a different time on
+    /// every run and on every machine. The far-future one is what keeps the
+    /// "valid until" image from expiring on its own some morning.
+    private func pairing(expiresAt: Double, expired: Bool) -> some View {
+        List {
+            PairDeviceView(
+                client: ApiClient(),
+                childId: "kid",
+                enrollment: EnrollmentResponse(
+                    code: "A2B3C4",
+                    expiresAt: Date(timeIntervalSince1970: expiresAt),
+                    qrPayload: "schirmziit://enroll?url=https://api.schirmziit.ch&code=A2B3C4"
+                ),
+                expired: expired
+            )
+        }
+        .schirmziitList()
+        .environment(\.timeZone, TimeZone(identifier: "Europe/Zurich")!)
+    }
+
+    func testPairDevice() {
+        assert(pairing(expiresAt: 4_091_498_100, expired: false), named: "pair-device")
+    }
+
+    /// An expired code shown as usable sends a parent to a phone that refuses
+    /// it, so this is a different image, not a restyled line of the one above.
+    func testPairDeviceExpired() {
+        assert(pairing(expiresAt: 1_787_814_900, expired: true), named: "pair-device-expired")
+    }
+
     func testDayRibbon() {
         // Fixed figures: a ribbon that changes shape between runs is not a
         // snapshot test, it is a random image generator.

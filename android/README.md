@@ -9,7 +9,7 @@ matters and is tested: the token is stored before the logout, and a failed claim
 stores nothing but still logs out. A child's phone must never be left holding a
 parent session.
 
-**Pairing codes still work** (QR or eight characters typed), for the case where
+**Pairing codes still work** (QR or six characters typed), for the case where
 the parent is not standing there. That is the only reason the code path exists.
 
 The parent dashboard itself is web and iOS for now; this app is the child side.

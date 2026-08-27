@@ -81,6 +81,14 @@ actor ApiClient {
         try await send(path: path, method: "POST", body: try JSONEncoder().encode(body), as: type)
     }
 
+    /// A `POST` whose whole request is its route. Minting an enrollment takes no
+    /// body — the session says which family, the path says which child — and
+    /// sending `{}` would put a Content-Type on the wire for a body the handler
+    /// does not read.
+    func post<T: Decodable & Sendable>(_ path: String, as type: T.Type) async throws -> T {
+        try await send(path: path, method: "POST", body: nil, as: type)
+    }
+
     /// The server answers a delete with 204 and no body, so there is nothing to
     /// decode — a `Decodable` variant would throw on success.
     func delete(_ path: String) async throws {

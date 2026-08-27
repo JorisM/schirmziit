@@ -12,7 +12,7 @@
     <string name="pair_body">Scansiona il codice mostrato nella panoramica dei tuoi genitori — oppure digitalo.</string>
     <string name="pair_scan">Scansiona il codice QR</string>
     <string name="pair_server">Indirizzo del server</string>
-    <string name="pair_code">Codice di otto caratteri</string>
+    <string name="pair_code">Codice di sei caratteri</string>
     <string name="pair_submit">Collega</string>
     <string name="pair_working">Collegamento…</string>
     <string name="pair_failed">Collegamento non riuscito: %1$s</string>

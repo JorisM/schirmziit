@@ -88,7 +88,7 @@ export const fr: Strings = {
     revoked: 'déconnecté',
     pairTitle: 'Connecter un téléphone',
     pairStep1: 'Ouvre Schirmziit sur le téléphone de l’enfant.',
-    pairStep2: 'Saisis-y les huit caractères, ainsi que l’adresse du serveur ci-dessous.',
+    pairStep2: 'Saisis-y les six caractères, ainsi que l’adresse du serveur ci-dessous.',
     pairStep3: 'C’est fait. Le téléphone envoie ensuite ses données environ toutes les 30 minutes.',
     codeExpires: 'Valable jusqu’à',
     codeLabel: 'Code',

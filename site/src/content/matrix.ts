@@ -61,7 +61,7 @@ export const matrix: MatrixRow[] = [
   { key: 'childOwnNumbers', group: 'view', status: { android: 'yes', ios: 'yes', web: null } },
   { key: 'manageChildren', group: 'view', status: { android: null, ios: 'yes', web: 'yes' } },
   { key: 'revokeDevice', group: 'view', status: { android: null, ios: 'yes', web: 'yes' } },
-  { key: 'pairingCode', group: 'view', status: { android: null, ios: 'no', web: 'yes' } },
+  { key: 'pairingCode', group: 'view', status: { android: null, ios: 'yes', web: 'yes' } },
   { key: 'deleteData', group: 'view', status: { android: null, ios: 'no', web: 'yes' } },
   { key: 'helpLinks', group: 'view', status: { android: 'yes', ios: 'yes', web: 'yes' } },
   { key: 'languages', group: 'view', status: { android: 'yes', ios: 'yes', web: 'yes' } },

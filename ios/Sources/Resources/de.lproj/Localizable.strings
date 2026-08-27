@@ -47,6 +47,19 @@
 "devices.revoke.body" = "Dieses Handy hört sofort auf zu melden. Die bisher gesammelten Zahlen bleiben.";
 "devices.revoke.confirm" = "Ja, trennen";
 
+"devices.pair.title" = "Handy verbinden";
+"devices.pair.step1" = "Öffne Schirmziit auf dem Handy des Kindes.";
+"devices.pair.step2" = "Tippe dort die sechs Zeichen ein, dazu die Serveradresse unten.";
+"devices.pair.step3" = "Fertig. Das Handy meldet sich danach etwa alle 30 Minuten.";
+"devices.pair.code" = "Code";
+"devices.pair.server" = "Serveradresse";
+"devices.pair.server.hint" = "Genau diese Adresse muss das Kinderhandy erreichen — sonst verbindet es sich einmal und meldet danach nie wieder.";
+"devices.pair.expires" = "Gültig bis";
+"devices.pair.expired" = "Dieser Code ist abgelaufen. Erzeuge einen neuen.";
+"devices.pair.create" = "Code erzeugen";
+"devices.pair.working" = "Code wird erzeugt …";
+"devices.pair.new" = "Neuen Code erzeugen";
+
 "help.title" = "Wie Schirmziit funktioniert";
 "help.intro" = "Schirmziit zeigt, wie lange und wann das Handy deines Kindes benutzt wird. Nichts davon ist geheim: das Kind sieht dieselben Zahlen auf seinem Handy.";
 "help.measures.title" = "Was Schirmziit misst";
@@ -86,7 +99,7 @@
 "agent.pairing.server" = "Server";
 "agent.pairing.server.placeholder" = "https://schirmziit.beispiel.ch";
 "agent.pairing.code" = "Code";
-"agent.pairing.code.placeholder" = "ABCD1234";
+"agent.pairing.code.placeholder" = "K7MPQ2";
 "agent.pairing.code.hint" = "Der Code steht im Dashboard und gilt einmal.";
 "agent.pairing.label" = "Name dieses Handys";
 "agent.pairing.label.placeholder" = "Mein iPhone";

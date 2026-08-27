@@ -11,8 +11,6 @@
 "signin.password" = "Password";
 "signin.submit" = "Sign in";
 "signin.working" = "Signing in…";
-"signin.wrong" = "That email or password is not right.";
-"signin.bad.server" = "That server address does not look right.";
 
 "children.title" = "Children";
 "children.empty" = "No child yet";
@@ -22,7 +20,6 @@
 "children.add.title" = "New child";
 "children.add.placeholder" = "Name, e.g. Lena";
 "children.add.save" = "Add";
-"children.add.empty" = "Give the child a name first.";
 "children.remove" = "Remove";
 "children.remove.body" = "Their phone stops reporting straight away and their figures are no longer shown. You cannot undo this.";
 "children.remove.confirm" = "Yes, remove";
@@ -75,7 +72,6 @@
 "help.notacontrol" = "Schirmziit blocks nothing and filters nothing. It is a basis for a conversation, not a remote control.";
 "help.swiss" = "Made in Switzerland. Free and open source.";
 
-"error.offline" = "No connection to the server.";
 
 "unit.hour" = "h";
 "unit.minute" = "min";
@@ -96,9 +92,6 @@
 "agent.pairing.label.placeholder" = "My iPhone";
 "agent.pairing.submit" = "Connect";
 "agent.pairing.working" = "Connecting…";
-"agent.pairing.badserver" = "That server address does not look right.";
-"agent.pairing.badcode" = "This code is unknown, used up or expired.";
-"agent.pairing.failed" = "Could not reach the server.";
 
 "agent.status.queue" = "Queue";
 "agent.status.pending" = "Hours waiting";
@@ -118,7 +111,6 @@
 "agent.status.syncing" = "Sending…";
 "agent.status.sync.nothing" = "Nothing to send yet — this phone has not recorded any hours.";
 "agent.status.sync.done" = "Sent.";
-"agent.status.sync.failed" = "Sending failed. The figures stay on this phone and are sent later.";
 "agent.status.unpair" = "Disconnect this phone";
 "agent.status.unpair.confirm" = "Stop reporting and forget the server?";
 
@@ -163,8 +155,6 @@
 "agent.setup.parentaccount" = "Your account";
 "agent.setup.continue" = "Sign in";
 "agent.setup.cancel" = "Cancel";
-"agent.setup.badlogin" = "Email or password is wrong.";
-"agent.setup.nochildren" = "Could not read the children on that server.";
 "agent.setup.whose" = "Whose phone is this?";
 "agent.setup.whose.hint" = "Add a child in the dashboard first if the list is empty.";
 "agent.setup.finish" = "Report from this phone";
@@ -172,4 +162,9 @@
 "agent.unlock.body" = "Stopping the reporting needs the parent password for this account.";
 "agent.unlock.submit" = "Stop reporting";
 "agent.unlock.cancel" = "Keep reporting";
-"agent.unlock.wrong" = "That password is not right.";
+
+/* The error panel's own chrome; the per-code copy is generated. */
+"errorpanel.retry" = "Try again";
+"errorpanel.copy" = "Copy details";
+"errorpanel.copied" = "Copied";
+"errorpanel.reference" = "Error code and reference";

@@ -11,8 +11,6 @@
 "signin.password" = "Mot de passe";
 "signin.submit" = "Se connecter";
 "signin.working" = "Connexion…";
-"signin.wrong" = "Cet e-mail ou ce mot de passe n'est pas correct.";
-"signin.bad.server" = "Cette adresse de serveur ne semble pas correcte.";
 
 "children.title" = "Enfants";
 "children.empty" = "Aucun enfant";
@@ -22,7 +20,6 @@
 "children.add.title" = "Nouvel enfant";
 "children.add.placeholder" = "Prénom, p. ex. Lena";
 "children.add.save" = "Ajouter";
-"children.add.empty" = "Donne d’abord un prénom à l’enfant.";
 "children.remove" = "Retirer";
 "children.remove.body" = "Son téléphone arrête aussitôt d’envoyer, et ses chiffres ne sont plus affichés. Tu ne peux pas revenir en arrière.";
 "children.remove.confirm" = "Oui, retirer";
@@ -75,7 +72,6 @@
 "help.notacontrol" = "Schirmziit ne bloque rien et ne filtre rien. C'est une base de discussion, pas une télécommande.";
 "help.swiss" = "Développé en Suisse. Libre et open source.";
 
-"error.offline" = "Pas de connexion au serveur.";
 
 "unit.hour" = "h";
 "unit.minute" = "min";
@@ -96,9 +92,6 @@
 "agent.pairing.label.placeholder" = "Mon iPhone";
 "agent.pairing.submit" = "Connecter";
 "agent.pairing.working" = "Connexion…";
-"agent.pairing.badserver" = "Cette adresse de serveur ne semble pas correcte.";
-"agent.pairing.badcode" = "Ce code est inconnu, déjà utilisé ou expiré.";
-"agent.pairing.failed" = "Le serveur est injoignable.";
 
 "agent.status.queue" = "File d'attente";
 "agent.status.pending" = "Heures en attente";
@@ -118,7 +111,6 @@
 "agent.status.syncing" = "Envoi…";
 "agent.status.sync.nothing" = "Rien à envoyer — ce téléphone n’a encore enregistré aucune heure.";
 "agent.status.sync.done" = "Envoyé.";
-"agent.status.sync.failed" = "Envoi échoué. Les chiffres restent sur le téléphone et partiront plus tard.";
 "agent.status.unpair" = "Déconnecter ce téléphone";
 "agent.status.unpair.confirm" = "Arrêter la transmission et oublier le serveur ?";
 
@@ -163,8 +155,6 @@
 "agent.setup.parentaccount" = "Ton compte";
 "agent.setup.continue" = "Se connecter";
 "agent.setup.cancel" = "Annuler";
-"agent.setup.badlogin" = "E-mail ou mot de passe incorrect.";
-"agent.setup.nochildren" = "Impossible de lire les enfants sur ce serveur.";
 "agent.setup.whose" = "À qui est ce téléphone ?";
 "agent.setup.whose.hint" = "Si la liste est vide, ajoute d'abord l'enfant dans le tableau de bord.";
 "agent.setup.finish" = "Transmettre depuis ce téléphone";
@@ -172,4 +162,9 @@
 "agent.unlock.body" = "Arrêter la transmission demande le mot de passe parent de ce compte.";
 "agent.unlock.submit" = "Arrêter la transmission";
 "agent.unlock.cancel" = "Continuer";
-"agent.unlock.wrong" = "Ce mot de passe n'est pas correct.";
+
+/* The error panel's own chrome; the per-code copy is generated. */
+"errorpanel.retry" = "Réessayer";
+"errorpanel.copy" = "Copier les détails";
+"errorpanel.copied" = "Copié";
+"errorpanel.reference" = "Code d'erreur et référence";

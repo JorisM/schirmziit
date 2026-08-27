@@ -28,23 +28,27 @@ final class ChildDetailViewTests: XCTestCase {
     )
 
     private let problemBody = Data(
-        #"{"type":"about:blank","title":"error","status":502,"detail":"bad gateway"}"#.utf8
+        #"{"type":"about:blank","title":"error","status":502,"detail":"bad gateway","code":"SZ-E901","ref":"aa11bb"}"#.utf8
     )
 
     /// The finding this test exists for: a 502 must come back as a `.failure`
-    /// carrying the server's own message, never as a value a caller can read as
-    /// "nothing to report" and zero-fill a fortnight from.
-    func testFetchUsageReturnsTheProblemDetailOnFailure() async {
+    /// carrying the server's own code and reference, never as a value a caller
+    /// can read as "nothing to report" and zero-fill a fortnight from.
+    ///
+    /// It carries the code, not the server's `detail`: that sentence is English
+    /// and exists for the log and the copy-details block.
+    func testFetchUsageReturnsTheProblemCodeOnFailure() async {
         let client = await stubbedClient { _ in (502, self.problemBody) }
 
         let outcome = await ChildDetailView.fetchUsage(
             client: client, childId: "kid", from: "2026-08-11", to: "2026-08-24", bucket: "day"
         )
 
-        guard case .failure(let message) = outcome else {
+        guard case .failure(let error) = outcome else {
             return XCTFail("a 502 must be a failure, got \(outcome)")
         }
-        XCTAssertEqual(message, "bad gateway")
+        XCTAssertEqual(error.code.wire, "SZ-E901")
+        XCTAssertEqual(error.ref, "aa11bb")
     }
 
     func testFetchUsageReturnsTheDecodedResponseOnSuccess() async {

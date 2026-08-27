@@ -9,7 +9,13 @@ import Observation
 public final class AgentModel {
     public private(set) var status: AgentStatus = .needsPairing
     public private(set) var isBusy = false
-    public private(set) var lastError: String?
+    /// Typed, like everywhere else: a code the child or the parent can read
+    /// off the screen, and a reference that identifies this one occurrence.
+    ///
+    /// Internal rather than public, unlike the rest of this model: only the
+    /// views in this framework render it, and making it public would drag
+    /// `AppError`'s whole surface out with it for no caller that exists.
+    private(set) var lastError: AppError?
     /// What the last "send now" did, so the button visibly answers.
     public private(set) var lastSyncNote: String?
     public private(set) var sharedContainerAvailable = GroupContainer.isShared()
@@ -120,13 +126,20 @@ public final class AgentModel {
             // Nothing is recorded until the schedule exists, so start it the
             // moment permission lands rather than at the next launch.
             try? monitoring.start()
+        } else if result == .denied {
+            // A refusal the parent just made, so it gets a code and a reference
+            // like any other failed action. The standing "needs permission"
+            // screen still covers the case where it was never granted —
+            // `.unavailable` stays there too, since a missing entitlement is
+            // not something anyone on this phone can act on.
+            lastError = AppError.local(.screenTimeAuthorisationDenied)
         }
         refresh()
     }
 
     public func pair(server: String, code: String, label: String) async {
         guard let url = Self.normalisedServer(server) else {
-            lastError = String(localized: "agent.pairing.badserver")
+            lastError = AppError.local(.baseUrlNotConfigured)
             return
         }
 
@@ -147,9 +160,16 @@ public final class AgentModel {
             )
             try? monitoring.start()
         } catch AgentClientError.unknownCode {
-            lastError = String(localized: "agent.pairing.badcode")
+            lastError = AppError.local(.pairingCodeInvalid)
+        } catch let error as CredentialStoreError {
+            // The enrolment worked and the token could not be kept. Saying
+            // "pairing failed" would send a parent round the loop again to hit
+            // the same keychain.
+            lastError = AppError.local(error.code)
+        } catch let error as AppError {
+            lastError = error
         } catch {
-            lastError = String(localized: "agent.pairing.failed")
+            lastError = AppError.transport(error, endpoint: "v1/enroll")
         }
         refresh()
     }
@@ -167,8 +187,10 @@ public final class AgentModel {
             lastSyncNote = outcome.sent == 0 && outcome.remaining == 0
                 ? String(localized: "agent.status.sync.nothing")
                 : String(localized: "agent.status.sync.done")
+        } catch let error as AppError {
+            lastError = error
         } catch {
-            lastError = String(localized: "agent.status.sync.failed")
+            lastError = AppError.transport(error, endpoint: "v1/ingest")
         }
         refresh()
     }
@@ -254,7 +276,7 @@ public final class AgentModel {
     /// session stays in memory only.
     public func signInForChildSetup(server: String, email: String, password: String) async -> Bool {
         guard let url = Self.normalisedServer(server) else {
-            lastError = String(localized: "pairing.badserver")
+            lastError = AppError.local(.baseUrlNotConfigured)
             return false
         }
 
@@ -265,15 +287,19 @@ public final class AgentModel {
         guard let cookie = await ChildSetup.signIn(
             baseURL: url, transport: transport, email: email, password: password
         ) else {
-            lastError = String(localized: "agent.setup.badlogin")
+            lastError = AppError.local(.invalidCredentials)
             return false
         }
 
         let setup = ChildSetup(baseURL: url, transport: transport, sessionCookie: cookie)
         do {
             setupChildren = try await setup.children()
+        } catch let error as AppError {
+            lastError = error
+            await setup.endSession()
+            return false
         } catch {
-            lastError = String(localized: "agent.setup.nochildren")
+            lastError = AppError.transport(error, endpoint: "v1/children")
             await setup.endSession()
             return false
         }
@@ -310,8 +336,14 @@ public final class AgentModel {
                     parentEmail: session.email
                 )
             )
+        } catch let error as CredentialStoreError {
+            lastError = AppError.local(error.code)
+            return false
+        } catch let error as AppError {
+            lastError = error
+            return false
         } catch {
-            lastError = String(localized: "pairing.failed")
+            lastError = AppError.transport(error, endpoint: "v1/children/claim")
             return false
         }
 
@@ -355,7 +387,7 @@ public final class AgentModel {
         guard let cookie = await ChildSetup.signIn(
             baseURL: stored.baseURL, transport: transport, email: email, password: password
         ) else {
-            lastError = String(localized: "agent.unlock.wrong")
+            lastError = AppError.local(.wrongParentPassword)
             return false
         }
 

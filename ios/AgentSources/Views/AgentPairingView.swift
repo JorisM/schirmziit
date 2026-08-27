@@ -36,10 +36,7 @@ struct AgentPairingView: View {
             }
 
             if let error = model.lastError {
-                Section {
-                    Label(error, systemImage: "exclamationmark.triangle.fill")
-                        .foregroundStyle(Palette.urgent)
-                }
+                Section { ErrorView(error: error) }
             }
 
             Section {

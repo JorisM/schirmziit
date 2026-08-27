@@ -7,9 +7,13 @@ import { api } from '../api/client'
 import { clearErrorLog, fromProblem } from '../api/errors'
 
 const enrollment = {
-  code: 'K7MPQ2XY',
-  expires_at: '2026-08-27T10:15:00Z',
-  qr_payload: 'schirmziit://enroll?url=https://schirmziit.example.ch&code=K7MPQ2XY',
+  code: 'K7MPQ2',
+  // The server's own window, measured from now. A fixed instant here passes
+  // until the wall clock reaches it and then fails for everyone afterwards —
+  // which is exactly what this fixture did, silently, an afternoon after it
+  // was written. The expired case below sets its own past instant on purpose.
+  expires_at: new Date(Date.now() + 15 * 60_000).toISOString(),
+  qr_payload: 'schirmziit://enroll?url=https://schirmziit.example.ch&code=K7MPQ2',
 }
 
 const renderPanel = () =>
@@ -40,7 +44,7 @@ describe('PairDevice', () => {
 
     await userEvent.click(screen.getByRole('button', { name: locales.en.devices.pairCreateCode }))
 
-    await waitFor(() => expect(screen.getByText('K7MPQ2XY')).toBeTruthy())
+    await waitFor(() => expect(screen.getByText('K7MPQ2')).toBeTruthy())
     expect(post).toHaveBeenCalledWith('/v1/children/kid/enrollments')
     // The address is the half of the pairing a wrong value breaks silently: the
     // phone enrols once against the wrong host and then never reports.
@@ -54,8 +58,8 @@ describe('PairDevice', () => {
 
     await userEvent.click(screen.getByRole('button', { name: locales.en.devices.pairCreateCode }))
 
-    await waitFor(() => expect(screen.getByText('K7MPQ2XY')).toBeTruthy())
-    // The deep link is a machine string. A parent reads eight characters aloud,
+    await waitFor(() => expect(screen.getByText('K7MPQ2')).toBeTruthy())
+    // The deep link is a machine string. A parent reads six characters aloud,
     // so the payload must never be what is put in front of them as "the code".
     expect(screen.queryByText(/schirmziit:\/\//)).toBeNull()
   })
@@ -65,7 +69,7 @@ describe('PairDevice', () => {
     renderPanel()
 
     await userEvent.click(screen.getByRole('button', { name: locales.en.devices.pairCreateCode }))
-    await waitFor(() => expect(screen.getByText('K7MPQ2XY')).toBeTruthy())
+    await waitFor(() => expect(screen.getByText('K7MPQ2')).toBeTruthy())
     await userEvent.click(screen.getByRole('button', { name: locales.en.devices.pairNewCode }))
 
     await waitFor(() => expect(post).toHaveBeenCalledTimes(2))

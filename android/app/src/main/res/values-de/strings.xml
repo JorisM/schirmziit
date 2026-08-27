@@ -13,7 +13,7 @@
     <string name="pair_body">Scanne den Code, den die Übersicht deiner Eltern zeigt — oder tippe ihn ein.</string>
     <string name="pair_scan">QR-Code scannen</string>
     <string name="pair_server">Server-Adresse</string>
-    <string name="pair_code">Code mit acht Zeichen</string>
+    <string name="pair_code">Code mit sechs Zeichen</string>
     <string name="pair_submit">Verbinden</string>
     <string name="pair_working">Verbinde…</string>
     <string name="pair_failed">Verbinden nicht möglich: %1$s</string>

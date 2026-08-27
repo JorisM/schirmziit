@@ -12,7 +12,7 @@ type Enrollment = components['schemas']['EnrollmentResponse']
  *
  * Deliberately not minted on render: a code lives fifteen minutes and can be
  * claimed once, so a page that mints on arrival hands out a code nobody asked
- * for and burns it. The parent presses, then reads eight characters aloud.
+ * for and burns it. The parent presses, then reads six characters aloud.
  *
  * The deep link (`schirmziit://enroll?url=…&code=…`) carries the server address
  * as well as the code, which is why the address is shown next to it: a phone
@@ -81,7 +81,7 @@ export function PairDevice({ childId }: { childId: string }) {
             <p className="text-sm" style={{ color: 'var(--ink-faint)' }}>
               {t.devices.codeLabel}
             </p>
-            {/* Tracked wide and monospaced: these eight characters get read out
+            {/* Tracked wide and monospaced: these six characters get read out
                 loud and typed on a phone, one character at a time. */}
             <p className="font-display tabular text-4xl leading-none tracking-[0.12em]">{code.code}</p>
           </div>

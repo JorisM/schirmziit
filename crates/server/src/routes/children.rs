@@ -15,7 +15,12 @@ use uuid::Uuid;
 
 /// No 0/O/1/I/L: parents read these codes aloud and type them on a phone.
 pub const ENROLL_ALPHABET: &str = "23456789ABCDEFGHJKMNPQRSTVWXYZ";
-const ENROLL_LEN: usize = 8;
+/// Six over this alphabet is 30^6 ≈ 7.3·10^8 codes, ~900× fewer than eight.
+/// It stays out of guessing range only because a code is single-use and lives
+/// fifteen minutes — so the rate limit in front of `POST /v1/enroll` is part of
+/// this number, not an optional extra: a guessed code is a device token for
+/// another family's child.
+const ENROLL_LEN: usize = 6;
 const ENROLL_TTL_MINUTES: i64 = 15;
 /// Three missed 30-minute syncs.
 const STALE_AFTER_MINUTES: i64 = 90;

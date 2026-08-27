@@ -88,7 +88,7 @@ export const de: Strings = {
     revoked: 'getrennt',
     pairTitle: 'Handy verbinden',
     pairStep1: 'Öffne Schirmziit auf dem Handy des Kindes.',
-    pairStep2: 'Tippe dort die acht Zeichen ein, dazu die Serveradresse unten.',
+    pairStep2: 'Tippe dort die sechs Zeichen ein, dazu die Serveradresse unten.',
     pairStep3: 'Fertig. Das Handy meldet sich danach etwa alle 30 Minuten.',
     codeExpires: 'Gültig bis',
     codeLabel: 'Code',

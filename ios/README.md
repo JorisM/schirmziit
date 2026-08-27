@@ -16,14 +16,23 @@ Pairing codes still exist for the case where the parent is not there to sign in;
 the parent-session path is what removes the typing for everyone else.
 
 **Parent mode manages the family, not just reads it.** The children list adds a
-child and removes one; a child's screen disconnects one of their phones. All
-three go through `static func`s (`ChildrenView.create`/`.remove`,
-`ChildDetailView.revokeDevice`) returning a `WriteOutcome`, for the same reason
-`fetchUsage` is one: these views own no `@Observable` model, and `@State` on a
-view SwiftUI has not installed silently loses writes, so the testable part stays
-out of the view lifecycle. Both destructive actions are a swipe with
-`allowsFullSwipe: false` followed by a named confirmation — the swipe opens the
-question, never answers it.
+child and removes one; a child's screen disconnects one of their phones and mints
+the code that connects the next one. All four go through `static func`s
+(`ChildrenView.create`/`.remove`, `ChildDetailView.revokeDevice`,
+`PairDeviceView.mintCode`), for the same reason `fetchUsage` is one: these views
+own no `@Observable` model, and `@State` on a view SwiftUI has not installed
+silently loses writes, so the testable part stays out of the view lifecycle. Both
+destructive actions are a swipe with `allowsFullSwipe: false` followed by a named
+confirmation — the swipe opens the question, never answers it.
+
+`PairDeviceView` sits at the foot of the child's screen, **outside** the usage
+load: a family whose phone has never reported is exactly the family that needs to
+enrol one, and hiding the control behind a failed fetch would lock them out of
+the fix. It mints on press, never on appearance — a code lives fifteen minutes
+and is claimable once — and shows the server address from the deep link beside
+it, because a phone enrolled against the wrong host enrols once and then goes
+quiet for good. Typed, not scanned: rendering the `schirmziit://enroll?…` payload
+as a QR needs an encoder no target here has.
 
 Removing a child also revokes that child's devices, on the server, in one
 transaction. Without it the phone keeps uploading: the device token is

@@ -87,7 +87,7 @@ export const en: Strings = {
     revoked: 'disconnected',
     pairTitle: 'Connect a phone',
     pairStep1: 'Open Schirmziit on your child’s phone.',
-    pairStep2: 'Type the eight characters there, along with the server address below.',
+    pairStep2: 'Type the six characters there, along with the server address below.',
     pairStep3: 'Done. The phone then reports about every 30 minutes.',
     codeExpires: 'Valid until',
     codeLabel: 'Code',

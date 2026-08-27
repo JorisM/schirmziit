@@ -47,6 +47,19 @@
 "devices.revoke.body" = "Ce téléphone arrête aussitôt d’envoyer. Les chiffres déjà collectés restent.";
 "devices.revoke.confirm" = "Oui, déconnecter";
 
+"devices.pair.title" = "Connecter un téléphone";
+"devices.pair.step1" = "Ouvre Schirmziit sur le téléphone de l’enfant.";
+"devices.pair.step2" = "Saisis-y les six caractères, ainsi que l’adresse du serveur ci-dessous.";
+"devices.pair.step3" = "C’est fait. Le téléphone envoie ensuite ses données environ toutes les 30 minutes.";
+"devices.pair.code" = "Code";
+"devices.pair.server" = "Adresse du serveur";
+"devices.pair.server.hint" = "C’est exactement cette adresse que le téléphone de l’enfant doit pouvoir joindre — sinon il se connecte une fois et n’envoie plus rien ensuite.";
+"devices.pair.expires" = "Valable jusqu’à";
+"devices.pair.expired" = "Ce code a expiré. Crée un nouveau code.";
+"devices.pair.create" = "Créer un code";
+"devices.pair.working" = "Création du code…";
+"devices.pair.new" = "Créer un nouveau code";
+
 "help.title" = "Comment fonctionne Schirmziit";
 "help.intro" = "Schirmziit montre combien de temps et à quel moment le téléphone de ton enfant est utilisé. Rien n'est caché : l'enfant voit les mêmes chiffres sur son téléphone.";
 "help.measures.title" = "Ce que Schirmziit mesure";
@@ -86,7 +99,7 @@
 "agent.pairing.server" = "Serveur";
 "agent.pairing.server.placeholder" = "https://schirmziit.exemple.ch";
 "agent.pairing.code" = "Code";
-"agent.pairing.code.placeholder" = "ABCD1234";
+"agent.pairing.code.placeholder" = "K7MPQ2";
 "agent.pairing.code.hint" = "Le code s'affiche dans le tableau de bord et ne sert qu'une fois.";
 "agent.pairing.label" = "Nom de ce téléphone";
 "agent.pairing.label.placeholder" = "Mon iPhone";

@@ -17,7 +17,7 @@
     <string name="pair_body">Scan the code your parent’s dashboard shows, or type it in.</string>
     <string name="pair_scan">Scan QR code</string>
     <string name="pair_server">Server address</string>
-    <string name="pair_code">8-character code</string>
+    <string name="pair_code">6-character code</string>
     <string name="pair_submit">Connect</string>
     <string name="pair_working">Connecting…</string>
     <string name="pair_failed">Could not connect: %1$s</string>

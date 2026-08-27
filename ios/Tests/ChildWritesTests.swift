@@ -1,8 +1,9 @@
 import XCTest
 @testable import SchirmziitKit
 
-/// The three writes the parent app can make: add a child, remove a child,
-/// disconnect a phone. Two of them are irreversible, so what matters is not
+/// The four writes the parent app can make: add a child, remove a child,
+/// disconnect a phone, mint a pairing code. Two of them are irreversible, so
+/// what matters is not
 /// only that they reach the right route — it is that a *failure* comes back as a
 /// failure. A delete that swallows its 502 and returns "done" is how a parent
 /// ends up believing a phone has stopped reporting while it has not.
@@ -148,5 +149,60 @@ final class ChildWritesTests: XCTestCase {
             return XCTFail("a 502 must be a failure, got \(outcome)")
         }
         XCTAssertEqual(error.code.wire, "SZ-E901")
+    }
+
+    // MARK: - Minting a pairing code
+
+    private let enrollmentBody = Data(
+        #"""
+        {"code":"A2B3C4","expires_at":"2026-08-27T09:15:00Z",
+         "qr_payload":"schirmziit://enroll?url=https://api.schirmziit.ch&code=A2B3C4"}
+        """#.utf8
+    )
+
+    func testMintingACodePostsToThatChildsEnrollmentsRoute() async {
+        let client = await stubbedClient(status: 201, body: enrollmentBody)
+
+        let outcome = await PairDeviceView.mintCode(client: client, childId: "kid")
+
+        guard case .success(let enrollment) = outcome else {
+            return XCTFail("a 201 must be a success, got \(outcome)")
+        }
+        XCTAssertEqual(enrollment.code, "A2B3C4")
+        XCTAssertEqual(Self.sent.all.map(\.method), ["POST"])
+        XCTAssertEqual(Self.sent.all.first?.path, "/v1/children/kid/enrollments")
+    }
+
+    /// One press, one code. Every mint burns a code the server keeps for fifteen
+    /// minutes, so a card that quietly asked twice would hand out one the parent
+    /// never sees and cannot use.
+    func testMintingACodeSendsExactlyOneRequest() async {
+        let client = await stubbedClient(status: 201, body: enrollmentBody)
+
+        _ = await PairDeviceView.mintCode(client: client, childId: "kid")
+
+        XCTAssertEqual(Self.sent.all.count, 1)
+    }
+
+    func testAFailedMintCarriesTheProblemCode() async {
+        let client = await stubbedClient(status: 502, body: problemBody)
+
+        let outcome = await PairDeviceView.mintCode(client: client, childId: "kid")
+        guard case .failure(let error) = outcome else {
+            return XCTFail("a 502 must be a failure, got \(outcome)")
+        }
+        XCTAssertEqual(error.code.wire, "SZ-E901")
+        XCTAssertEqual(error.ref, "aa11bb")
+    }
+
+    /// A captive portal, a proxy page, a server one version behind: whatever
+    /// came back, it is not a code. Reading it as one would put an empty card on
+    /// screen for a parent to read six characters off.
+    func testAMintThatDoesNotAnswerWithACodeIsAFailure() async {
+        let client = await stubbedClient(status: 200, body: Data("<html>sign in to the guest wifi</html>".utf8))
+
+        guard case .failure = await PairDeviceView.mintCode(client: client, childId: "kid") else {
+            return XCTFail("a body that is not an enrollment must not read as one")
+        }
     }
 }

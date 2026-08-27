@@ -12,7 +12,7 @@
     <string name="pair_body">Scanne le code affiché sur le tableau de bord de tes parents — ou saisis-le.</string>
     <string name="pair_scan">Scanner le code QR</string>
     <string name="pair_server">Adresse du serveur</string>
-    <string name="pair_code">Code à huit caractères</string>
+    <string name="pair_code">Code à six caractères</string>
     <string name="pair_submit">Connecter</string>
     <string name="pair_working">Connexion…</string>
     <string name="pair_failed">Connexion impossible : %1$s</string>

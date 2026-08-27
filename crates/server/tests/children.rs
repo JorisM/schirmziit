@@ -40,7 +40,10 @@ async fn enrollment_code_is_human_typable_and_carries_the_public_url(pool: PgPoo
     assert_eq!(enrollment.status, StatusCode::CREATED);
 
     let code = enrollment.json["code"].as_str().unwrap();
-    assert_eq!(code.len(), 8);
+    // Six characters, because a parent types them on a phone with a child
+    // waiting. Every surface's copy names this length, so a change here is a
+    // change to four languages on three clients.
+    assert_eq!(code.len(), 6);
     assert!(
         code.chars()
             .all(|c| schirmziit_server::routes::children::ENROLL_ALPHABET.contains(c)),

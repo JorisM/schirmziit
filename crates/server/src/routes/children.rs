@@ -10,7 +10,7 @@ use axum::{
     routing::{delete, get, post},
 };
 use chrono::{Duration, Utc};
-use rand::Rng;
+use rand::RngExt;
 use uuid::Uuid;
 
 /// No 0/O/1/I/L: parents read these codes aloud and type them on a phone.

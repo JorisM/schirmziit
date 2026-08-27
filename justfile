@@ -98,6 +98,13 @@ xcode_clang := xcode_dir + "/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang"
 apple := if os() == "macos" { "env -u SDKROOT -u NIX_CFLAGS_COMPILE -u NIX_LDFLAGS DEVELOPER_DIR=" + xcode_dir + " CARGO_TARGET_AARCH64_APPLE_IOS_LINKER=" + xcode_clang + " CARGO_TARGET_AARCH64_APPLE_IOS_SIM_LINKER=" + xcode_clang } else { "" }
 xcb := if os() == "macos" { "env -i HOME=" + env('HOME') + " USER=" + env('USER') + " TMPDIR=" + env('TMPDIR', '/tmp') + " LANG=en_US.UTF-8 PATH=/usr/bin:/bin:/usr/sbin:/sbin xcodebuild" } else { "xcodebuild" }
 
+# The simulator the gates and the goldens run on. One variable, because the
+# snapshot images are device-specific: recording on a different model rewrites
+# every golden, and a `-destination` typo makes xcodebuild list every runtime it
+# has instead of saying the name is wrong. `bin/ios-check` reads this with
+# `just --evaluate ios_sim`, so there is one name, in one place.
+ios_sim := env("SCHIRMZIIT_IOS_SIM", "iPhone 17 Pro")
+
 # The child agent and the parent viewer share the Rust core through a Swift
 # xcframework. Both simulator and device slices, so `ios-check` needs no signing.
 ios-core:
@@ -121,7 +128,7 @@ ios-project: ios-core
 # Both apps, on the simulator, unsigned. Not part of `check`: CI runs on Linux.
 ios-check: ios-project
     cd ios && {{ xcb }} -project Schirmziit.xcodeproj -scheme Schirmziit \
-        -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test CODE_SIGNING_ALLOWED=NO
+        -destination 'platform=iOS Simulator,name={{ ios_sim }}' test CODE_SIGNING_ALLOWED=NO
 
 # Re-record the screen images, deliberately: delete them, then let the run write
 # what is missing. Reports failures for every image it writes — that is the
@@ -129,9 +136,9 @@ ios-check: ios-project
 ios-record: ios-project
     rm -rf ios/Tests/__Snapshots__
     -cd ios && {{ xcb }} -project Schirmziit.xcodeproj -scheme Schirmziit \
-        -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test CODE_SIGNING_ALLOWED=NO
+        -destination 'platform=iOS Simulator,name={{ ios_sim }}' test CODE_SIGNING_ALLOWED=NO
     cd ios && {{ xcb }} -project Schirmziit.xcodeproj -scheme Schirmziit \
-        -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test CODE_SIGNING_ALLOWED=NO
+        -destination 'platform=iOS Simulator,name={{ ios_sim }}' test CODE_SIGNING_ALLOWED=NO
 
 # ─── Skill ───────────────────────────────────────────────────────────
 # The project skill lives in .claude/skills/schirmziit and is picked up

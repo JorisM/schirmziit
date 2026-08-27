@@ -9,7 +9,7 @@ struct ChildrenView: View {
     /// off-screen snapshot host does not reliably run to completion inside the
     /// settle wait, and a golden of a spinner proves nothing about the screen.
     @State var children: [ChildResponse] = []
-    @State private var errorText: String?
+    @State private var error: AppError?
     @State private var showHelp = false
     @State private var path: [ChildResponse] = []
     @State private var addingChild = false
@@ -23,12 +23,11 @@ struct ChildrenView: View {
     var body: some View {
         NavigationStack(path: $path) {
             List {
-                if let errorText {
-                    Label(errorText, systemImage: "exclamationmark.triangle")
-                        .foregroundStyle(Palette.urgent)
+                if let error {
+                    ErrorView(error: error) { Task { await load() } }
                 }
 
-                if children.isEmpty && errorText == nil {
+                if children.isEmpty && error == nil {
                     VStack(alignment: .leading, spacing: 8) {
                         L("children.empty").font(.headline)
                         L("children.empty.hint")
@@ -161,7 +160,10 @@ struct ChildrenView: View {
         // The Add button is disabled on a blank field; this is the second line
         // of defence. It returns a failure rather than `.ok`, because a request
         // that was never sent must never read as a child that was created.
-        guard !trimmed.isEmpty else { return .failed(S("children.add.empty")) }
+        // SZ-E301 is the catalog's "the server could not use that", which is
+        // what an empty name would have got from the server anyway. The
+        // disabled button is the line of defence a parent actually meets.
+        guard !trimmed.isEmpty else { return .failed(AppError.local(.validationFailed)) }
 
         return await WriteOutcome.of {
             _ = try await client.post(
@@ -183,13 +185,13 @@ struct ChildrenView: View {
         switch await Self.create(client: client, name: newChildName) {
         case .ok:
             newChildName = ""
-            errorText = nil
+            error = nil
             // Re-read rather than append the created child: the list carries
             // today's total per child, and a locally-appended row would sit
             // there at zero even for a child whose phone is already reporting.
             await load()
-        case .failed(let message):
-            errorText = message
+        case .failed(let failure):
+            error = failure
         }
     }
 
@@ -200,12 +202,12 @@ struct ChildrenView: View {
         pendingRemoval = nil
         switch await Self.remove(client: client, childId: child.id) {
         case .ok:
-            errorText = nil
+            error = nil
             await load()
-        case .failed(let message):
+        case .failed(let failure):
             // The row stays: a delete that failed must not leave the parent
             // looking at a list the server does not agree with.
-            errorText = message
+            error = failure
         }
     }
 
@@ -213,11 +215,11 @@ struct ChildrenView: View {
         do {
             let zone = TimeZone.current.identifier
             children = try await client.get("v1/children?tz=\(zone)", as: [ChildResponse].self)
-            errorText = nil
-        } catch let ApiError.problem(problem) {
-            errorText = problem.detail
+            error = nil
+        } catch let caught as AppError {
+            error = caught
         } catch {
-            errorText = S("error.offline")
+            self.error = AppError.transport(error, endpoint: "v1/children")
         }
     }
 }

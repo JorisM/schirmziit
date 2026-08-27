@@ -93,6 +93,40 @@ final class SnapshotTests: XCTestCase {
         assert(RoleChoiceView(onParent: {}, onChild: {}), named: "role-choice")
     }
 
+    // MARK: - Errors
+
+    /// The panel a parent photographs. Four states, because each one is a
+    /// different promise: an urgent failure, an expected one that must not be
+    /// painted red, the detail a report is copied from, and the banner that
+    /// leaves loaded data on screen.
+    private func failure(_ code: ErrorCode, ref: String = "7f3a9c") -> AppError {
+        AppError(code: code, ref: ref, endpoint: "/v1/children", httpStatus: 500)
+    }
+
+    /// Snapshotted inside a list, because that is where every one of these
+    /// actually renders — a bare view would show the panel hard against the
+    /// screen edge and hide whether the insets are right.
+    private func listed<V: View>(_ view: V) -> some View {
+        List { Section { view } }.schirmziitList()
+    }
+
+    func testErrorInline() {
+        assert(listed(ErrorView(error: failure(.internal), onRetry: {})), named: "error-inline")
+    }
+
+    /// Offline is expected and self-correcting. If this image is red, the
+    /// colour that means "something actually broke" has been spent.
+    func testErrorNeutral() {
+        assert(listed(ErrorView(error: failure(.offline))), named: "error-neutral")
+    }
+
+    func testErrorBanner() {
+        assert(
+            listed(ErrorView(error: failure(.internal), placement: .banner, onRetry: {})),
+            named: "error-banner"
+        )
+    }
+
     // MARK: - Child mode
 
     private func agent(

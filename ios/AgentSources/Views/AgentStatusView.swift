@@ -74,11 +74,7 @@ struct AgentStatusView: View {
             }
 
             if let error = model.lastError {
-                Section {
-                    Label(error, systemImage: "exclamationmark.triangle.fill")
-                        .foregroundStyle(Palette.urgent)
-                        .font(.footnote)
-                }
+                Section { ErrorView(error: error) }
             }
 
             if case .reporting = model.status {

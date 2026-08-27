@@ -64,5 +64,17 @@ struct ApiProblem: Codable, Sendable, Error {
     let type: String
     let title: String
     let status: Int
+    /// English, for the server log and the copy-details block. Never rendered:
+    /// the app speaks four languages and looks its copy up by `code`.
     let detail: String
+    /// The catalog code, e.g. `SZ-E201`.
+    ///
+    /// Optional because a self-hoster upgrades their server on their own
+    /// schedule: an app newer than the server it talks to is a normal state for
+    /// this product, and a server from before the catalog shipped sends neither
+    /// this nor `ref`. Requiring them would fail decoding and report a healthy
+    /// old server as "that answer didn't come from your server".
+    let code: String?
+    /// Six hex characters, the head of the server's request id.
+    let ref: String?
 }

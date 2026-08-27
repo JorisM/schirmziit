@@ -12,6 +12,8 @@ import ch.jorisda.schirmziit.agent.ui.theme.SchirmziitTheme
 import ch.jorisda.schirmziit.core.AppTotalFfi
 import ch.jorisda.schirmziit.core.DayDetailFfi
 import ch.jorisda.schirmziit.core.DayTotalFfi
+import com.dropbox.differ.SimpleImageComparator
+import com.github.takahirom.roborazzi.RoborazziOptions
 import com.github.takahirom.roborazzi.captureRoboImage
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -36,10 +38,30 @@ class ScreenshotTest {
         const val LIGHT_EN = "en-w411dp-h891dp-xxhdpi"
     }
 
+    /// Skia rounds premultiplied alpha differently on macOS/arm64 than on the
+    /// Linux/x86-64 runner, so a handful of antialiased edge pixels come out one
+    /// step apart — a dialog shadow renders (161,157,163,211) here and
+    /// (162,158,164,210) there. Roborazzi's default comparator calls that a
+    /// difference (its distance, 0.0078, just clears the 0.007 default) and its
+    /// default validator allows no differing pixel at all, so images recorded on
+    /// one machine can never verify on the other.
+    ///
+    /// Widening the per-pixel distance instead of allowing a budget of changed
+    /// pixels keeps the check strict where it matters: a moved button or a
+    /// wrapped line differs by far more than one step per channel, and is still
+    /// caught by the first pixel it touches.
+    private val comparing = RoborazziOptions(
+        compareOptions = RoborazziOptions.CompareOptions(
+            imageComparator = SimpleImageComparator(maxDistance = 0.01f),
+        ),
+    )
+
     /// Captures the composable directly rather than through a compose rule: the
     /// rule wants a host activity, which a library-less unit test does not have.
     private fun shoot(name: String, content: @Composable () -> Unit) {
-        captureRoboImage("src/test/snapshots/$name.png") { SchirmziitTheme { content() } }
+        captureRoboImage("src/test/snapshots/$name.png", roborazziOptions = comparing) {
+            SchirmziitTheme { content() }
+        }
     }
 
     @Test

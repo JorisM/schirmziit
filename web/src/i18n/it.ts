@@ -86,13 +86,33 @@ export const it: Strings = {
       'Questo telefono smette subito di inviare. I numeri già raccolti restano.',
     revokeConfirm: 'Sì, disconnetti',
     revoked: 'disconnesso',
-    addDevice: 'Collega un telefono',
     pairTitle: 'Collega un telefono',
     pairStep1: 'Apri Schirmziit sul telefono del bambino.',
-    pairStep2: 'Scansiona questo codice — oppure digita gli otto caratteri.',
+    pairStep2: 'Digita lì gli otto caratteri e anche l’indirizzo del server qui sotto.',
     pairStep3: 'Fatto. Il telefono invia poi i dati circa ogni 30 minuti.',
     codeExpires: 'Valido fino a',
     codeLabel: 'Codice',
+    pairCreateCode: 'Crea un codice',
+    pairWorking: 'Creazione del codice…',
+    pairNewCode: 'Crea un nuovo codice',
+    pairServerLabel: 'Indirizzo del server',
+    pairServerHint:
+      'Il telefono del bambino deve raggiungere esattamente questo indirizzo — altrimenti si collega una volta e poi non invia più nulla.',
+    pairExpired: 'Questo codice è scaduto. Creane uno nuovo.',
+  },
+
+  data: {
+    title: 'Dati di questo bambino',
+    body:
+      'Cancella tutti i valori orari e i totali giornalieri salvati per questo bambino. Il bambino e i suoi telefoni restano collegati e continuano a inviare — spariscono solo i numeri raccolti finora.',
+    delete: 'Cancella i dati',
+    deleteBody:
+      'Tutti i valori orari e i totali giornalieri di questo bambino verranno cancellati. Non è reversibile e non esiste un archivio.',
+    deleteConfirm: 'Sì, cancella i dati',
+    deleted: 'Cancellato.',
+    deletedHours: 'Valori orari per app',
+    deletedDeviceHours: 'Ore del dispositivo',
+    deletedDays: 'Totali giornalieri',
   },
 
   help: {

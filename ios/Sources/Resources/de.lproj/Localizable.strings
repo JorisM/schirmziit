@@ -141,6 +141,10 @@
 "agent.help.where" = "Auf dem eigenen Server deiner Familie. Keine Firma dazwischen und nichts an Dritte.";
 "agent.help.yousee.title" = "Du siehst alles";
 "agent.help.yousee" = "Du kannst diese App jederzeit öffnen und sehen, was gesendet wurde. Wenn du das Handy trennst, hören die Meldungen auf — das sehen deine Eltern auch.";
+"agent.help.support.title" = "Wenn dir das zu viel ist";
+"agent.help.support" = "Mit jemandem ausserhalb der Familie zu reden hilft oft. Die Beratung 147 ist kostenlos, rund um die Uhr, per Telefon, Chat oder SMS — und sagt deinen Eltern nichts.";
+"agent.help.support.link" = "147.ch";
+"agent.help.support.url" = "https://www.147.ch/";
 "agent.help.swiss" = "Entwickelt in der Schweiz. Gratis und Open Source.";
 
 /* ── Which phone is this ──────────────────────────────────── */

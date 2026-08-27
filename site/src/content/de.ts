@@ -112,9 +112,16 @@ export const de: Site = {
         childOwnNumbers: { label: 'Das Kind sieht auf seinem Handy dieselben Zahlen' },
         manageChildren: { label: 'Kind anlegen und entfernen' },
         revokeDevice: { label: 'Ein Handy trennen' },
+        pairingCode: {
+          label: 'Verbindungs-Code für ein Kinderhandy erzeugen',
+          note: 'In der Übersicht im Browser. Im iPhone-Eltern-Modus noch nicht — dort verbindest du ein Kinderhandy über dein Eltern-Login, ohne Code.',
+        },
+        deleteData: {
+          label: 'Gespeicherte Zahlen eines Kindes löschen',
+          note: 'Löscht Stundenwerte und Tagessummen und sagt, wie viele Zeilen weg sind. Das Kind bleibt verbunden und meldet weiter. Im iPhone-Eltern-Modus noch nicht.',
+        },
         helpLinks: {
           label: 'Hilfe und Schweizer Beratungsstellen',
-          note: 'Auf dem iPhone fehlt im Kinder-Bereich noch der Link auf die Beratung 147.',
         },
         languages: { label: 'Deutsch, Französisch, Italienisch, Englisch' },
       },

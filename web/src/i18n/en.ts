@@ -85,13 +85,33 @@ export const en: Strings = {
       'This phone stops reporting straight away. The figures already collected stay.',
     revokeConfirm: 'Yes, disconnect',
     revoked: 'disconnected',
-    addDevice: 'Connect a phone',
     pairTitle: 'Connect a phone',
     pairStep1: 'Open Schirmziit on your child’s phone.',
-    pairStep2: 'Scan this code — or type the eight characters.',
+    pairStep2: 'Type the eight characters there, along with the server address below.',
     pairStep3: 'Done. The phone then reports about every 30 minutes.',
     codeExpires: 'Valid until',
     codeLabel: 'Code',
+    pairCreateCode: 'Create a code',
+    pairWorking: 'Creating a code…',
+    pairNewCode: 'Create a new code',
+    pairServerLabel: 'Server address',
+    pairServerHint:
+      'This exact address has to be reachable from the child’s phone — otherwise it connects once and then never reports again.',
+    pairExpired: 'This code has expired. Create a new one.',
+  },
+
+  data: {
+    title: 'This child’s data',
+    body:
+      'Deletes every stored hourly figure and daily total for this child. The child and their phones stay connected and keep reporting — only the figures collected so far are gone.',
+    delete: 'Delete data',
+    deleteBody:
+      'Every hourly figure and daily total for this child will be deleted. This cannot be undone and there is no archive.',
+    deleteConfirm: 'Yes, delete the data',
+    deleted: 'Deleted.',
+    deletedHours: 'Hourly figures per app',
+    deletedDeviceHours: 'Device hours',
+    deletedDays: 'Daily totals',
   },
 
   help: {

@@ -9,6 +9,8 @@ import { DayRibbon } from '../components/DayRibbon'
 import { DayStrip } from '../components/DayStrip'
 import { DeviceStatus } from '../components/DeviceStatus'
 import { ErrorPanel } from '../components/ErrorPanel'
+import { PairDevice } from '../components/PairDevice'
+import { PurgeData } from '../components/PurgeData'
 import { HeroSkeleton, RibbonSkeleton, RowsSkeleton, StripSkeleton } from '../components/Skeleton'
 import { formatDuration, useI18n } from '../i18n'
 
@@ -191,6 +193,26 @@ export function ChildDetail({ childId }: { childId: string }) {
         ) : (
           <RowsSkeleton />
         )}
+        {/* Below the list, not above it: a parent arrives to read numbers, and
+            connecting another phone is the rarer errand. It does not wait for
+            `data` — minting a code has nothing to do with today's figures, and
+            hiding it behind a failed usage fetch is how a family ends up unable
+            to enrol the phone that would fix the gap. */}
+        <div className="mt-6 border-t pt-6" style={{ borderColor: 'var(--hairline)' }}>
+          <PairDevice childId={childId} />
+        </div>
+      </section>
+
+      <section className="card p-6">
+        <PurgeData
+          childId={childId}
+          // Both keys, and the strip first: the fortnight above is what shows
+          // whether the delete actually landed.
+          onPurged={async () => {
+            await refreshStrip()
+            await mutate()
+          }}
+        />
       </section>
     </div>
   )

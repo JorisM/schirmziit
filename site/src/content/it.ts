@@ -111,9 +111,16 @@ export const it: Site = {
         childOwnNumbers: { label: 'Il bambino vede gli stessi numeri sul suo telefono' },
         manageChildren: { label: 'Aggiungere e rimuovere un bambino' },
         revokeDevice: { label: 'Scollegare un telefono' },
+        pairingCode: {
+          label: 'Creare un codice di collegamento per il telefono di un bambino',
+          note: 'Nella panoramica nel browser. Non ancora nella modalità genitore su iPhone — lì colleghi il telefono del bambino con il tuo login genitore, senza codice.',
+        },
+        deleteData: {
+          label: 'Cancellare i numeri salvati di un bambino',
+          note: 'Cancella i valori orari e i totali giornalieri e dice quante righe sono sparite. Il bambino resta collegato e continua a inviare. Non ancora nella modalità genitore su iPhone.',
+        },
         helpLinks: {
           label: 'Aiuto e servizi di consulenza svizzeri',
-          note: 'Su iPhone manca ancora, nella parte del bambino, il link alla Consulenza 147.',
         },
         languages: { label: 'Tedesco, francese, italiano, inglese' },
       },

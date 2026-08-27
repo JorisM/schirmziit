@@ -32,6 +32,24 @@ object StatusText {
         }
 
     /**
+     * When a phone last reported, as a fixed local stamp — "2026-08-20 18:04".
+     *
+     * Absolute rather than "two hours ago", unlike iOS's
+     * `.relative(presentation: .named)`. Two reasons, and the second is the real
+     * one: a parent comparing two phones wants to know *when*, and a relative
+     * string is a function of the current clock, so the screenshot goldens for
+     * this screen would differ on every run.
+     */
+    fun lastSeen(millis: Long): String = java.time.Instant.ofEpochMilli(millis)
+        .atZone(java.time.ZoneId.systemDefault())
+        .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+
+    /** "14:32" — what a pairing code's expiry is worth saying. */
+    fun timeOfDay(millis: Long): String = java.time.Instant.ofEpochMilli(millis)
+        .atZone(java.time.ZoneId.systemDefault())
+        .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
+
+    /**
      * "2 h 14 min" / "18 min" / "45 s" — never a decimal hour. Matches the
      * dashboard (`web/src/i18n/index.tsx`) and the iOS agent
      * (`Formatting.duration`).

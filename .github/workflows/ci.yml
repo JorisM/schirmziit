@@ -36,6 +36,17 @@ jobs:
       - run: cargo sqlx prepare --workspace --check
       - run: cargo test
 
+  renovate-config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+      # Not only that the config parses: that every manager still matches a real
+      # file. A valid config matching nothing is the silent failure here — the
+      # dependencies keep looking current because nothing reads them any more.
+      - run: scripts/check-renovate.sh
+
   web:
     runs-on: ubuntu-latest
     steps:

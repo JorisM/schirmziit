@@ -6,6 +6,12 @@ export DATABASE_URL := env("DATABASE_URL", "postgres://postgres:schirmziit@local
 # parity, and every test on both sides.
 check: rust-check web-check
 
+# Renovate is what bumps the dependencies; this proves its config still reads
+# every surface. Kept out of `check` because it downloads Renovate and talks to
+# the network — CI runs it on every pull request instead.
+renovate-check:
+    bash scripts/check-renovate.sh
+
 rust-check:
     cargo fmt --check
     cargo clippy --all-targets -- -D warnings

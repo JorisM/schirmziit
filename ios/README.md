@@ -106,6 +106,16 @@ needed — point `DEVELOPER_DIR` at it per command:
 
 ## Build, test, install
 
+**`bin/ios-check` is the gate**, and it re-enters the dev shell itself, so none of the
+`PATH` care below applies to it. It also checks that the simulator the recipe names is
+actually installed before spending three minutes on the Rust core — override the model
+with `SCHIRMZIIT_IOS_SIM`, but not for a snapshot run: the goldens are device-specific.
+
+    bin/ios-check                      # the whole gate, from a bare terminal
+    bin/check ios                      # the same gate, inside the full set
+
+The rest of this section is for driving the pieces by hand.
+
 **`$HOME/.cargo/bin` must precede `/opt/homebrew/bin` in `PATH`.** Homebrew's rust
 shadows rustup and carries no iOS std, so `just ios-core` dies with
 

@@ -185,3 +185,14 @@
 "errorpanel.copy" = "Copier les détails";
 "errorpanel.copied" = "Copié";
 "errorpanel.reference" = "Code d'erreur et référence";
+
+"data.title" = "Données de cet enfant";
+"data.body" = "Supprime tous les chiffres horaires et totaux journaliers enregistrés pour cet enfant. L’enfant et ses téléphones restent connectés et continuent d’envoyer — seuls les chiffres déjà collectés disparaissent.";
+"data.delete" = "Supprimer les données";
+"data.delete.body" = "Tous les chiffres horaires et totaux journaliers de cet enfant seront supprimés. C’est irréversible et il n’y a pas d’archive.";
+"data.delete.confirm" = "Oui, supprimer les données";
+"data.delete.working" = "Suppression…";
+"data.deleted" = "Supprimé.";
+"data.deleted.hours" = "Chiffres horaires par application";
+"data.deleted.devicehours" = "Heures d’appareil";
+"data.deleted.days" = "Totaux journaliers";

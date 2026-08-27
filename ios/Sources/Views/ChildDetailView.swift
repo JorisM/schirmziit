@@ -155,6 +155,20 @@ struct ChildDetailView: View {
             // a failed usage fetch is how a family ends up unable to enrol the
             // very phone whose absence is the gap they are looking at.
             PairDeviceView(client: client, childId: child.id)
+
+            // Last, and outside `if let usage` for the same reason. A day that
+            // failed to load is one of the moments a parent is most likely to
+            // want the figures gone, and putting this behind a successful fetch
+            // makes the promise on the privacy page conditional on the network.
+            PurgeDataView(client: client, childId: child.id) {
+                // Both halves, and deliberately blanking first: everywhere else
+                // this app keeps loaded numbers on screen through a refresh,
+                // but these bars describe rows the server has just deleted.
+                usage = nil
+                strip = nil
+                await loadStrip()
+                await load()
+            }
         }
         .navigationTitle(child.displayName)
         .confirmationDialog(

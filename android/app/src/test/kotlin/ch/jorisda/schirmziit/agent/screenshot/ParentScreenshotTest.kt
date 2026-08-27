@@ -19,11 +19,14 @@ import ch.jorisda.schirmziit.agent.parent.Enrollment
 import ch.jorisda.schirmziit.agent.parent.PairingState
 import ch.jorisda.schirmziit.agent.parent.ParentChild
 import ch.jorisda.schirmziit.agent.parent.ParentDevice
+import ch.jorisda.schirmziit.agent.parent.Purged
+import ch.jorisda.schirmziit.agent.parent.PurgeState
 import ch.jorisda.schirmziit.agent.ui.parent.ChildDetailScreen
 import ch.jorisda.schirmziit.agent.ui.parent.ChildrenScreen
 import ch.jorisda.schirmziit.agent.ui.parent.ErrorPanel
 import ch.jorisda.schirmziit.agent.ui.parent.ErrorPlacement
 import ch.jorisda.schirmziit.agent.ui.parent.PairDeviceCard
+import ch.jorisda.schirmziit.agent.ui.parent.PurgeDataCard
 import ch.jorisda.schirmziit.agent.ui.parent.ParentHelpScreen
 import ch.jorisda.schirmziit.agent.ui.parent.RoleChoiceScreen
 import ch.jorisda.schirmziit.agent.ui.parent.SignInScreen
@@ -68,6 +71,7 @@ class ParentScreenshotTest {
         const val LIGHT_DE = "de-rCH-w411dp-h891dp-xxhdpi"
         const val DARK_DE = "de-rCH-w411dp-h891dp-night-xxhdpi"
         const val LIGHT_EN = "en-w411dp-h891dp-xxhdpi"
+        const val DARK_EN = "en-w411dp-h891dp-night-xxhdpi"
         const val LIGHT_FR = "fr-w411dp-h891dp-xxhdpi"
 
         /** 2026-08-27 20:00 Europe/Zurich — the clock these goldens are read at. */
@@ -297,6 +301,7 @@ class ParentScreenshotTest {
         child = ParentChild("c1", "Lena", 6_300_000L),
         state = state,
         pairing = pairing,
+        purge = PurgeState(),
         // A fixed clock, not the wall clock: it decides which of two lines sits
         // under a minted code, and a golden that flips at a quarter past is a
         // golden nobody can verify.
@@ -306,6 +311,9 @@ class ParentScreenshotTest {
         onRetryStrip = {},
         onMintCode = {},
         onRevokeDevice = {},
+        onAskPurge = {},
+        onCancelPurge = {},
+        onConfirmPurge = {},
         onBack = {},
     )
 
@@ -387,6 +395,83 @@ class ParentScreenshotTest {
         expiresAtMillis = MINTED_AT + 15 * 60 * 1000L,
         qrPayload = "schirmziit://enroll?url=https://api.schirmziit.ch&code=K7MNPQ",
     )
+
+    // ─── deleting a child's figures ──────────────────────────────────────
+
+    // On its own for the same reason the pairing card is: it sits at the very
+    // foot of `ChildDetailScreen`, past the devices list, and Roborazzi captures
+    // one screen's worth.
+
+    @Test
+    @Config(qualifiers = LIGHT_DE)
+    fun `the delete control asks before it deletes`() {
+        // One press must not delete. The resting state is a single quiet text
+        // button under the sentence saying what it does — not a red button
+        // sitting next to numbers a parent came to read.
+        shoot("parent-purge-de-light") { purgeCard(PurgeState()) }
+    }
+
+    @Test
+    @Config(qualifiers = LIGHT_DE)
+    fun `the question names what will go and offers a way out`() {
+        shoot("parent-purge-asking-de-light") { purgeCard(PurgeState(asking = true)) }
+    }
+
+    @Test
+    @Config(qualifiers = DARK_EN)
+    fun `what was deleted is counted, not asserted`() {
+        // "Deleted" with nothing behind it is exactly the claim a family has no
+        // way to check. These are the server's own `rows_affected`.
+        shoot("parent-purge-done-en-dark") {
+            purgeCard(PurgeState(purged = Purged(usageHours = 412L, deviceHours = 168L, usageDays = 14L)))
+        }
+    }
+
+    @Test
+    @Config(qualifiers = LIGHT_EN)
+    fun `a purge that matched nothing says zero rather than nothing`() {
+        // A child whose phone has not reported yet. Zero has to be legible as an
+        // answer, or a parent cannot tell a purge that worked from one that
+        // found nothing.
+        shoot("parent-purge-zero-en-light") {
+            purgeCard(PurgeState(purged = Purged(0L, 0L, 0L)))
+        }
+    }
+
+    @Test
+    @Config(qualifiers = LIGHT_EN)
+    fun `a purge that failed keeps the question open and shows no count`() {
+        // A confirmation that closes on failure reads as "done". The question
+        // stays, with the failure inside it — and no receipt anywhere near it.
+        shoot("parent-purge-failed-en-light") {
+            purgeCard(
+                PurgeState(
+                    asking = true,
+                    failure = ApiFailure(ErrorCode.TIMEOUT, "0c0d0e", "/v1/children/data"),
+                ),
+            )
+        }
+    }
+
+    @Composable
+    private fun purgeCard(state: PurgeState) {
+        Column(
+            modifier = Modifier.safeDrawingPadding().padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+        ) {
+            // `reduced = true`: every shot here is taken with animations off at
+            // the system level, and the card's receipt fades in. Passing the
+            // reduced path explicitly captures the settled state rather than
+            // whichever frame the capture happened to land on.
+            PurgeDataCard(
+                state = state,
+                reduced = true,
+                onAsk = {},
+                onCancel = {},
+                onConfirm = {},
+            )
+        }
+    }
 
     // ─── help, and the error panel on its own ────────────────────────────
 

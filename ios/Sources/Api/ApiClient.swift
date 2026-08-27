@@ -95,6 +95,15 @@ actor ApiClient {
         _ = try await raw(path: path, method: "DELETE", body: nil)
     }
 
+    /// The one delete that answers with a body: purging a child's figures
+    /// reports how many rows went. Kept separate from the 204 variant above
+    /// rather than made optional, so neither caller can end up in the other's
+    /// case — a purge whose counts silently failed to decode would show the
+    /// parent a receipt for a deletion nobody counted.
+    func delete<T: Decodable & Sendable>(_ path: String, as type: T.Type) async throws -> T {
+        try await send(path: path, method: "DELETE", body: nil, as: type)
+    }
+
     private func send<T: Decodable & Sendable>(
         path: String,
         method: String,

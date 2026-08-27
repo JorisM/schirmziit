@@ -204,4 +204,14 @@
     <string name="devices_pair_create">Code erzeugen</string>
     <string name="devices_pair_working">Code wird erzeugt…</string>
     <string name="devices_pair_new">Neuen Code erzeugen</string>
+    <string name="data_title">Daten dieses Kindes</string>
+    <string name="data_body">Löscht alle gespeicherten Stundenwerte und Tagessummen dieses Kindes. Das Kind und seine Handys bleiben verbunden und melden weiter — nur die bisherigen Zahlen sind weg.</string>
+    <string name="data_delete">Daten löschen</string>
+    <string name="data_delete_body">Alle Stundenwerte und Tagessummen dieses Kindes werden gelöscht. Das ist nicht rückgängig zu machen, und es gibt kein Archiv.</string>
+    <string name="data_delete_confirm">Ja, Daten löschen</string>
+    <string name="data_delete_working">Wird gelöscht…</string>
+    <string name="data_deleted">Gelöscht.</string>
+    <string name="data_deleted_hours">Stundenwerte pro App</string>
+    <string name="data_deleted_device_hours">Gerätestunden</string>
+    <string name="data_deleted_days">Tagessummen</string>
 </resources>

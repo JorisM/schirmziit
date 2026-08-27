@@ -203,4 +203,14 @@
     <string name="devices_pair_create">Créer un code</string>
     <string name="devices_pair_working">Création du code…</string>
     <string name="devices_pair_new">Créer un nouveau code</string>
+    <string name="data_title">Données de cet enfant</string>
+    <string name="data_body">Supprime tous les chiffres horaires et totaux journaliers enregistrés pour cet enfant. L\'enfant et ses téléphones restent connectés et continuent d\'envoyer — seuls les chiffres déjà collectés disparaissent.</string>
+    <string name="data_delete">Supprimer les données</string>
+    <string name="data_delete_body">Tous les chiffres horaires et totaux journaliers de cet enfant seront supprimés. C\'est irréversible et il n\'y a pas d\'archive.</string>
+    <string name="data_delete_confirm">Oui, supprimer les données</string>
+    <string name="data_delete_working">Suppression…</string>
+    <string name="data_deleted">Supprimé.</string>
+    <string name="data_deleted_hours">Chiffres horaires par application</string>
+    <string name="data_deleted_device_hours">Heures d\'appareil</string>
+    <string name="data_deleted_days">Totaux journaliers</string>
 </resources>

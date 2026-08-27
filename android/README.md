@@ -68,12 +68,21 @@ at the system level. That is deliberate twice over: it makes the goldens
 deterministic, and it captures the *reduced-motion* path, so a bar at 20 % height
 in one of those images is a bug rather than a timing artefact.
 
+`PurgeDataCard` deletes a child's stored figures — the same act as the
+dashboard's `PurgeData`, and the only irreversible write here that answers with
+numbers. It asks twice, the standing control is quiet and the confirm inside the
+question is the red one, and afterwards it shows the server's own
+`rows_affected`: "deleted" with nothing behind it is exactly the claim a family
+cannot check. Zeros are shown as zeros, so a purge that matched nothing is
+legible as one. `purgedDay` then blanks the fortnight and the day and re-reads
+both — the one place this app deliberately drops loaded numbers, because those
+bars describe rows the server has just deleted.
+
 ### What the parent mode does not do yet
 
-Deleting a child's stored figures — the dashboard's `PurgeData` — has no screen
-on either phone. And the pairing code is shown as **text**, not as a QR: Android
-is the one place that could render one, since zxing is already a dependency here
-for the child app's scanner. `docs/platform-matrix.md` tracks both.
+The pairing code is shown as **text**, not as a QR: Android is the one place that
+could render one, since zxing is already a dependency here for the child app's
+scanner. `docs/platform-matrix.md` tracks it.
 
 ## Two ways to connect a phone
 

@@ -55,6 +55,7 @@ import ch.jorisda.schirmziit.agent.parent.ChildDayState
 import ch.jorisda.schirmziit.agent.parent.ParentChild
 import ch.jorisda.schirmziit.agent.parent.PairingState
 import ch.jorisda.schirmziit.agent.parent.ParentDevice
+import ch.jorisda.schirmziit.agent.parent.PurgeState
 import ch.jorisda.schirmziit.agent.ui.StatusText
 import ch.jorisda.schirmziit.core.AppTotalFfi
 import java.time.LocalDate
@@ -81,6 +82,7 @@ fun ChildDetailScreen(
     child: ParentChild,
     state: ChildDayState,
     pairing: PairingState,
+    purge: PurgeState,
     /**
      * Read once per composition and passed down, not called inside the pairing
      * card: it decides which of two lines sits under the code, and a golden of
@@ -92,6 +94,9 @@ fun ChildDetailScreen(
     onRetryStrip: () -> Unit,
     onMintCode: () -> Unit,
     onRevokeDevice: (ParentDevice) -> Unit,
+    onAskPurge: () -> Unit,
+    onCancelPurge: () -> Unit,
+    onConfirmPurge: () -> Unit,
     onBack: () -> Unit,
 ) {
     val reduced = rememberReducedMotion()
@@ -246,6 +251,19 @@ fun ChildDetailScreen(
 
             else -> DaySkeleton()
         }
+
+        // Outside the `when` deliberately, and last. Deleting a child's figures
+        // must not require those figures to have loaded: a day that failed is
+        // one of the moments a parent is most likely to want them gone, and
+        // hiding the control behind a successful fetch makes the promise on the
+        // privacy page conditional on the network.
+        PurgeDataCard(
+            state = purge,
+            reduced = reduced,
+            onAsk = onAskPurge,
+            onCancel = onCancelPurge,
+            onConfirm = onConfirmPurge,
+        )
     }
 
     // A phone that is disconnected cannot be reconnected without enrolling it

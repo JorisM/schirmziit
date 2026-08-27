@@ -27,6 +27,21 @@ struct EnrollmentResponse: Codable, Sendable {
     let qrPayload: String
 }
 
+/// What a purge actually removed, straight from the server's `rows_affected`.
+///
+/// Counted rather than asserted: "deleted" with nothing behind it is exactly the
+/// claim a family has no way to check, and a delete that matched nothing has to
+/// be able to say zero instead of implying a purge.
+///
+/// Non-optional on purpose. A body missing a count is not a purge of zero rows,
+/// it is a body this app cannot read — and decoding it leniently would show a
+/// parent a receipt for a deletion that may never have happened.
+struct PurgeResponse: Codable, Sendable, Equatable {
+    let deletedUsageHours: Int
+    let deletedDeviceHours: Int
+    let deletedUsageDays: Int
+}
+
 struct DeviceStatus: Codable, Sendable, Identifiable {
     let id: String
     let label: String

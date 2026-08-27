@@ -185,3 +185,14 @@
 "errorpanel.copy" = "Copy details";
 "errorpanel.copied" = "Copied";
 "errorpanel.reference" = "Error code and reference";
+
+"data.title" = "This child’s data";
+"data.body" = "Deletes every stored hourly figure and daily total for this child. The child and their phones stay connected and keep reporting — only the figures collected so far are gone.";
+"data.delete" = "Delete data";
+"data.delete.body" = "Every hourly figure and daily total for this child will be deleted. This cannot be undone and there is no archive.";
+"data.delete.confirm" = "Yes, delete the data";
+"data.delete.working" = "Deleting…";
+"data.deleted" = "Deleted.";
+"data.deleted.hours" = "Hourly figures per app";
+"data.deleted.devicehours" = "Device hours";
+"data.deleted.days" = "Daily totals";

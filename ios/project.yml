@@ -101,6 +101,9 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit
+        # The catalog sits inside Sources/Resources, which the target already
+        # takes whole; only the name has to be declared.
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         CODE_SIGN_STYLE: Automatic
         CODE_SIGN_ENTITLEMENTS: Sources/Resources/Schirmziit.entitlements
         GENERATE_INFOPLIST_FILE: NO

@@ -98,6 +98,9 @@ header.site .wrap {
   padding-block: 0.75rem;
 }
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   font-family: 'Bricolage Grotesque', system-ui, sans-serif;
   font-size: 1.3rem;
   font-weight: 700;

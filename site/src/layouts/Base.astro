@@ -42,6 +42,7 @@ const analyticsId = import.meta.env.PUBLIC_UMAMI_ID
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="canonical" href={new URL(pathFor(locale), Astro.site)} />
     {locales.map((l) => (
       <link rel="alternate" hreflang={sites[l].htmlLang} href={new URL(pathFor(l), Astro.site)} />
@@ -75,7 +76,21 @@ const analyticsId = import.meta.env.PUBLIC_UMAMI_ID
     <AlphaBanner locale={locale} />
     <header class="site">
       <div class="wrap">
-        <a class="brand" href={base || '/'}>Schirmziit</a>
+        <a class="brand" href={base || '/'}>
+          <svg class="brand-mark" viewBox="0 0 64 64" width="26" height="26" aria-hidden="true">
+            <path d="M32,28 L32,47 Q32,52 26.5,52" fill="none" stroke="var(--ink)" stroke-width="2.6" stroke-linecap="round" />
+            <circle cx="20" cy="39.7" r="3.2" fill="var(--ink)" />
+            <path d="M16.4,50.5 v-3.2 a3.6,3.6 0 0 1 7.2,0 v3.2 Z" fill="var(--ink)" />
+            <circle cx="44" cy="39.7" r="3.2" fill="var(--ink)" />
+            <path d="M40.4,50.5 v-3.2 a3.6,3.6 0 0 1 7.2,0 v3.2 Z" fill="var(--ink)" />
+            <path d="M8,26 L17.6,14.35 L17.6,34 Q12.8,28.5 8,34 Z" fill="var(--ribbon-1)" />
+            <path d="M17.6,14.35 L27.2,10.45 L27.2,34 Q22.4,28.5 17.6,34 Z" fill="var(--ribbon-3)" />
+            <path d="M27.2,10.45 L36.8,10.45 L36.8,34 Q32,28.5 27.2,34 Z" fill="var(--accent)" />
+            <path d="M36.8,10.45 L46.4,14.35 L46.4,34 Q41.6,28.5 36.8,34 Z" fill="var(--ribbon-3)" />
+            <path d="M46.4,14.35 L56,26 L56,34 Q51.2,28.5 46.4,34 Z" fill="var(--ribbon-1)" />
+          </svg>
+          Schirmziit
+        </a>
         <span class="swiss">🇨🇭 {t.swissLabel}</span>
         <nav class="site">
           {pages.map((p) => (

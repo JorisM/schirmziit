@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The mark drawn on the 64-grid it was designed on, then pushed into the
+     centre of the 108dp adaptive canvas. Keeping the original coordinates is
+     what lets the web favicon and this file be checked against each other. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:translateX="22"
+        android:translateY="22">
+        <path
+            android:pathData="M32,28 L32,47 Q32,52 26.5,52"
+            android:strokeColor="#F2F0EA"
+            android:strokeWidth="2.6"
+            android:strokeLineCap="round" />
+        <path android:pathData="M16.8,39.7 a3.2,3.2 0 1,0 6.4,0 a3.2,3.2 0 1,0 -6.4,0 Z" android:fillColor="#F2F0EA" />
+        <path android:pathData="M16.4,50.5 v-3.2 a3.6,3.6 0 0 1 7.2,0 v3.2 Z" android:fillColor="#F2F0EA" />
+        <path android:pathData="M40.8,39.7 a3.2,3.2 0 1,0 6.4,0 a3.2,3.2 0 1,0 -6.4,0 Z" android:fillColor="#F2F0EA" />
+        <path android:pathData="M40.4,50.5 v-3.2 a3.6,3.6 0 0 1 7.2,0 v3.2 Z" android:fillColor="#F2F0EA" />
+        <path android:pathData="M8,26 L17.6,14.35 L17.6,34 Q12.8,28.5 8,34 Z" android:fillColor="#A3C2AD" />
+        <path android:pathData="M17.6,14.35 L27.2,10.45 L27.2,34 Q22.4,28.5 17.6,34 Z" android:fillColor="#CFDCD2" />
+        <path android:pathData="M27.2,10.45 L36.8,10.45 L36.8,34 Q32,28.5 27.2,34 Z" android:fillColor="#F2F0EA" />
+        <path android:pathData="M36.8,10.45 L46.4,14.35 L46.4,34 Q41.6,28.5 36.8,34 Z" android:fillColor="#CFDCD2" />
+        <path android:pathData="M46.4,14.35 L56,26 L56,34 Q51.2,28.5 46.4,34 Z" android:fillColor="#A3C2AD" />
+    </group>
+</vector>

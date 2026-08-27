@@ -4,6 +4,7 @@
 /android/app/src/main/jniLibs
 /android/app/src/main/kotlin/ch/jorisda/schirmziit/core
 /android/.gradle
+/android/buildSrc/.gradle
 /android/build
 /android/app/build
 /android/local.properties

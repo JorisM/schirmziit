@@ -1,0 +1,33 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "packages": {
+    ".": {
+      "//": "release-type is \"simple\", not \"rust\": the rust strategy's CargoToml updater requires a [package] version, and this repo's root Cargo.toml is a virtual workspace manifest ([workspace]/[workspace.package], no [package] section at all). A dry run against the real repo failed on every run with: Error: value at path package.version is not tagged (release-please/build/src/updaters/rust/cargo-toml.js). The workspace version is instead the first extra-files entry below, a toml jsonpath into [workspace.package].version. Do not switch this back to \"rust\" without first fixing that upstream requirement.",
+      "release-type": "simple",
+      "package-name": "schirmziit",
+      "changelog-path": "CHANGELOG.md",
+      "include-component-in-tag": false,
+      "extra-files": [
+        {
+          "type": "toml",
+          "path": "Cargo.toml",
+          "jsonpath": "$.workspace.package.version"
+        },
+        {
+          "type": "generic",
+          "path": "android/app/build.gradle.kts"
+        },
+        {
+          "type": "yaml",
+          "path": "ios/project.yml",
+          "jsonpath": "$.settings.base.MARKETING_VERSION"
+        },
+        {
+          "type": "json",
+          "path": "web/package.json",
+          "jsonpath": "$.version"
+        }
+      ]
+    }
+  }
+}

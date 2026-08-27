@@ -47,6 +47,14 @@ jobs:
       # dependencies keep looking current because nothing reads them any more.
       - run: scripts/check-renovate.sh
 
+  release-config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      # Not that the config parses: that each of the four version strings it
+      # rewrites is still where it says it is, and that all of them agree.
+      - run: scripts/check-release-please.sh
+
   web:
     runs-on: ubuntu-latest
     steps:
@@ -91,6 +99,11 @@ jobs:
         run: |
           ls -l android/app/src/test/resources/linux-x86-64/
           file android/app/src/test/resources/linux-x86-64/libschirmziit_core.so
+      # buildSrc is a separate build; Gradle builds it on demand and does not run
+      # its tests as part of the app's. versionCodeOf is the one piece of build
+      # logic that can silently publish an unreplaceable release.
+      - run: ./gradlew -p buildSrc test
+        working-directory: android
       - run: ./gradlew testDebugUnitTest
         working-directory: android
       # A screenshot failure is unreadable without the image. Keep the compare
@@ -100,3 +113,33 @@ jobs:
         with:
           name: roborazzi
           path: android/app/build/outputs/roborazzi/
+
+  ios:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios,aarch64-apple-ios-sim
+      - uses: Swatinem/rust-cache@v2
+      - run: brew install just xcodegen
+
+      # The goldens are device-specific — recording on a different model
+      # rewrites every one of them — so the simulator is named, never
+      # discovered. If the runner image stops carrying it, this listing is what
+      # says so, instead of thirty screenshot diffs.
+      - run: xcrun simctl list devices available
+      - run: xcodebuild -version
+
+      # The same gate bin/ios-check runs. There is no second definition of it.
+      - run: just ios-check
+        env:
+          SCHIRMZIIT_IOS_SIM: iPhone 17 Pro
+
+      # A snapshot failure with no image is unreadable, the same reason the
+      # android job keeps its Roborazzi output.
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-test-results
+          path: /Users/runner/Library/Developer/Xcode/DerivedData/**/Logs/Test/*.xcresult

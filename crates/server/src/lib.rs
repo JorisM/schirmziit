@@ -87,8 +87,8 @@ fn build(state: AppState, rate_limit: bool) -> Router {
                 .expect("valid governor config"),
         );
         auth::routes::credential_router()
-            .layer(GovernorLayer { config: strict })
-            .merge(auth::routes::session_router().layer(GovernorLayer { config: loose }))
+            .layer(GovernorLayer::new(strict))
+            .merge(auth::routes::session_router().layer(GovernorLayer::new(loose)))
     } else {
         auth::routes::router()
     };
@@ -108,7 +108,7 @@ fn build(state: AppState, rate_limit: bool) -> Router {
                 .finish()
                 .expect("valid governor config"),
         );
-        routes::waitlist::router().layer(GovernorLayer { config: public })
+        routes::waitlist::router().layer(GovernorLayer::new(public))
     } else {
         routes::waitlist::router()
     };

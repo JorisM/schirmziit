@@ -15,9 +15,14 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# This workflow has irreversible side effects between its start and its end —
+# release-please can merge the Release PR, cut the tag and publish the GitHub
+# Release before the image finishes building. Runs queue instead of
+# superseding one another, so a later push can never cancel an in-flight run
+# and leave a release with no image to match it.
 concurrency:
   group: release-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   release-please:
@@ -43,7 +48,14 @@ jobs:
     # the short sha are what the deploy from ~/Projects/home-network pins, and
     # this must not disturb them. A release adds the semver tags to the same
     # build rather than making a second one.
+    #
+    # `if` guards against `needs:` doing the opposite: GitHub only runs a job
+    # once every job it needs has succeeded, so a release-please failure would
+    # otherwise skip this job outright and stop those tags publishing too. The
+    # semver tags below already disable themselves when release-please's
+    # outputs are empty, so a failure degrades to exactly today's three tags.
     needs: release-please
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     permissions:
       contents: read

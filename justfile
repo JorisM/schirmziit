@@ -139,4 +139,3 @@ ios-record: ios-project
         -destination 'platform=iOS Simulator,name={{ ios_sim }}' test CODE_SIGNING_ALLOWED=NO
     cd ios && {{ xcb }} -project Schirmziit.xcodeproj -scheme Schirmziit \
         -destination 'platform=iOS Simulator,name={{ ios_sim }}' test CODE_SIGNING_ALLOWED=NO
-

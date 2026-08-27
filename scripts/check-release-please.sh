@@ -42,7 +42,22 @@ cargo_version=$(sed -n 's/^version = "\(.*\)"$/\1/p' Cargo.toml | head -1)
 grep -qF "\"$version\"" Cargo.lock \
     || note "Cargo.lock carries no $version entry, so the lock file has drifted from Cargo.toml"
 
+# `done < <(jq ...)` would run the loop in the shell's own scope but hide a
+# failing or empty jq behind it: a background pipeline's exit status never
+# reaches the foreground `while`, so a renamed "packages" key or a deleted
+# extra-files array both iterate zero times and read as "everything passed".
+# Count first, and capture jq's own exit status, so a config that points at
+# nothing fails loudly instead of quietly checking nothing.
+extra_files_count=$(jq -r '.packages["."]["extra-files"] // [] | length' "$config")
+if [ "$extra_files_count" -eq 0 ]; then
+    note "$config has no extra-files entries under .packages[\".\"], so nothing but Cargo.toml/Cargo.lock would be checked"
+fi
+
+entries=$(jq -r '.packages["."]["extra-files"] // [] | .[] | "\(.type) \(.path)"' "$config") \
+    || note "$config extra-files could not be read by jq"
+
 while read -r type path; do
+    [ -n "$type" ] || continue
     if [ ! -f "$path" ]; then
         note "extra-files entry \"$path\" does not exist"
         continue
@@ -67,7 +82,7 @@ while read -r type path; do
             note "no check is written for extra-files type \"$type\" ($path)"
             ;;
     esac
-done < <(jq -r '.packages["."]["extra-files"][] | "\(.type) \(.path)"' "$config")
+done <<< "$entries"
 
 [ "$fail" -eq 0 ] || exit 1
 echo "ok: every version release-please writes is at $version"

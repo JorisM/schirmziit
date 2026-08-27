@@ -118,12 +118,86 @@ db_ensure() {
   DATABASE_URL="$(db_url)" sqlx migrate run --source "$root/crates/server/migrations" >/dev/null
 }
 
-# The one connected Android device, or a clear reason why not.
+android_devices() { adb devices | awk 'NR>1 && $2 == "device" { print $1 }'; }
+
+# Reach the phone over wifi, which is how these scripts prefer to talk to it —
+# no cable, and the phone can stay wherever the child left it.
+#
+# Pairing happens once, ever: on the phone, Developer options → Wireless
+# debugging → Pair device with pairing code, then `adb pair <ip>:<port> <code>`.
+# After that adb finds the phone by mdns on its own — but only once it has had a
+# discovery round, and the wireless-debugging port is random and changes on
+# every reboot, so mdns is the only thing that knows the current one.
+#
+#   ANDROID_WIFI=1              (the default) any paired phone on this network
+#   ANDROID_WIFI=192.168.1.9    that address, whatever port it is on today
+#   ANDROID_WIFI=192.168.1.9:41301  straight to it, no discovery
+#   ANDROID_WIFI=0              do not go looking; cable only
+android_wifi_connect() {
+  local want="${ANDROID_WIFI:-1}"
+  [ "$want" = 0 ] && return 1
+
+  # Already connected? adb auto-connects paired phones as it discovers them, and
+  # connecting a second time by address lists the same phone twice — which then
+  # reads as "more than one Android device".
+  android_devices | grep -q . && return 0
+
+  local target=""
+  if printf '%s' "$want" | grep -Eq '^[0-9.]+:[0-9]+$'; then
+    target="$want"
+  else
+    local host="" svc=""
+    [ "$want" != 1 ] && host="$want"
+    # Poll: the first `adb mdns services` call usually answers with an empty
+    # list while the daemon is still browsing.
+    for _ in 1 2 3 4 5; do
+      # adb auto-connects a paired phone the moment it discovers it, and then
+      # there is nothing left for us to do.
+      android_devices | grep -q . && return 0
+      svc="$(adb mdns services 2>/dev/null | awk -v h="$host" '
+        $2 == "_adb-tls-connect._tcp" && (h == "" || index($3, h ":") == 1) { print $3; exit }')"
+      [ -n "$svc" ] && break
+      sleep 1
+    done
+    target="$svc"
+  fi
+
+  [ -n "$target" ] || return 1
+
+  say "connecting to $target over wifi" >&2
+  adb connect "$target" >/dev/null 2>&1 || true
+  # `adb connect` returns before the device is usable.
+  local n=0
+  for _ in $(seq 1 20); do
+    n="$(android_devices | grep -c . || true)"
+    [ "$n" -ge 1 ] && break
+    sleep 0.5
+  done
+
+  # adb keeps browsing mdns in the background and auto-connects a paired phone
+  # under its service name. When that lands while we are connecting by address,
+  # the same phone is listed twice and every caller reads it as two devices. So
+  # drop our own entry and let the service-name one stand.
+  if [ "$n" -gt 1 ] && android_devices | grep -qF '_adb-tls-connect._tcp'; then
+    say "adb already found it by mdns — dropping the duplicate $target" >&2
+    adb disconnect "$target" >/dev/null 2>&1 || true
+  fi
+
+  android_devices | grep -q . && return 0
+  return 1
+}
+
+# The one connected Android device, or a clear reason why not. Tries wifi before
+# it complains, so the usual case needs neither a cable nor an argument.
 one_android_device() {
   local devices
-  devices="$(adb devices | awk 'NR>1 && $2 == "device" { print $1 }')"
+  devices="$(android_devices)"
+  if [ -z "$devices" ]; then
+    android_wifi_connect || true
+    devices="$(android_devices)"
+  fi
   case "$(printf '%s' "$devices" | grep -c . || true)" in
-    0) die "no Android device — plug the phone in, unlock it, and allow USB debugging" ;;
+    0) die "no Android device. Over wifi: turn on Wireless debugging and, the first time only, pair it (Pair device with pairing code, then 'adb pair <ip>:<port> <code>'). Or plug the phone in, unlock it, and allow USB debugging." ;;
     1) printf '%s' "$devices" ;;
     *) die "more than one Android device: $(echo $devices). Pass one with ANDROID_SERIAL=..." ;;
   esac

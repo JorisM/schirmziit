@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
-# Build, install on the connected phone, and launch it.
+# Build, install on the phone, and launch it.
+#
+# No cable needed: the phone is reached over wifi whenever it is paired for
+# wireless debugging — see android_wifi_connect in _lib.sh. A USB device, if one
+# is plugged in, wins simply by already being there.
 source "$(dirname "${BASH_SOURCE[0]}")/_lib.sh"
 need_dev_shell "$@"
 

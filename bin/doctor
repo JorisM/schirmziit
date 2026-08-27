@@ -65,8 +65,14 @@ else
 fi
 have adb adb 'adb version'
 if command -v adb >/dev/null 2>&1; then
-  devices="$(adb devices | awk 'NR>1 && $2 == "device" { print $1 }' | tr '\n' ' ')"
-  [ -n "$devices" ] && ok "devices" "$devices" || note "devices" "none connected"
+  # Reporting only — doctor never connects anything. But say what to do, since
+  # "none connected" reads as "go find a cable" and wifi is the default here.
+  devices="$(android_devices | tr '\n' ' ')"
+  if [ -n "$devices" ]; then
+    ok "devices" "$devices"
+  else
+    note "devices" "none — bin/android-install finds a wifi-paired phone by mdns"
+  fi
 fi
 
 bold "iOS"

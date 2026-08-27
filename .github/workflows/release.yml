@@ -1,12 +1,18 @@
 name: release
 
-# Publishes the container image self-hosters pull. While this repository is
-# private the package is private too — make the package public before pointing
-# outside users at ghcr.io/jorism/schirmziit.
+# One workflow, on purpose. A tag created with the default GITHUB_TOKEN does not
+# trigger other workflows — GitHub suppresses that to stop workflows recursing —
+# so the obvious shape, release-please cuts a tag and a tag-triggered workflow
+# builds it, publishes nothing and says nothing. The artifact jobs hang off
+# `needs: release-please` in the same run instead. That run is also the push
+# that merged the Release PR, so its commit is the one the tag points at.
+#
+# The container image self-hosters pull is published here. While this repository
+# is private the package is private too — make the package public before
+# pointing outside users at ghcr.io/jorism/schirmziit.
 on:
   push:
     branches: [main]
-    tags: ['v*']
   workflow_dispatch:
 
 concurrency:
@@ -14,7 +20,30 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
+      major: ${{ steps.release.outputs.major }}
+      minor: ${{ steps.release.outputs.minor }}
+    steps:
+      - id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
   image:
+    # Runs on every push to main, release or not: `latest`, the branch tag and
+    # the short sha are what the deploy from ~/Projects/home-network pins, and
+    # this must not disturb them. A release adds the semver tags to the same
+    # build rather than making a second one.
+    needs: release-please
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -34,12 +63,15 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository }}
+          # type=semver is gone with the tag trigger: it reads the version off a
+          # ref this workflow is never started by. The raw tags below read it
+          # from release-please instead.
           tags: |
             type=ref,event=branch
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
             type=sha,format=short
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=${{ needs.release-please.outputs.version }},enable=${{ needs.release-please.outputs.release_created == 'true' }}
+            type=raw,value=${{ needs.release-please.outputs.major }}.${{ needs.release-please.outputs.minor }},enable=${{ needs.release-please.outputs.release_created == 'true' }}
 
       - uses: docker/build-push-action@v6
         with:

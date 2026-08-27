@@ -39,8 +39,13 @@ cargo_version=$(sed -n 's/^version = "\(.*\)"$/\1/p' Cargo.toml | head -1)
 [ "$cargo_version" = "$version" ] \
     || note "Cargo.toml says $cargo_version, the manifest says $version"
 
-grep -qF "\"$version\"" Cargo.lock \
-    || note "Cargo.lock carries no $version entry, so the lock file has drifted from Cargo.toml"
+# Deliberately no assertion on Cargo.lock: release-please does not write it
+# (the rust strategy that would have is not usable here — see the "//" comment
+# in release-please-config.json), nothing in this repo builds with --locked
+# (neither ci.yml nor the Dockerfile), so cargo self-heals the lock on its next
+# invocation regardless. The Release-PR checklist carries a manual
+# `cargo update --workspace` step instead. Asserting it here would turn every
+# legitimate post-release lag into a red main.
 
 # `done < <(jq ...)` would run the loop in the shell's own scope but hide a
 # failing or empty jq behind it: a background pipeline's exit status never
@@ -50,7 +55,7 @@ grep -qF "\"$version\"" Cargo.lock \
 # nothing fails loudly instead of quietly checking nothing.
 extra_files_count=$(jq -r '.packages["."]["extra-files"] // [] | length' "$config")
 if [ "$extra_files_count" -eq 0 ]; then
-    note "$config has no extra-files entries under .packages[\".\"], so nothing but Cargo.toml/Cargo.lock would be checked"
+    note "$config has no extra-files entries under .packages[\".\"], so nothing but Cargo.toml would be checked"
 fi
 
 entries=$(jq -r '.packages["."]["extra-files"] // [] | .[] | "\(.type) \(.path)"' "$config") \
@@ -63,6 +68,14 @@ while read -r type path; do
         continue
     fi
     case "$type" in
+        toml)
+            # Same file and the same value the Cargo.toml-vs-manifest
+            # comparison above already checked; this is release-please's own
+            # account of where it writes it, under [workspace.package], so it
+            # must resolve too, not just parse as TOML.
+            grep -qF "version = \"$version\"" "$path" \
+                || note "$path has no version = \"$version\" line for the extra-files entry to write"
+            ;;
         generic)
             grep -qF 'x-release-please-version' "$path" \
                 || note "$path has no x-release-please-version marker, so release-please would not touch it"

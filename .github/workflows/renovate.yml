@@ -1,0 +1,47 @@
+name: renovate
+
+# Self-hosted rather than the Mend app: the schedule, the version and the logs
+# stay in this repository, and no third-party app holds write access to a repo
+# that is going public.
+#
+# The cron only wakes Renovate up. What it does once awake is decided by
+# renovate.json, which restricts most updates to Monday morning.
+on:
+  schedule:
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: Log level
+        type: choice
+        default: info
+        options: [info, debug]
+      dryRun:
+        description: Work everything out, open nothing
+        type: boolean
+        default: false
+
+concurrency:
+  group: renovate
+
+# Renovate authenticates with RENOVATE_TOKEN, never with the workflow's own
+# token — a PR opened with GITHUB_TOKEN does not start ci.yml, and a dependency
+# PR that arrives with no test results is the one thing this must not produce.
+permissions: {}
+
+jobs:
+  renovate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dry run, if asked for
+        if: inputs.dryRun
+        run: echo 'RENOVATE_DRY_RUN=full' >> "$GITHUB_ENV"
+
+      # Exact version, not a floating major: this action publishes no `v46` tag.
+      # Renovate keeps it current like any other action.
+      - uses: renovatebot/github-action@v46.2.4
+        with:
+          token: ${{ secrets.RENOVATE_TOKEN }}
+        env:
+          LOG_LEVEL: ${{ inputs.logLevel || 'info' }}
+          RENOVATE_REPOSITORIES: ${{ github.repository }}

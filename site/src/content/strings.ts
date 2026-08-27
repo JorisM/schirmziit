@@ -2,6 +2,8 @@
  * Every string on the site, per language. One file so a missing translation is a
  * type error rather than an English paragraph in the middle of a French page.
  */
+import type { MatrixColumn, MatrixRowKey, MatrixStatus } from './matrix'
+
 export const locales = ['de', 'fr', 'it', 'en'] as const
 export type Locale = (typeof locales)[number]
 
@@ -38,6 +40,24 @@ export type Alpha = {
   mailCta: string
 }
 
+/**
+ * The words around `matrix.ts`. The statuses are not in here on purpose: a
+ * `Record<MatrixRowKey, …>` makes a forgotten row a type error in that one
+ * language, while a per-language status would let the four pages disagree about
+ * what the product does.
+ */
+export type Matrix = {
+  title: string
+  lead: string
+  featureHeader: string
+  columns: Record<MatrixColumn, string>
+  groups: { measure: string; view: string }
+  legend: Record<MatrixStatus, string>
+  /** Read out for a column that is not meant to do this row at all. */
+  notApplicable: string
+  rows: Record<MatrixRowKey, { label: string; note?: string }>
+}
+
 export type Site = {
   htmlLang: string
   swissLabel: string
@@ -65,6 +85,7 @@ export type Site = {
     androidBody: string
     iosLabel: string
     iosBody: string
+    matrix: Matrix
     openTitle: string
     openBody: string
   }

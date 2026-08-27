@@ -69,10 +69,55 @@ export const fr: Site = {
     platformsBody: 'Ce qui fonctionne aujourd’hui — et ce qui ne fonctionne pas.',
     androidLabel: 'Android',
     androidBody:
-      'Complet : temps par application et par heure, déverrouillages, forme de la journée. À partir d’Android 8.',
+      'Complet : temps par application et par heure, déverrouillages, forme de la journée. À partir d’Android 8. Installé aujourd’hui en APK, pas encore dans le Play Store.',
     iosLabel: 'iPhone',
     iosBody:
-      'Les deux rôles fonctionnent maintenant sur iPhone — un tableau de bord pour les parents, et désormais une vue pour l’enfant aussi. Mesurer le temps d’écran directement sur un iPhone exige encore une autorisation d’Apple que nous n’avons pas — pour l’instant, seul un téléphone Android peut être mesuré. Nous le dirons ici dès que cela change.',
+      'Les deux rôles fonctionnent sur iPhone : le tableau de bord pour les parents, et désormais une vue pour l’enfant aussi. Un iPhone est mesuré également — pour cela l’app a besoin de l’accès au temps d’écran d’Apple, qu’Apple autorise app par app. Il vaut pour nos propres appareils de test ; pour la distribution via TestFlight ou l’App Store, l’autorisation manque encore. À partir d’iOS 17.',
+    matrix: {
+      title: 'Ce qui fonctionne où',
+      lead:
+        'L’état d’aujourd’hui, ligne par ligne. « Pas encore » veut dire prévu ou bloqué — la note précise lequel.',
+      featureHeader: 'Fonction',
+      columns: { android: 'Téléphone Android', ios: 'iPhone', web: 'Tableau de bord dans le navigateur' },
+      groups: { measure: 'Mesurer sur le téléphone de l’enfant', view: 'Consulter' },
+      legend: { yes: 'fonctionne', partial: 'en partie', no: 'pas encore' },
+      notApplicable: 'non prévu ici',
+      rows: {
+        appHours: { label: 'Temps par application et par heure' },
+        timeOfDay: { label: 'À quelle heure de la journée le téléphone a été utilisé' },
+        unlocks: {
+          label: 'Déverrouillages',
+          note: 'iOS ne compte pas les déverrouillages. Ce qui est compté, c’est le nombre de fois où le téléphone a été pris en main — l’équivalent honnête le plus proche.',
+        },
+        background: {
+          label: 'Son en arrière-plan, écran éteint',
+          note: 'Sur Android seulement si tu autorises l’accès aux notifications ; iOS ne le fournit pas. Ce temps n’est jamais compté comme temps d’écran.',
+        },
+        appNames: {
+          label: 'Noms des applications au lieu des noms de paquets',
+          note: 'iOS retient certains noms, et l’identifiant de l’application s’affiche alors.',
+        },
+        offline: { label: 'Sans internet, les valeurs attendent sur le téléphone' },
+        install: {
+          label: 'Installable sans machine de développement',
+          note: 'Android : un APK aujourd’hui, pas encore de Play Store. iPhone : TestFlight et l’App Store exigent l’autorisation d’Apple pour la distribution, qui manque encore.',
+        },
+        roles: {
+          label: 'Rôle parent et rôle enfant dans une seule app',
+          note: 'L’app Android est réservée au téléphone de l’enfant.',
+        },
+        overview14: { label: 'Les quatorze derniers jours d’un coup d’œil' },
+        dayDetail: { label: 'Une journée, heure par heure' },
+        childOwnNumbers: { label: 'L’enfant voit les mêmes chiffres sur son téléphone' },
+        manageChildren: { label: 'Ajouter et retirer un enfant' },
+        revokeDevice: { label: 'Déconnecter un téléphone' },
+        helpLinks: {
+          label: 'Aide et services de conseil suisses',
+          note: 'Sur iPhone, le côté enfant n’a pas encore le lien vers le Conseil 147.',
+        },
+        languages: { label: 'Allemand, français, italien, anglais' },
+      },
+    },
 
     openTitle: 'Libre et vérifiable',
     openBody:

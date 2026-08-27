@@ -80,15 +80,26 @@ of reading as an empty day. A `myTimeBusy` guard drops an overlapping call, and
 a failed load keeps whatever numbers are already on screen — only the error
 line and a retry button appear alongside them.
 
-**What does not work without Apple's approval.** Family Controls is an
-entitlement Apple grants per app; a free Personal Team cannot sign it, and App
-Groups need a paid team too. Without both, the app builds, installs and runs —
-role choice, sign-in, enrolment, syncing — but `AuthorizationCenter` refuses, so
-there are no figures to report and the status screen says exactly that
-(`agent.status.unavailable.*`). The App Group falls back to the app's own
-container, which the status screen also states
-(`agent.status.shared.warning`). Nothing here pretends to work.
+**What Apple still has to grant.** Family Controls is an entitlement Apple
+grants per bundle id. A paid Apple Developer Program membership signs the
+**Development** variant — and App Groups — so on our own devices the child role
+measures for real. **Family Controls (Distribution)** is a separate, reviewed
+request per bundle id (`ch.jorisda.schirmziit`, `.monitor`, `.report`) and is
+still outstanding, so TestFlight and the App Store are closed until it lands:
+today an iPhone can only be measured by someone who builds and installs the app
+themselves. Xcode says so on every build.
 
+Where the entitlement is missing anyway — a fork on a free team, a build with
+the capability stripped — the app still runs: role choice, sign-in, enrolment,
+syncing all work, but `AuthorizationCenter` refuses, so there are no figures to
+report and the status screen says exactly that (`agent.status.unavailable.*`).
+The App Group then falls back to the app's own container, which the status
+screen also states (`agent.status.shared.warning`). Nothing here pretends to
+work.
+
+`docs/platform-matrix.md` is the table of what runs where, iPhone against
+Android against the dashboard; it and `site/src/content/matrix.ts` change
+together.
 
 ## Toolchain
 

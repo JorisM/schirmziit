@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro'
 import Ribbon from './Ribbon.astro'
+import Matrix from './Matrix.astro'
 import { prefix, sites, type Locale } from '../content'
 
 interface Props { locale: Locale }
@@ -50,6 +51,10 @@ const base = prefix(locale)
       <p>{t.home.iosBody}</p>
     </section>
   </div>
+
+  <h3>{t.home.matrix.title}</h3>
+  <p>{t.home.matrix.lead}</p>
+  <Matrix locale={locale} />
 
   <h2>{t.choose.title}</h2>
   <div class="cards">

@@ -69,10 +69,55 @@ export const it: Site = {
     platformsBody: 'Cosa funziona oggi — e cosa no.',
     androidLabel: 'Android',
     androidBody:
-      'Completo: tempo per app e per ora, sblocchi, forma della giornata. Da Android 8 in poi.',
+      'Completo: tempo per app e per ora, sblocchi, forma della giornata. Da Android 8 in poi. Oggi si installa come APK, non ancora dal Play Store.',
     iosLabel: 'iPhone',
     iosBody:
-      'Entrambi i ruoli funzionano ora su iPhone — una panoramica per i genitori, e ora anche una vista per il bambino stesso. Misurare il tempo di schermo direttamente su un iPhone richiede ancora un’autorizzazione di Apple che non abbiamo — per ora può essere misurato solo un telefono Android. Lo scriveremo qui appena cambia.',
+      'Entrambi i ruoli funzionano su iPhone: la panoramica per i genitori e ora anche una vista per il bambino stesso. Anche un iPhone viene misurato — per questo l’app ha bisogno dell’accesso al tempo di schermo di Apple, che Apple concede app per app. Vale per i nostri dispositivi di test; per la distribuzione via TestFlight o App Store l’autorizzazione manca ancora. Da iOS 17 in poi.',
+    matrix: {
+      title: 'Cosa funziona dove',
+      lead:
+        'Lo stato di oggi, riga per riga. «Non ancora» significa previsto o bloccato — la nota dice quale dei due.',
+      featureHeader: 'Funzione',
+      columns: { android: 'Telefono Android', ios: 'iPhone', web: 'Panoramica nel browser' },
+      groups: { measure: 'Misurare sul telefono del bambino', view: 'Guardare' },
+      legend: { yes: 'funziona', partial: 'in parte', no: 'non ancora' },
+      notApplicable: 'non previsto qui',
+      rows: {
+        appHours: { label: 'Tempo per app e per ora' },
+        timeOfDay: { label: 'In quale ora del giorno è stato usato il telefono' },
+        unlocks: {
+          label: 'Sblocchi',
+          note: 'iOS non conta gli sblocchi. Viene contato quante volte il telefono è stato preso in mano — l’equivalente onesto più vicino.',
+        },
+        background: {
+          label: 'Audio in secondo piano, schermo spento',
+          note: 'Su Android solo se permetti l’accesso alle notifiche; iOS non lo fornisce. Questo tempo non viene mai contato come tempo di schermo.',
+        },
+        appNames: {
+          label: 'Nomi delle app invece dei nomi dei pacchetti',
+          note: 'iOS trattiene alcuni nomi e allora compare l’identificatore dell’app.',
+        },
+        offline: { label: 'Senza internet i valori aspettano sul telefono' },
+        install: {
+          label: 'Installabile senza un computer di sviluppo',
+          note: 'Android: oggi un APK, non ancora il Play Store. iPhone: TestFlight e App Store richiedono l’autorizzazione di Apple per la distribuzione, che manca ancora.',
+        },
+        roles: {
+          label: 'Ruolo genitore e ruolo bambino in una sola app',
+          note: 'L’app Android è solo per il telefono del bambino.',
+        },
+        overview14: { label: 'Gli ultimi quattordici giorni a colpo d’occhio' },
+        dayDetail: { label: 'Un giorno, ora per ora' },
+        childOwnNumbers: { label: 'Il bambino vede gli stessi numeri sul suo telefono' },
+        manageChildren: { label: 'Aggiungere e rimuovere un bambino' },
+        revokeDevice: { label: 'Scollegare un telefono' },
+        helpLinks: {
+          label: 'Aiuto e servizi di consulenza svizzeri',
+          note: 'Su iPhone manca ancora, nella parte del bambino, il link alla Consulenza 147.',
+        },
+        languages: { label: 'Tedesco, francese, italiano, inglese' },
+      },
+    },
 
     openTitle: 'Libero e verificabile',
     openBody:

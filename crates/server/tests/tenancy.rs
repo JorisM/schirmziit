@@ -27,17 +27,6 @@ async fn another_family_cannot_read_usage(pool: PgPool) {
 }
 
 #[sqlx::test]
-async fn another_family_cannot_read_a_summary(pool: PgPool) {
-    let (_, child_id, b) = two_families(pool).await;
-    let response = b
-        .get(&format!(
-            "/v1/children/{child_id}/summary?date=2026-08-20&tz=Europe/Zurich"
-        ))
-        .await;
-    assert_eq!(response.status, StatusCode::NOT_FOUND);
-}
-
-#[sqlx::test]
 async fn another_family_cannot_mint_an_enrollment_code(pool: PgPool) {
     let (_, child_id, b) = two_families(pool).await;
     let response = b

@@ -131,28 +131,6 @@ async fn an_unknown_timezone_is_a_422(pool: PgPool) {
 }
 
 #[sqlx::test]
-async fn summary_returns_top_apps_and_first_last_activity(pool: PgPool) {
-    let (app, child_id, device_id) = setup(pool.clone()).await;
-    seed(&pool, &device_id, 8, "com.a", 60_000).await;
-    seed(&pool, &device_id, 20, "com.b", 120_000).await;
-
-    let response = app
-        .get(&format!(
-            "/v1/children/{child_id}/summary?date=2026-08-20&tz=Europe/Zurich"
-        ))
-        .await;
-    assert_eq!(response.status, StatusCode::OK, "{}", response.json);
-    assert_eq!(response.json["total_ms"], 180_000);
-    assert_eq!(
-        response.json["top_apps"][0]["package"], "com.b",
-        "sorted by time descending"
-    );
-    assert!(response.json["first_activity"].is_string());
-    assert!(response.json["last_activity"].is_string());
-    assert_eq!(response.json["unlock_count"], 14);
-}
-
-#[sqlx::test]
 async fn daily_bucket_returns_one_device_total_per_day(pool: PgPool) {
     let (app, child_id, device_id) = setup(pool.clone()).await;
     seed(&pool, &device_id, 10, "com.a", 60_000).await;

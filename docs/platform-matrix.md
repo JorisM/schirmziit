@@ -67,5 +67,3 @@ measured only by someone who builds and installs the app themselves.
   check. On both phones the control sits at the very foot of the child's screen,
   deliberately outside the usage load — a day that failed to fetch is one of the
   moments a parent is most likely to want the figures gone.
-- **Nothing reads `/v1/children/{id}/summary`.** The route is in `openapi.json`
-  and no client calls it.

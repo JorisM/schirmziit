@@ -151,22 +151,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/children/{id}/summary": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["summary"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/v1/children/{id}/usage": {
         parameters: {
             query?: never;
@@ -521,26 +505,6 @@ export interface components {
             package: string;
             points: components["schemas"]["Point"][];
         };
-        SummaryResponse: {
-            /** Format: uuid */
-            child_id: string;
-            /** Format: date */
-            date: string;
-            first_activity?: string | null;
-            last_activity?: string | null;
-            top_apps: components["schemas"]["TopApp"][];
-            /** Format: int64 */
-            total_ms: number;
-            tz: string;
-            /** Format: int64 */
-            unlock_count: number;
-        };
-        TopApp: {
-            /** Format: int64 */
-            foreground_ms: number;
-            label: string;
-            package: string;
-        };
         UsageResponse: {
             bucket: string;
             /** Format: uuid */
@@ -870,46 +834,6 @@ export interface operations {
             };
             /** @description No such child in this family */
             404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    summary: {
-        parameters: {
-            query: {
-                date: string;
-                tz: string;
-            };
-            header?: never;
-            path: {
-                /** @description Child id */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description One local day, summarised */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SummaryResponse"];
-                };
-            };
-            /** @description No such child in this family */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Unknown timezone */
-            422: {
                 headers: {
                     [name: string]: unknown;
                 };

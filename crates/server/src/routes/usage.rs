@@ -20,7 +20,6 @@ const MAX_READS_PER_HOUR: u32 = 240;
 pub fn router() -> Router<AppState> {
     Router::new()
         .route("/v1/children/{id}/usage", get(usage))
-        .route("/v1/children/{id}/summary", get(summary))
         // Same `/v1/me` prefix as `auth::routes`' `/v1/me` (the parent
         // session), but a different identity: this one is `my_usage`, read by
         // the calling *device* over its bearer token. Do not let a future
@@ -93,25 +92,6 @@ pub struct UsageResponse {
     pub devices: Vec<DeviceStatus>,
     pub series: Vec<Series>,
     pub device_totals: Vec<DeviceTotal>,
-}
-
-#[derive(serde::Serialize, utoipa::ToSchema)]
-pub struct TopApp {
-    pub package: String,
-    pub label: String,
-    pub foreground_ms: i64,
-}
-
-#[derive(serde::Serialize, utoipa::ToSchema)]
-pub struct SummaryResponse {
-    pub child_id: Uuid,
-    pub date: NaiveDate,
-    pub tz: String,
-    pub total_ms: i64,
-    pub unlock_count: i64,
-    pub first_activity: Option<String>,
-    pub last_activity: Option<String>,
-    pub top_apps: Vec<TopApp>,
 }
 
 #[derive(serde::Deserialize, utoipa::IntoParams)]
@@ -388,88 +368,4 @@ pub(crate) async fn usage_for_child(
             .collect(),
         device_totals,
     })
-}
-
-#[derive(serde::Deserialize, utoipa::IntoParams)]
-pub struct SummaryQuery {
-    date: NaiveDate,
-    tz: String,
-}
-
-#[utoipa::path(
-    get, path = "/v1/children/{id}/summary",
-    params(("id" = Uuid, Path, description = "Child id"), SummaryQuery),
-    responses(
-        (status = 200, description = "One local day, summarised", body = SummaryResponse),
-        (status = 404, description = "No such child in this family"),
-        (status = 422, description = "Unknown timezone"),
-    ),
-    tag = "usage"
-)]
-pub async fn summary(
-    parent: Parent,
-    State(state): State<AppState>,
-    Path(id): Path<Uuid>,
-    Query(q): Query<SummaryQuery>,
-) -> Result<Json<SummaryResponse>, ApiError> {
-    let child_id = scope::child_of_family(&state.pool, parent.family_id, id).await?;
-    let tz = zone(&q.tz)?;
-    let (start, end) = bounds(q.date, q.date, tz)?;
-
-    let rows = sqlx::query!(
-        r#"SELECT u.package,
-                  COALESCE(p.label, u.package) AS "label!",
-                  SUM(u.foreground_ms)::bigint AS "ms!",
-                  MIN(u.hour_start) AS "first!",
-                  MAX(u.hour_start) AS "last!"
-           FROM usage_hours u
-           JOIN devices d ON d.id = u.device_id
-           LEFT JOIN packages p ON p.family_id = d.family_id AND p.package = u.package
-           WHERE d.child_id = $1 AND u.hour_start >= $2 AND u.hour_start < $3
-           GROUP BY u.package, "label!"
-           ORDER BY "ms!" DESC"#,
-        child_id,
-        start,
-        end
-    )
-    .fetch_all(&state.pool)
-    .await?;
-
-    let unlocks: Option<i64> = sqlx::query_scalar!(
-        r#"SELECT SUM(h.unlock_count)::bigint FROM device_hours h
-           JOIN devices d ON d.id = h.device_id
-           WHERE d.child_id = $1 AND h.hour_start >= $2 AND h.hour_start < $3"#,
-        child_id,
-        start,
-        end
-    )
-    .fetch_one(&state.pool)
-    .await?;
-
-    Ok(Json(SummaryResponse {
-        child_id,
-        date: q.date,
-        tz: q.tz,
-        total_ms: rows.iter().map(|r| r.ms).sum::<i64>(),
-        unlock_count: unlocks.unwrap_or(0),
-        first_activity: rows
-            .iter()
-            .map(|r| r.first)
-            .min()
-            .map(|t| t.with_timezone(&tz).to_rfc3339()),
-        last_activity: rows
-            .iter()
-            .map(|r| r.last)
-            .max()
-            .map(|t| t.with_timezone(&tz).to_rfc3339()),
-        top_apps: rows
-            .iter()
-            .take(10)
-            .map(|r| TopApp {
-                package: r.package.clone(),
-                label: r.label.clone(),
-                foreground_ms: r.ms,
-            })
-            .collect(),
-    }))
 }

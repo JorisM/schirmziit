@@ -49,7 +49,8 @@
 
 "devices.pair.title" = "Collega un telefono";
 "devices.pair.step1" = "Apri Schirmziit sul telefono del bambino.";
-"devices.pair.step2" = "Digita lì i sei caratteri e anche l’indirizzo del server qui sotto.";
+"devices.pair.step2" = "Scansiona il quadrato qui sotto con la fotocamera di quel telefono — oppure digita i sei caratteri e l’indirizzo del server.";
+"devices.pair.qr" = "Codice QR con l’indirizzo del server e il codice";
 "devices.pair.step3" = "Fatto. Il telefono invia poi i dati circa ogni 30 minuti.";
 "devices.pair.code" = "Codice";
 "devices.pair.server" = "Indirizzo del server";

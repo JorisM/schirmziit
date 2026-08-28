@@ -60,6 +60,15 @@ struct PairDeviceView: View {
                     .font(.footnote)
                     .foregroundStyle(Palette.inkMuted)
 
+                    // Only when the server drew one, and only when what it drew
+                    // is genuinely a square: the code and the address below are
+                    // the whole pairing on their own, and an empty frame here
+                    // reads as a broken screen.
+                    if let qr = enrollment.qr, qr.isDrawable {
+                        QrMatrixView(matrix: qr, label: "devices.pair.qr")
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
+
                     VStack(alignment: .leading, spacing: 2) {
                         L("devices.pair.code")
                             .font(.caption)

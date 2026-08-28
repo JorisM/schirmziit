@@ -25,6 +25,35 @@ struct EnrollmentResponse: Codable, Sendable {
     let code: String
     let expiresAt: Date
     let qrPayload: String
+    /// `qrPayload` already drawn by the server, or nil when it could not draw
+    /// it. Nothing in this app encodes a QR: one encoder in `crates/core` is
+    /// what keeps this phone, the dashboard and an Android phone from handing a
+    /// family three different squares.
+    let qr: QrMatrix?
+}
+
+/// A square of modules, row by row, `1` dark and `0` light, quiet zone
+/// included — exactly as the server sent it.
+struct QrMatrix: Codable, Sendable, Equatable {
+    let size: Int
+    let rows: [String]
+
+    /// False for anything that is not genuinely a square of `size` binary
+    /// modules. A truncated or ragged matrix draws a square that scans as
+    /// nothing, which a parent reads as their camera being at fault — and the
+    /// code and address beside it pair the phone without it.
+    var isDrawable: Bool {
+        size > 0
+            && rows.count == size
+            && rows.allSatisfy { row in
+                row.count == size && row.allSatisfy { $0 == "0" || $0 == "1" }
+            }
+    }
+
+    func isDark(x: Int, y: Int) -> Bool {
+        let row = rows[y]
+        return row[row.index(row.startIndex, offsetBy: x)] == "1"
+    }
 }
 
 /// What a purge actually removed, straight from the server's `rows_affected`.

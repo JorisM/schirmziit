@@ -7,6 +7,7 @@ use axum::extract::{Path, Query, State};
 use axum::{Json, Router, routing::get};
 use chrono::{DateTime, Duration, NaiveDate, TimeZone, Utc};
 use chrono_tz::Tz;
+use schirmziit_core::insight::{self, HourPoint, WeekComparison};
 use std::collections::BTreeMap;
 use uuid::Uuid;
 
@@ -20,6 +21,7 @@ const MAX_READS_PER_HOUR: u32 = 240;
 pub fn router() -> Router<AppState> {
     Router::new()
         .route("/v1/children/{id}/usage", get(usage))
+        .route("/v1/children/{id}/insight", get(insight))
         // Same `/v1/me` prefix as `auth::routes`' `/v1/me` (the parent
         // session), but a different identity: this one is `my_usage`, read by
         // the calling *device* over its bearer token. Do not let a future
@@ -368,4 +370,95 @@ pub(crate) async fn usage_for_child(
             .collect(),
         device_totals,
     })
+}
+
+#[derive(serde::Deserialize, utoipa::IntoParams)]
+pub struct InsightQuery {
+    /// The local date the parent is looking at. Today is part of neither week
+    /// — the comparison ends yesterday — but it decides where the two weeks
+    /// fall, and only the client knows which day it is where the family lives.
+    date: NaiveDate,
+    tz: String,
+}
+
+#[derive(serde::Serialize, utoipa::ToSchema)]
+pub struct InsightResponse {
+    pub child_id: Uuid,
+    pub tz: String,
+    pub week: WeekComparison,
+}
+
+#[utoipa::path(
+    get, path = "/v1/children/{id}/insight",
+    params(("id" = Uuid, Path, description = "Child id"), InsightQuery),
+    responses(
+        (status = 200, description = "The last full week against the one before it", body = InsightResponse),
+        (status = 404, description = "No such child in this family"),
+        (status = 422, description = "Unknown timezone"),
+    ),
+    tag = "usage"
+)]
+pub async fn insight(
+    parent: Parent,
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+    Query(q): Query<InsightQuery>,
+) -> Result<Json<InsightResponse>, ApiError> {
+    let child_id = scope::child_of_family(&state.pool, parent.family_id, id).await?;
+    // Validated here so an unknown zone is the same 422 every other read
+    // answers with, rather than a core error surfacing one layer down.
+    zone(&q.tz)?;
+    let weeks = insight::weeks(&q.tz, q.date).map_err(|e| ApiError::Validation(e.to_string()))?;
+
+    let rows = sqlx::query!(
+        r#"SELECT u.hour_start,
+                  u.package,
+                  COALESCE(p.label, u.package) AS "label!",
+                  SUM(u.foreground_ms)::bigint AS "ms!"
+           FROM usage_hours u
+           JOIN devices d ON d.id = u.device_id
+           LEFT JOIN packages p ON p.family_id = d.family_id AND p.package = u.package
+           WHERE d.child_id = $1 AND u.hour_start >= $2 AND u.hour_start < $3
+           GROUP BY u.hour_start, u.package, "label!""#,
+        child_id,
+        weeks.start,
+        weeks.end
+    )
+    .fetch_all(&state.pool)
+    .await?;
+
+    // Whether the earlier week was measured at all, which the sum above cannot
+    // answer: a week of zeros and a week no phone reported add up the same and
+    // mean opposite things.
+    let previous_measured = sqlx::query_scalar!(
+        r#"SELECT EXISTS(
+             SELECT 1 FROM device_hours h
+             JOIN devices d ON d.id = h.device_id
+             WHERE d.child_id = $1 AND h.hour_start >= $2 AND h.hour_start < $3
+           ) AS "measured!""#,
+        child_id,
+        weeks.start,
+        weeks.previous_end
+    )
+    .fetch_one(&state.pool)
+    .await?;
+
+    let points: Vec<HourPoint> = rows
+        .into_iter()
+        .map(|r| HourPoint {
+            hour_start: r.hour_start,
+            package: r.package,
+            label: r.label,
+            foreground_ms: r.ms,
+        })
+        .collect();
+
+    let week = insight::compare(&q.tz, q.date, &points, previous_measured)
+        .map_err(|e| ApiError::Validation(e.to_string()))?;
+
+    Ok(Json(InsightResponse {
+        child_id,
+        tz: q.tz,
+        week,
+    }))
 }

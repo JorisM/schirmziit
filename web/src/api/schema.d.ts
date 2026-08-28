@@ -151,6 +151,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/children/{id}/insight": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["insight"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/children/{id}/usage": {
         parameters: {
             query?: never;
@@ -288,6 +304,18 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * @description One app, in both weeks. `ms` may be lower than `previous_ms`; a mover moves
+         *     in either direction and the renderer says which.
+         */
+        AppMove: {
+            /** Format: int64 */
+            foreground_ms: number;
+            label: string;
+            package: string;
+            /** Format: int64 */
+            previous_foreground_ms: number;
+        };
         ChildResponse: {
             display_name: string;
             /** Format: uuid */
@@ -417,6 +445,12 @@ export interface components {
             accepted: string[];
             rejected: components["schemas"]["Rejected"][];
         };
+        InsightResponse: {
+            /** Format: uuid */
+            child_id: string;
+            tz: string;
+            week: components["schemas"]["WeekComparison"];
+        };
         MeResponse: {
             email: string;
             /** Format: uuid */
@@ -522,6 +556,49 @@ export interface components {
             email: string;
             /** @description One of `de`, `fr`, `it`, `en`. */
             locale: string;
+        };
+        /** @description Seven days against the seven before them. */
+        WeekComparison: {
+            /**
+             * Format: int32
+             * @description Shipped rather than assumed, so a renderer can name the hour it is
+             *     talking about instead of hard-coding a 21 of its own.
+             */
+            evening_from_hour: number;
+            /**
+             * Format: int64
+             * @description Screen time from `evening_from_hour` to local midnight, a subset of
+             *     `total_ms` and never something to add to it.
+             */
+            evening_ms: number;
+            /**
+             * Format: date
+             * @description First and last local day of the recent week, both inclusive.
+             */
+            from: string;
+            /** @description Ranked by distance moved, longest first, at most [`MAX_MOVERS`]. */
+            movers: components["schemas"]["AppMove"][];
+            /** Format: int64 */
+            previous_evening_ms: number;
+            /**
+             * Format: date
+             * @description The week before, both inclusive.
+             */
+            previous_from: string;
+            /**
+             * @description False when no device reported anything in the earlier week. A week
+             *     against nothing is not a doubling, it is a first week, and every
+             *     surface has to say so rather than print a percentage.
+             */
+            previous_measured: boolean;
+            /** Format: date */
+            previous_to: string;
+            /** Format: int64 */
+            previous_total_ms: number;
+            /** Format: date */
+            to: string;
+            /** Format: int64 */
+            total_ms: number;
         };
     };
     responses: never;
@@ -834,6 +911,51 @@ export interface operations {
             };
             /** @description No such child in this family */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    insight: {
+        parameters: {
+            query: {
+                /**
+                 * @description The local date the parent is looking at. Today is part of neither week
+                 *     — the comparison ends yesterday — but it decides where the two weeks
+                 *     fall, and only the client knows which day it is where the family lives.
+                 */
+                date: string;
+                tz: string;
+            };
+            header?: never;
+            path: {
+                /** @description Child id */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The last full week against the one before it */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InsightResponse"];
+                };
+            };
+            /** @description No such child in this family */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown timezone */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

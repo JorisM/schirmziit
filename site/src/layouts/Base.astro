@@ -31,6 +31,37 @@ const pathFor = (target: Locale) => {
   return `${p}/${slug}`
 }
 
+const canonical = new URL(pathFor(locale), Astro.site)
+
+/**
+ * Two objects, not one: the Organization is true on every page, the
+ * SoftwareApplication describes the product the home page is about. Only what
+ * we can stand behind goes in -- no rating, no price, no download count for
+ * something that has not shipped.
+ */
+const orgLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Schirmziit',
+  url: new URL('/', Astro.site).href,
+  email: 'joris@morger-gossweiler.ch',
+  sameAs: ['https://github.com/JorisM/schirmziit'],
+}
+
+const appLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Schirmziit',
+  url: canonical.href,
+  description,
+  applicationCategory: 'UtilitiesApplication',
+  operatingSystem: 'Android 8+, iOS 17+',
+  isAccessibleForFree: true,
+  license: 'https://github.com/JorisM/schirmziit/blob/main/LICENSE',
+  inLanguage: locales.map((l) => sites[l].htmlLang),
+  publisher: { '@type': 'Organization', name: 'Schirmziit' },
+}
+
 const analyticsHost = import.meta.env.PUBLIC_UMAMI_HOST
 const analyticsId = import.meta.env.PUBLIC_UMAMI_ID
 ---
@@ -44,7 +75,7 @@ const analyticsId = import.meta.env.PUBLIC_UMAMI_ID
     <meta name="description" content={description} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="canonical" href={new URL(pathFor(locale), Astro.site)} />
+    <link rel="canonical" href={canonical} />
     {locales.map((l) => (
       <link rel="alternate" hreflang={sites[l].htmlLang} href={new URL(pathFor(l), Astro.site)} />
     ))}
@@ -52,6 +83,19 @@ const analyticsId = import.meta.env.PUBLIC_UMAMI_ID
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content="Schirmziit" />
+    <meta property="og:locale" content={t.ogLocale} />
+    {locales.filter((l) => l !== locale).map((l) => (
+      <meta property="og:locale:alternate" content={sites[l].ogLocale} />
+    ))}
+    {/* No og:image yet, so the card is deliberately the text-only kind rather
+        than a large card with an empty frame where the picture should be. */}
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(orgLd)} />
+    {page === 'home' && <script type="application/ld+json" is:inline set:html={JSON.stringify(appLd)} />}
     {/* Self-hosted, cookieless counting. Injected only when configured, so a
         fork of this site ships without any analytics at all. */}
     {analyticsHost && analyticsId && (

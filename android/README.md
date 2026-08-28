@@ -78,11 +78,19 @@ legible as one. `purgedDay` then blanks the fortnight and the day and re-reads
 both — the one place this app deliberately drops loaded numbers, because those
 bars describe rows the server has just deleted.
 
-### What the parent mode does not do yet
+### The pairing square
 
-The pairing code is shown as **text**, not as a QR: Android is the one place that
-could render one, since zxing is already a dependency here for the child app's
-scanner. `docs/platform-matrix.md` tracks it.
+`PairDeviceCard` draws the matrix the server sent (`QrMatrixImage`), dark on
+light in both themes — an inverted QR is refused outright by some scanners.
+Nothing here encodes it: zxing could, and is already a dependency for the child
+app's scanner, but three encoders on three surfaces is three chances to hand a
+family a square that scans as something else. The one encoder is
+`crates/core::qr`, and `qrMatrixFrom` refuses anything that is not genuinely a
+square of binary modules — a ragged matrix draws a code a camera cannot read,
+which a parent reads as their own phone being at fault.
+
+A code the server could not draw is still a usable code: the six characters and
+the address below the square are what pairing was before it existed.
 
 ## Two ways to connect a phone
 

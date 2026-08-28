@@ -198,7 +198,8 @@
     <string name="devices_revoke_hint">Press and hold a phone to disconnect it.</string>
     <string name="devices_pair_title">Connect a phone</string>
     <string name="devices_pair_step1">Open Schirmziit on your child\'s phone.</string>
-    <string name="devices_pair_step2">Type the six characters there, along with the server address below.</string>
+    <string name="devices_pair_step2">Scan the square below with that phone\'s camera — or type the six characters and the server address.</string>
+    <string name="devices_pair_qr">QR code carrying the server address and the pairing code</string>
     <string name="devices_pair_step3">Done. The phone then reports about every 30 minutes.</string>
     <string name="devices_pair_code">Code</string>
     <string name="devices_pair_server">Server address</string>

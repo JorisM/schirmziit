@@ -194,7 +194,8 @@
     <string name="devices_revoke_hint">Halte ein Handy gedrückt, um die Verbindung zu trennen.</string>
     <string name="devices_pair_title">Handy verbinden</string>
     <string name="devices_pair_step1">Öffne Schirmziit auf dem Handy des Kindes.</string>
-    <string name="devices_pair_step2">Tippe dort die sechs Zeichen ein, dazu die Serveradresse unten.</string>
+    <string name="devices_pair_step2">Scanne das Quadrat unten mit der Kamera dieses Handys — oder tippe die sechs Zeichen und die Serveradresse ein.</string>
+    <string name="devices_pair_qr">QR-Code mit der Serveradresse und dem Code</string>
     <string name="devices_pair_step3">Fertig. Das Handy meldet sich danach etwa alle 30 Minuten.</string>
     <string name="devices_pair_code">Code</string>
     <string name="devices_pair_server">Serveradresse</string>

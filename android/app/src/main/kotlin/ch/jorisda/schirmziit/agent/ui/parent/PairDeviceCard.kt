@@ -85,6 +85,18 @@ fun PairDeviceCard(
                     Step(3, stringResource(R.string.devices_pair_step3))
                 }
 
+                // Only when the server drew one: the code and the address below
+                // are the whole pairing on their own, so a square that could not
+                // be drawn costs a scan and nothing else. An empty frame here
+                // would read as a broken card instead.
+                enrollment.qr?.let { matrix ->
+                    QrMatrixImage(
+                        matrix = matrix,
+                        description = stringResource(R.string.devices_pair_qr),
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                    )
+                }
+
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(
                         stringResource(R.string.devices_pair_code),

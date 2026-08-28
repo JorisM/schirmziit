@@ -193,7 +193,8 @@
     <string name="devices_revoke_hint">Tieni premuto un telefono per disconnetterlo.</string>
     <string name="devices_pair_title">Collega un telefono</string>
     <string name="devices_pair_step1">Apri Schirmziit sul telefono del bambino.</string>
-    <string name="devices_pair_step2">Digita lì i sei caratteri e anche l’indirizzo del server qui sotto.</string>
+    <string name="devices_pair_step2">Scansiona il quadrato qui sotto con la fotocamera di quel telefono — oppure digita i sei caratteri e l’indirizzo del server.</string>
+    <string name="devices_pair_qr">Codice QR con l’indirizzo del server e il codice</string>
     <string name="devices_pair_step3">Fatto. Il telefono invia poi i dati circa ogni 30 minuti.</string>
     <string name="devices_pair_code">Codice</string>
     <string name="devices_pair_server">Indirizzo del server</string>

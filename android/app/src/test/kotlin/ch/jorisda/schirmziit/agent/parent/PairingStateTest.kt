@@ -5,6 +5,7 @@ import java.io.IOException
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
+import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -23,6 +24,7 @@ class PairingStateTest {
         code = "K7MNPQ",
         expiresAtMillis = 1_787_997_600_000L,
         qrPayload = "schirmziit://enroll?url=https://api.schirmziit.ch&code=K7MNPQ",
+        qr = QrMatrix(3, listOf("101", "010", "101")),
     )
 
     // ─── minting over the wire ───────────────────────────────────────────
@@ -56,6 +58,72 @@ class PairingStateTest {
         assertEquals("/v1/children/c1/enrollments", request.path)
         assertEquals("POST", request.method)
         server.shutdown()
+    }
+
+    @Test
+    fun `minting reads back the square the server drew`() {
+        val server = MockWebServer().apply {
+            enqueue(
+                MockResponse().setResponseCode(201).setBody(
+                    """{"code":"K7MNPQ","expires_at":"2026-08-28T10:00:00Z","qr_payload":"x",
+                        "qr":{"size":3,"rows":["101","010","101"]}}""",
+                ),
+            )
+            start()
+        }
+
+        val result = ParentClient(
+            server.url("/").toString(),
+            OkHttpClient(),
+            InMemoryParentSession(cookie = "schirmziit_session=abc"),
+        ).mintEnrollment("c1")
+
+        assertEquals(QrMatrix(3, listOf("101", "010", "101")), result.qr)
+        // Read by row, then column. A renderer fed a transposed matrix still
+        // draws a plausible square, and a plausible square scans as nothing.
+        assertTrue(result.qr!!.isDark(0, 0))
+        assertFalse(result.qr!!.isDark(1, 0))
+        assertTrue(result.qr!!.isDark(1, 1))
+        server.shutdown()
+    }
+
+    @Test
+    fun `a server that drew no square still mints a usable code`() {
+        val server = MockWebServer().apply {
+            enqueue(
+                MockResponse().setResponseCode(201).setBody(
+                    """{"code":"K7MNPQ","expires_at":"2026-08-28T10:00:00Z","qr_payload":"x"}""",
+                ),
+            )
+            start()
+        }
+
+        val result = ParentClient(
+            server.url("/").toString(),
+            OkHttpClient(),
+            InMemoryParentSession(cookie = "schirmziit_session=abc"),
+        ).mintEnrollment("c1")
+
+        // The square is a convenience; the code is the pairing. A missing
+        // matrix must not throw the code away with it.
+        assertNull(result.qr)
+        assertEquals("K7MNPQ", result.code)
+        server.shutdown()
+    }
+
+    // ─── a square that is not square ─────────────────────────────────────
+
+    @Test
+    fun `a ragged or truncated matrix is no matrix at all`() {
+        // Every one of these renders as a square a camera cannot read, which
+        // looks to a parent like their phone is at fault.
+        assertNull(qrMatrixFrom(JSONObject("""{"size":3,"rows":["101","01","101"]}""")))
+        assertNull(qrMatrixFrom(JSONObject("""{"size":3,"rows":["101","010"]}""")))
+        assertNull(qrMatrixFrom(JSONObject("""{"size":0,"rows":[]}""")))
+        assertNull(qrMatrixFrom(JSONObject("""{"rows":["1"]}""")))
+        assertNull(qrMatrixFrom(JSONObject("""{"size":1}""")))
+        assertNull(qrMatrixFrom(JSONObject("""{"size":2,"rows":["1x","01"]}""")))
+        assertNull(qrMatrixFrom(null))
     }
 
     @Test

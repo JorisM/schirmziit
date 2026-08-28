@@ -113,11 +113,11 @@ export const it: Site = {
         revokeDevice: { label: 'Scollegare un telefono' },
         pairingCode: {
           label: 'Creare un codice di collegamento per il telefono di un bambino',
-          note: 'Nella panoramica nel browser. Non ancora nella modalità genitore su iPhone — lì colleghi il telefono del bambino con il tuo login genitore, senza codice.',
+          note: 'Mostrato come codice QR e come sei caratteri, nella panoramica e in entrambe le app. Il telefono del bambino scansiona il codice, oppure qualcuno digita i sei caratteri e l’indirizzo del server.',
         },
         deleteData: {
           label: 'Cancellare i numeri salvati di un bambino',
-          note: 'Cancella i valori orari e i totali giornalieri e dice quante righe sono sparite. Il bambino resta collegato e continua a inviare. Non ancora nella modalità genitore su iPhone.',
+          note: 'Cancella i valori orari e i totali giornalieri e dice quante righe sono sparite. Il bambino resta collegato e continua a inviare.',
         },
         helpLinks: {
           label: 'Aiuto e servizi di consulenza svizzeri',

@@ -113,11 +113,11 @@ export const fr: Site = {
         revokeDevice: { label: 'Déconnecter un téléphone' },
         pairingCode: {
           label: 'Créer un code de connexion pour le téléphone d’un enfant',
-          note: 'Dans le tableau de bord du navigateur. Pas encore dans le mode parent sur iPhone — là, tu connectes le téléphone de l’enfant avec ton login parent, sans code.',
+          note: 'Affiché comme QR code et comme six caractères, dans le tableau de bord et dans les deux applications. Le téléphone de l’enfant scanne le code, ou quelqu’un saisit les six caractères et l’adresse du serveur.',
         },
         deleteData: {
           label: 'Supprimer les chiffres enregistrés d’un enfant',
-          note: 'Supprime les chiffres horaires et les totaux journaliers et indique combien de lignes ont disparu. L’enfant reste connecté et continue d’envoyer. Pas encore dans le mode parent sur iPhone.',
+          note: 'Supprime les chiffres horaires et les totaux journaliers et indique combien de lignes ont disparu. L’enfant reste connecté et continue d’envoyer.',
         },
         helpLinks: {
           label: 'Aide et services de conseil suisses',

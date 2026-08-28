@@ -21,7 +21,9 @@ import ch.jorisda.schirmziit.agent.parent.ParentChild
 import ch.jorisda.schirmziit.agent.parent.ParentDevice
 import ch.jorisda.schirmziit.agent.parent.Purged
 import ch.jorisda.schirmziit.agent.parent.PurgeState
+import ch.jorisda.schirmziit.agent.parent.AppMove
 import ch.jorisda.schirmziit.agent.parent.QrMatrix
+import ch.jorisda.schirmziit.agent.parent.WeekComparison
 import ch.jorisda.schirmziit.agent.ui.parent.ChildDetailScreen
 import ch.jorisda.schirmziit.agent.ui.parent.ChildrenScreen
 import ch.jorisda.schirmziit.agent.ui.parent.ErrorPanel
@@ -31,6 +33,7 @@ import ch.jorisda.schirmziit.agent.ui.parent.PurgeDataCard
 import ch.jorisda.schirmziit.agent.ui.parent.ParentHelpScreen
 import ch.jorisda.schirmziit.agent.ui.parent.RoleChoiceScreen
 import ch.jorisda.schirmziit.agent.ui.parent.SignInScreen
+import ch.jorisda.schirmziit.agent.ui.parent.WeekInsightCard
 import ch.jorisda.schirmziit.agent.ui.theme.SchirmziitTheme
 import ch.jorisda.schirmziit.core.AppTotalFfi
 import ch.jorisda.schirmziit.core.DayDetailFfi
@@ -310,12 +313,79 @@ class ParentScreenshotTest {
         onSelectDay = {},
         onRetryDay = {},
         onRetryStrip = {},
+        onRetryWeek = {},
         onMintCode = {},
         onRevokeDevice = {},
         onAskPurge = {},
         onCancelPurge = {},
         onConfirmPurge = {},
         onBack = {},
+    )
+
+    // ─── last week against the one before it ─────────────────────────────
+
+    // The card on its own as well as inside the screen: the screen's golden
+    // proves where it sits, and these prove what it says, including the two
+    // states a full week never shows.
+
+    @Test
+    @Config(qualifiers = LIGHT_DE)
+    fun `last week in german`() {
+        shoot("parent-week-de-light") { WeekInsightCard(week = comparison()) }
+    }
+
+    @Test
+    @Config(qualifiers = DARK_DE)
+    fun `last week in german dark`() {
+        shoot("parent-week-de-dark") { WeekInsightCard(week = comparison()) }
+    }
+
+    @Test
+    @Config(qualifiers = LIGHT_FR)
+    fun `last week in french`() {
+        // French runs longest of the four here — "de moins que la semaine
+        // précédente" beside a duration is where a mover row wraps first.
+        shoot("parent-week-fr-light") { WeekInsightCard(week = comparison()) }
+    }
+
+    @Test
+    @Config(qualifiers = LIGHT_EN)
+    fun `a first week has nothing to compare with`() {
+        // No deltas at all, and a sentence saying why. A rise of a hundred per
+        // cent against a week nobody measured is the lost day, dressed up.
+        shoot("parent-week-first-en-light") {
+            WeekInsightCard(week = comparison(previousMeasured = false))
+        }
+    }
+
+    @Test
+    @Config(qualifiers = LIGHT_EN)
+    fun `a week where nothing moved says so`() {
+        shoot("parent-week-steady-en-light") {
+            WeekInsightCard(week = comparison(movers = emptyList()))
+        }
+    }
+
+    private fun comparison(
+        previousMeasured: Boolean = true,
+        movers: List<AppMove> = listOf(
+            AppMove("com.zhiliaoapp.musically", "TikTok", 9_000_000L, 3_600_000L),
+            AppMove("com.games.puzzle", "Puzzle", 1_200_000L, 4_800_000L),
+        ),
+    ) = WeekComparison(
+        // Fixed dates and fixed figures: the card describes a week that has
+        // already ended, so nothing in it moves with the clock.
+        from = "2026-08-13",
+        to = "2026-08-19",
+        previousFrom = "2026-08-06",
+        previousTo = "2026-08-12",
+        totalMs = 44_400_000L,
+        previousTotalMs = if (previousMeasured) 42_000_000L else 0L,
+        eveningMs = 7_200_000L,
+        previousEveningMs = if (previousMeasured) 4_800_000L else 0L,
+        eveningFromHour = 21,
+        movers = if (previousMeasured) movers else emptyList(),
+        previousMeasured = previousMeasured,
     )
 
     // ─── connecting a phone ──────────────────────────────────────────────
@@ -606,6 +676,9 @@ class ParentScreenshotTest {
                 backgroundMeasured = true,
             ),
             devices = sampleDevices(),
+            // A loaded screen has a loaded week too: a golden with a skeleton
+            // in the middle of it would be a picture of a half-arrived screen.
+            week = comparison(),
         )
     }
 }

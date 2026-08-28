@@ -99,6 +99,29 @@ fun StripSkeleton() {
     }
 }
 
+/** Two figures side by side, the shape the week card settles into. */
+@Composable
+fun WeekSkeleton() {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Bone(width = 120.dp, height = 18.dp)
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(24.dp),
+        ) {
+            repeat(2) {
+                Column(
+                    Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    Bone(width = 88.dp, height = 12.dp)
+                    Bone(width = 104.dp, height = 28.dp)
+                    Bone(width = 120.dp, height = 12.dp)
+                }
+            }
+        }
+    }
+}
+
 /** The day's headline total, its hour ribbon, and a few app rows. */
 @Composable
 fun DaySkeleton() {

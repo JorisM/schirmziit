@@ -92,6 +92,7 @@ fun ChildDetailScreen(
     onSelectDay: (String) -> Unit,
     onRetryDay: () -> Unit,
     onRetryStrip: () -> Unit,
+    onRetryWeek: () -> Unit,
     onMintCode: () -> Unit,
     onRevokeDevice: (ParentDevice) -> Unit,
     onAskPurge: () -> Unit,
@@ -140,6 +141,20 @@ fun ChildDetailScreen(
             )
 
             else -> StripSkeleton()
+        }
+
+        // Between the fortnight and the day: it answers the question the strip
+        // raises and one day cannot. Loaded on its own, so a week that failed
+        // is a banner where the card was and nothing else — the day is why a
+        // parent opened this screen.
+        when {
+            state.week != null -> WeekInsightCard(week = state.week)
+            state.weekFailure != null -> ErrorPanel(
+                failure = state.weekFailure,
+                onRetry = onRetryWeek,
+            )
+
+            else -> WeekSkeleton()
         }
 
         val detail = state.detail

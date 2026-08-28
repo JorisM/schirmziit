@@ -209,6 +209,21 @@ class ParentClient(
         )
 
     /**
+     * Last week against the one before it, compared by the server.
+     *
+     * `date` is this phone's own local date: only the device knows which day it
+     * is where the family lives, and the server counts the two weeks back from
+     * it. Read strictly — a body this app cannot parse is a failure, never a
+     * card full of zeroes.
+     */
+    fun insight(childId: String, date: String): WeekComparison {
+        val path = "/v1/children/$childId/insight"
+        val body = get(path, "date" to date, "tz" to timeZone())
+        return weekComparisonFrom(runCatching { JSONObject(body) }.getOrNull())
+            ?: throw ApiException(ApiFailure.badResponseBody(path, 200))
+    }
+
+    /**
      * Mints the code a child's phone is enrolled with. `POST`, so it is called
      * on a press and never on appearance: a code lives fifteen minutes and can
      * be claimed once, so a screen that mints when a parent opens it hands out

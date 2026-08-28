@@ -49,6 +49,13 @@ data class ChildDayState(
     val devices: List<ParentDevice>? = null,
     val dayFailure: ApiFailure? = null,
     /**
+     * Last week against the one before it. Independent of both halves above:
+     * it is about the fortnight, so tapping a day neither reloads nor clears
+     * it, and a week that failed costs the week alone.
+     */
+    val week: WeekComparison? = null,
+    val weekFailure: ApiFailure? = null,
+    /**
      * The day whose request is in flight. Compared against on completion so a
      * slow response for a day the parent has since tapped away from cannot
      * overwrite a faster, newer one — the highlighted day and the numbers under
@@ -132,6 +139,21 @@ fun mergeStrip(
     onSuccess = { previous.copy(strip = it, stripFailure = null) },
     onFailure = {
         previous.copy(stripFailure = ApiFailure.of(it, "/v1/children/usage"))
+    },
+)
+
+/**
+ * Folds the week in. On failure the comparison already on screen is left where
+ * it is, for the same reason the strip is: a poll that failed must not blank a
+ * week a parent is reading.
+ */
+fun mergeWeek(
+    previous: ChildDayState,
+    loaded: Result<WeekComparison>,
+): ChildDayState = loaded.fold(
+    onSuccess = { previous.copy(week = it, weekFailure = null) },
+    onFailure = {
+        previous.copy(weekFailure = ApiFailure.of(it, "/v1/children/insight"))
     },
 )
 

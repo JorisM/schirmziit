@@ -214,4 +214,15 @@
     <string name="data_deleted_hours">Valori orari per app</string>
     <string name="data_deleted_device_hours">Ore del dispositivo</string>
     <string name="data_deleted_days">Totali giornalieri</string>
+
+    <!-- La settimana scorsa rispetto a quella precedente -->
+    <string name="week_title">La settimana scorsa</string>
+    <string name="week_total">Tempo sullo schermo</string>
+    <string name="week_evening_from">La sera dalle %1$s</string>
+    <string name="week_more">%1$s in più rispetto alla settimana precedente</string>
+    <string name="week_less">%1$s in meno rispetto alla settimana precedente</string>
+    <string name="week_same">Come la settimana precedente</string>
+    <string name="week_movers">Che cosa è cambiato</string>
+    <string name="week_movers_none">Nessuna app è cambiata di più di cinque minuti.</string>
+    <string name="week_first">Nella settimana precedente nessun telefono ha segnalato nulla: non c\'è ancora nulla da confrontare.</string>
 </resources>

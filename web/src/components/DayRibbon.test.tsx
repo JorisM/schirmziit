@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { DayRibbon, hoursFromTotals, rampStep } from './DayRibbon'
 import { LocaleProvider } from '../i18n'
@@ -76,5 +76,47 @@ describe('the ribbon and the wave share one screen', () => {
     expect(cells).toHaveLength(24)
     expect(cells.every((cell) => !cell.className.includes('animate-'))).toBe(true)
     expect(cells.every((cell) => !(cell as HTMLElement).style.animationDelay)).toBe(true)
+  })
+})
+
+describe('hovering an hour must not move the ribbon', () => {
+  // The readout used to take the help text's place in the same flex row:
+  // hovering shrank the caption by two lines, the ribbon slid up out from under
+  // the cursor, mouseleave fired, the help text grew back, the cell returned
+  // under the cursor — and the page flickered as fast as the browser could
+  // relayout. Both lines keep their space now, hovered or not.
+  const ribbon = (
+    <LocaleProvider>
+      <DayRibbon totals={[{ start: '2026-08-21T15:00:00+02:00', screen_on_ms: 1_800_000, unlock_count: 3, background_measured: false }]} />
+    </LocaleProvider>
+  )
+  const help = 'Each cell is one hour, midnight to midnight. Darker means the screen was on longer. So you see not just how much, but when.'
+
+  it('keeps the help text while an hour is hovered', () => {
+    render(ribbon)
+    const cell = document.querySelectorAll('[data-ribbon-cell]')[15] as HTMLElement
+    fireEvent.mouseEnter(cell)
+    expect(screen.getByText('15:00 — 30 min')).toBeInTheDocument()
+    expect(screen.getByText(help)).toBeInTheDocument()
+  })
+
+  it('reserves the readout line before anything is hovered', () => {
+    render(ribbon)
+    const readout = document.querySelector('[data-ribbon-readout]') as HTMLElement
+    // Present and holding a line's height, so filling it adds nothing.
+    expect(readout).not.toBeNull()
+    expect(readout.textContent).toBe('\u00a0')
+  })
+
+  it('lifts the cell without moving its own hit area', () => {
+    render(ribbon)
+    const cell = document.querySelectorAll('[data-ribbon-cell]')[15] as HTMLElement
+    fireEvent.mouseEnter(cell)
+    // The lift lives on an inert child: a transform on the cell itself moves the
+    // hit box too, so a cursor near the bottom edge falls out of it and back in.
+    expect(cell.style.transform).toBe('')
+    const lift = cell.querySelector('[data-ribbon-lift]') as HTMLElement
+    expect(lift.style.transform).toBe('translateY(-2px)')
+    expect(lift.style.pointerEvents).toBe('none')
   })
 })

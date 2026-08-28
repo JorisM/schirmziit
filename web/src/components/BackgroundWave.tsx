@@ -116,13 +116,30 @@ export function BackgroundWave({
 
   return (
     <figure className="m-0 mt-6">
-      <figcaption className="mb-1 flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="text-lg">{t.child.backgroundTitle}</h3>
-        <span className="text-sm" style={{ color: 'var(--ink-faint)' }}>
-          {hovered === null
-            ? t.child.backgroundHelp
-            : `${String(hovered).padStart(2, '0')}:00 — ${formatDuration(perHour[hovered] ?? 0, t)}`}
-        </span>
+      {/*
+       * The readout gets its own line, and the help text keeps its own. Sharing
+       * one row meant hovering swapped a three-line help text for a short time:
+       * the caption shrank, the wave slid up out from under the cursor,
+       * mouseleave fired, the text came back — and the page flickered between
+       * the two heights. Nothing a pointer hovers may change layout.
+       */}
+      <figcaption className="mb-1">
+        <div className="flex items-baseline justify-between gap-4">
+          <h3 className="text-lg">{t.child.backgroundTitle}</h3>
+          <span
+            data-wave-readout
+            className="whitespace-nowrap text-sm tabular-nums"
+            style={{ color: 'var(--ink-faint)' }}
+            aria-live="polite"
+          >
+            {hovered === null
+              ? '\u00a0'
+              : `${String(hovered).padStart(2, '0')}:00 — ${formatDuration(perHour[hovered] ?? 0, t)}`}
+          </span>
+        </div>
+        <p className="mt-1 text-sm" style={{ color: 'var(--ink-faint)' }}>
+          {t.child.backgroundHelp}
+        </p>
       </figcaption>
 
       <div className="relative" style={{ height: HEIGHT }}>

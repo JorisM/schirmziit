@@ -26,6 +26,7 @@ import ch.jorisda.schirmziit.agent.parent.mergeDay
 import ch.jorisda.schirmziit.agent.parent.mergeEnrollment
 import ch.jorisda.schirmziit.agent.parent.mergePurge
 import ch.jorisda.schirmziit.agent.parent.mergeStrip
+import ch.jorisda.schirmziit.agent.parent.mergeWeek
 import ch.jorisda.schirmziit.agent.parent.purgedDay
 import ch.jorisda.schirmziit.agent.parent.refreshDay
 import ch.jorisda.schirmziit.agent.parent.selectDay
@@ -106,6 +107,21 @@ fun ParentApp(
         }
     }
 
+    /**
+     * Last week against the one before it. Asked for by this phone's own local
+     * date: only the device knows which day it is where the family lives.
+     */
+    fun loadWeek(child: ParentChild) {
+        val api = client() ?: return
+        scope.launch {
+            val today = LocalDate.now().toString()
+            val loaded = withContext(Dispatchers.IO) {
+                runCatching { api.insight(child.id, today) }
+            }
+            day = day?.let { mergeWeek(it, loaded) }
+        }
+    }
+
     fun open(child: ParentChild) {
         val today = LocalDate.now().toString()
         openChild = child
@@ -117,6 +133,7 @@ fun ParentApp(
         purge = PurgeState()
         day = ChildDayState(selected = today, pending = today)
         loadStrip(child)
+        loadWeek(child)
         loadDay(child, today)
     }
 
@@ -186,6 +203,7 @@ fun ParentApp(
                 loadDay(child, currentDay.selected)
             },
             onRetryStrip = { loadStrip(child) },
+            onRetryWeek = { loadWeek(child) },
             onMintCode = {
                 val api = client() ?: return@ChildDetailScreen
                 pairing = pairing.copy(busy = true)

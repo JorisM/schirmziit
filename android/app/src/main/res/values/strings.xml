@@ -219,4 +219,15 @@
     <string name="data_deleted_hours">Hourly figures per app</string>
     <string name="data_deleted_device_hours">Device hours</string>
     <string name="data_deleted_days">Daily totals</string>
+
+    <!-- Last week against the one before it -->
+    <string name="week_title">Last week</string>
+    <string name="week_total">Screen time</string>
+    <string name="week_evening_from">Evenings from %1$s</string>
+    <string name="week_more">%1$s more than the week before</string>
+    <string name="week_less">%1$s less than the week before</string>
+    <string name="week_same">The same as the week before</string>
+    <string name="week_movers">What moved</string>
+    <string name="week_movers_none">No app moved by more than five minutes.</string>
+    <string name="week_first">No phone reported the week before this one, so there is nothing to compare with yet.</string>
 </resources>

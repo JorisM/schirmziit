@@ -215,4 +215,15 @@
     <string name="data_deleted_hours">Stundenwerte pro App</string>
     <string name="data_deleted_device_hours">Gerätestunden</string>
     <string name="data_deleted_days">Tagessummen</string>
+
+    <!-- Letzte Woche im Vergleich zur Woche davor -->
+    <string name="week_title">Letzte Woche</string>
+    <string name="week_total">Bildschirmzeit</string>
+    <string name="week_evening_from">Abends ab %1$s</string>
+    <string name="week_more">%1$s mehr als in der Woche davor</string>
+    <string name="week_less">%1$s weniger als in der Woche davor</string>
+    <string name="week_same">Gleich viel wie in der Woche davor</string>
+    <string name="week_movers">Was sich verändert hat</string>
+    <string name="week_movers_none">Keine App hat sich um mehr als fünf Minuten verändert.</string>
+    <string name="week_first">In der Woche davor hat kein Handy gemeldet — es gibt noch nichts zum Vergleichen.</string>
 </resources>

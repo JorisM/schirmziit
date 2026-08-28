@@ -17,6 +17,7 @@ path = "src/bin/uniffi-bindgen.rs"
 [dependencies]
 chrono.workspace = true
 chrono-tz.workspace = true
+qrcodegen = "1.8"
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true

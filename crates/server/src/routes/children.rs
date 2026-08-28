@@ -11,6 +11,7 @@ use axum::{
 };
 use chrono::{Duration, Utc};
 use rand::RngExt;
+use schirmziit_core::qr::QrCode;
 use uuid::Uuid;
 
 /// No 0/O/1/I/L: parents read these codes aloud and type them on a phone.
@@ -54,6 +55,13 @@ pub struct EnrollmentResponse {
     pub code: String,
     pub expires_at: chrono::DateTime<Utc>,
     pub qr_payload: String,
+    /// `qr_payload` drawn, so no client needs an encoder and all three draw
+    /// the same square. Null only when the payload does not fit in any QR
+    /// version — see `schirmziit_core::qr::encode`. A client that gets null
+    /// keeps showing the code and the URL as text, which is what it showed
+    /// before this field existed: a square that cannot be drawn costs a scan,
+    /// never the pairing.
+    pub qr: Option<QrCode>,
 }
 
 #[derive(serde::Deserialize, utoipa::ToSchema)]
@@ -273,6 +281,7 @@ pub async fn mint_enrollment(
     Ok((
         StatusCode::CREATED,
         Json(EnrollmentResponse {
+            qr: schirmziit_core::qr::encode(&qr_payload),
             code,
             expires_at,
             qr_payload,

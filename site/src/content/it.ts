@@ -2,6 +2,34 @@ import type { Site } from './strings'
 
 export const it: Site = {
   htmlLang: 'it-CH',
+
+  ogLocale: 'it_CH',
+
+  // The home page leads with the brand because it is the brand page; every
+  // other title leads with what the page is, which is what someone scanning a
+  // result list is looking for.
+  meta: {
+    home: {
+      title: 'Schirmziit — Tempo di schermo per famiglie',
+      description:
+        'Vedi quanto e quando viene usato il telefono di tuo figlio. Nessun contenuto, nessuna posizione, niente di bloccato. Aperto e self-hosted.',
+    },
+    selfHost: {
+      title: 'Self-hosting — Schirmziit',
+      description:
+        'Un solo programma e un database Postgres sul tuo server. Docker Compose, reverse proxy, backup — passo per passo.',
+    },
+    hosted: {
+      title: 'Versione ospitata — Schirmziit',
+      description:
+        'Non vuoi gestire un server. Ospitiamo Schirmziit per te — piccolo, aperto e per ora in Svizzera.',
+    },
+    privacy: {
+      title: 'Privacy — Schirmziit',
+      description:
+        'Tempi di utilizzo per ora, nient’altro. Nessun contenuto, nessuna posizione, nessuna trasmissione. Cosa viene salvato e chi lo vede.',
+    },
+  },
   swissLabel: 'Sviluppato in Svizzera',
   nav: { home: 'Panoramica', selfHost: 'Self-hosting', hosted: 'Ospitato', privacy: 'Privacy' },
 

@@ -2,18 +2,19 @@
 import '../styles/site.css'
 import AlphaBanner from '../components/AlphaBanner.astro'
 import Waitlist from '../components/Waitlist.astro'
-import { localeNames, locales, prefix, sites, type Locale } from '../content'
+import { localeNames, locales, prefix, sites, type Locale, type PageKey } from '../content'
 
 interface Props {
   locale: Locale
-  page: 'home' | 'selfHost' | 'hosted' | 'privacy'
-  title: string
-  description: string
+  page: PageKey
 }
 
-const { locale, page, title, description } = Astro.props
+const { locale, page } = Astro.props
 const t = sites[locale]
 const base = prefix(locale)
+// One page's search-result copy, written for a result list rather than lifted
+// from the headline above it -- see `Meta` in content/strings.ts.
+const { title, description } = t.meta[page]
 
 const pages = [
   { key: 'home' as const, href: base || '/', label: t.nav.home },

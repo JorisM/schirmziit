@@ -6,7 +6,7 @@ interface Props { locale: Locale }
 const { locale } = Astro.props
 const t = sites[locale]
 ---
-<Base locale={locale} page="privacy" title={`${t.privacy.title} — Schirmziit`} description={t.privacy.lead}>
+<Base locale={locale} page="privacy">
   <h1>{t.privacy.title}</h1>
   <p class="lead">{t.privacy.lead}</p>
 

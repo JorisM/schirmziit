@@ -16,6 +16,18 @@ export const localeNames: Record<Locale, string> = {
 
 export type Nav = { home: string; selfHost: string; hosted: string; privacy: string }
 
+/** The four pages, in nav order. One key for the nav, the meta copy and hreflang. */
+export type PageKey = 'home' | 'selfHost' | 'hosted' | 'privacy'
+
+/**
+ * What a search result and a chat preview show. Deliberately not the page's own
+ * headline: `home.lead` is a paragraph written to sit under an h1 and runs 180
+ * to 230 characters, where a description is cut at about 155, and an h1 that
+ * reads well on the page is longer than a title that survives a result list.
+ * Writing both from one string means one of the two is always wrong.
+ */
+export type Meta = { title: string; description: string }
+
 /**
  * The private-alpha notice and the waiting list it points at. Every page carries
  * the banner: someone deep-linked to the hosted page would otherwise read a
@@ -60,6 +72,9 @@ export type Matrix = {
 
 export type Site = {
   htmlLang: string
+  /** `og:locale`, which wants language_TERRITORY where `htmlLang` wants a hyphen. */
+  ogLocale: string
+  meta: Record<PageKey, Meta>
   swissLabel: string
   nav: Nav
   alpha: Alpha

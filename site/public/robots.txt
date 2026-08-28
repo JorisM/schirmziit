@@ -1,0 +1,6 @@
+# Everything here is meant to be found. The waiting-list POST is not a page and
+# has no URL to crawl, so there is nothing to keep out.
+User-agent: *
+Allow: /
+
+Sitemap: https://www.schirmziit.ch/sitemap-index.xml

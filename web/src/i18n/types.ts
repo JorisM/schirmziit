@@ -70,6 +70,23 @@ export type Strings = {
     selectedHeading: string
   }
 
+  /**
+   * Last week against the one before it. Deltas are named in words as well as
+   * shown as an arrow, and no string here scores the child: this reports what
+   * moved, in both directions, against no target at all.
+   */
+  week: {
+    title: string
+    total: string
+    eveningFrom: string
+    more: string
+    less: string
+    same: string
+    moversTitle: string
+    noMovers: string
+    firstWeek: string
+  }
+
   devices: {
     title: string
     fresh: string

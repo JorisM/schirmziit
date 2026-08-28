@@ -14,6 +14,32 @@ const usage = (bucket: string, from: string, to: string) => ({
   series: [{ package: 'com.a', label: 'A', points: [{ start: bucket === 'day' ? to : `${to}T10:00:00+02:00`, foreground_ms: 60_000, launch_count: 1, background_ms: 0 }] }],
 })
 
+const insight = (over: Record<string, unknown> = {}) => ({
+  child_id: 'kid',
+  tz: 'Europe/Zurich',
+  week: {
+    from: '2026-08-13', to: '2026-08-19',
+    previous_from: '2026-08-06', previous_to: '2026-08-12',
+    // Deliberately odd numbers: the day's own figures share this screen, and a
+    // fixture that renders "1 h" too makes a page test ambiguous.
+    total_ms: 4_620_000, previous_total_ms: 3_720_000,
+    evening_ms: 1_500_000, previous_evening_ms: 1_200_000,
+    evening_from_hour: 21, movers: [], previous_measured: true,
+    ...over,
+  },
+})
+
+/** The page makes three reads; only the two usage ones vary by bucket. */
+const answers = (path: string) => {
+  const url = new URL(path, 'http://x')
+  if (url.pathname.endsWith('/insight')) return insight()
+  return usage(
+    url.searchParams.get('bucket')!,
+    url.searchParams.get('from')!,
+    url.searchParams.get('to')!,
+  )
+}
+
 // SWR's default cache is a module-level singleton. Both tests build the same
 // key (same child, same "today"), so without an isolated cache and no
 // deduping window, the second test's mount would be served from the first
@@ -48,14 +74,11 @@ describe('localToday', () => {
 
 describe('ChildDetail', () => {
   it('asks for fourteen days of totals and one day of hours', async () => {
-    const get = vi.spyOn(api, 'get').mockImplementation(async (path: string) => {
-      const url = new URL(path, 'http://x')
-      return usage(url.searchParams.get('bucket')!, url.searchParams.get('from')!, url.searchParams.get('to')!) as never
-    })
+    const get = vi.spyOn(api, 'get').mockImplementation(async (path: string) => answers(path) as never)
 
     renderPage()
 
-    await waitFor(() => expect(get).toHaveBeenCalledTimes(2))
+    await waitFor(() => expect(get).toHaveBeenCalledTimes(3))
     const paths = get.mock.calls.map(([path]) => path as string)
     const strip = paths.find((p) => p.includes('bucket=day'))!
     const detail = paths.find((p) => p.includes('bucket=hour'))!
@@ -68,13 +91,10 @@ describe('ChildDetail', () => {
   })
 
   it('re-requests only the selected day when a bar is clicked', async () => {
-    const get = vi.spyOn(api, 'get').mockImplementation(async (path: string) => {
-      const url = new URL(path, 'http://x')
-      return usage(url.searchParams.get('bucket')!, url.searchParams.get('from')!, url.searchParams.get('to')!) as never
-    })
+    const get = vi.spyOn(api, 'get').mockImplementation(async (path: string) => answers(path) as never)
 
     renderPage()
-    await waitFor(() => expect(get).toHaveBeenCalledTimes(2))
+    await waitFor(() => expect(get).toHaveBeenCalledTimes(3))
 
     await userEvent.click(screen.getAllByRole('button')[0]!)
 
@@ -85,13 +105,12 @@ describe('ChildDetail', () => {
     })
     const daily = get.mock.calls.map(([p]) => p as string).filter((p) => p.includes('bucket=day'))
     expect(daily, 'selecting a day must not re-fetch the strip').toHaveLength(1)
+    const weeks = get.mock.calls.map(([p]) => p as string).filter((p) => p.includes('/insight'))
+    expect(weeks, 'nor the week, which is about the fortnight and not the day').toHaveLength(1)
   })
 
   it('offers a pairing code and a data delete on the day it is showing', async () => {
-    vi.spyOn(api, 'get').mockImplementation(async (path: string) => {
-      const url = new URL(path, 'http://x')
-      return usage(url.searchParams.get('bucket')!, url.searchParams.get('from')!, url.searchParams.get('to')!) as never
-    })
+    vi.spyOn(api, 'get').mockImplementation(async (path: string) => answers(path) as never)
     const post = vi.spyOn(api, 'post').mockResolvedValue({
       code: 'K7MPQ2XY',
       expires_at: new Date(Date.now() + 900_000).toISOString(),
@@ -118,6 +137,7 @@ describe('ChildDetail', () => {
   it('names the day, not "today", when an empty past day is selected', async () => {
     vi.spyOn(api, 'get').mockImplementation(async (path: string) => {
       const url = new URL(path, 'http://x')
+      if (url.pathname.endsWith('/insight')) return insight() as never
       const bucket = url.searchParams.get('bucket')!
       const from = url.searchParams.get('from')!
       const to = url.searchParams.get('to')!
@@ -146,6 +166,7 @@ describe('ChildDetail', () => {
     let resolveSecondDay: (value: unknown) => void = () => {}
     vi.spyOn(api, 'get').mockImplementation(async (path: string) => {
       const url = new URL(path, 'http://x')
+      if (url.pathname.endsWith('/insight')) return insight() as never
       if (url.searchParams.get('bucket') === 'day') return usage('day', '2026-08-12', localToday())
       hourCalls += 1
       // First call (initial mount) resolves; the second (after the tap) is held
@@ -174,6 +195,7 @@ describe('ChildDetail', () => {
   const stripFails = () =>
     vi.spyOn(api, 'get').mockImplementation(async (path: string) => {
       const url = new URL(path, 'http://x')
+      if (url.pathname.endsWith('/insight')) return insight() as never
       const bucket = url.searchParams.get('bucket')!
       if (bucket === 'day')
         throw fromProblem(
@@ -235,6 +257,38 @@ describe('ChildDetail', () => {
     await waitFor(() => expect(screen.getByText(/SZ-E901 · aa11bb/)).toBeInTheDocument())
     expect(screen.getByText(locales.en.child.historyTitle)).toBeInTheDocument()
   })
+
+  it('asks for the week by the local date the page is showing', async () => {
+    const get = vi.spyOn(api, 'get').mockImplementation(async (path: string) => answers(path) as never)
+
+    renderPage()
+
+    await waitFor(() => expect(screen.getByText(locales.en.week.title)).toBeInTheDocument())
+    const week = get.mock.calls.map(([p]) => p as string).find((p) => p.includes('/insight'))!
+    const params = new URL(week, 'http://x').searchParams
+    expect(params.get('date')).toBe(localToday())
+    expect(params.get('tz')).toBe(Intl.DateTimeFormat().resolvedOptions().timeZone)
+  })
+
+  it('keeps the day on screen when only the week fails to load', async () => {
+    // The week is the extra, the day is why the parent opened the page. A
+    // failed comparison must cost the comparison and nothing else.
+    vi.spyOn(api, 'get').mockImplementation(async (path: string) => {
+      if (new URL(path, 'http://x').pathname.endsWith('/insight')) {
+        throw fromProblem(
+          { type: 't', title: 't', status: 502, detail: 'bad gateway', code: 'SZ-E901', ref: 'aa11bb' },
+          { endpoint: path, httpStatus: 502 },
+        )
+      }
+      return answers(path) as never
+    })
+
+    renderPage()
+
+    await waitFor(() => expect(screen.getByText(/SZ-E901 · aa11bb/)).toBeInTheDocument())
+    expect(screen.getByText(locales.en.child.historyTitle)).toBeInTheDocument()
+    expect(screen.getByText(locales.en.child.ribbonTitle)).toBeInTheDocument()
+  })
 })
 
 describe('background listening', () => {
@@ -275,6 +329,7 @@ describe('background listening', () => {
     })
     vi.spyOn(api, 'get').mockImplementation(async (path: string) => {
       const url = new URL(path, 'http://x')
+      if (url.pathname.endsWith('/insight')) return insight() as never
       return body(
         url.searchParams.get('bucket')!,
         url.searchParams.get('from')!,

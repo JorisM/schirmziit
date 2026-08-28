@@ -73,6 +73,19 @@ export const it: Strings = {
     selectedHeading: 'Giorno selezionato',
   },
 
+  week: {
+    title: 'La settimana scorsa',
+    total: 'Tempo sullo schermo',
+    eveningFrom: 'La sera dalle',
+    more: 'in più rispetto alla settimana precedente',
+    less: 'in meno rispetto alla settimana precedente',
+    same: 'Come la settimana precedente',
+    moversTitle: 'Che cosa è cambiato',
+    noMovers: 'Nessuna app è cambiata di più di cinque minuti.',
+    firstWeek:
+      'Nella settimana precedente nessun telefono ha segnalato nulla: non c’è ancora nulla da confrontare.',
+  },
+
   devices: {
     title: 'Dispositivi',
     fresh: 'invia i dati',

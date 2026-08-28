@@ -2,9 +2,13 @@ import SwiftUI
 
 public struct AgentRootView: View {
     let model: AgentModel
+    /// A link this phone was opened with. Only the pairing screen has anything
+    /// to do with it, and only when this phone is asking for a code.
+    let scanned: EnrollLink?
 
-    public init(model: AgentModel) {
+    public init(model: AgentModel, scanned: EnrollLink? = nil) {
         self.model = model
+        self.scanned = scanned
     }
     @Environment(\.scenePhase) private var scenePhase
     @State private var showingHelp = false
@@ -36,7 +40,7 @@ public struct AgentRootView: View {
     @ViewBuilder private var content: some View {
         switch model.status {
         case .needsPairing:
-            AgentPairingView(model: model)
+            AgentPairingView(model: model, scanned: scanned)
         default:
             AgentStatusView(model: model)
         }

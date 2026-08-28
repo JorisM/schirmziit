@@ -98,6 +98,15 @@ targets:
         # says which is which. Spelled out because INFOPLIST_KEY_* settings are
         # ignored when GENERATE_INFOPLIST_FILE is NO, as it is here.
         CFBundleDisplayName: $(PRODUCT_NAME)
+        # What makes the pairing square scannable on an iPhone: the system
+        # camera reads `schirmziit://enroll?url=…&code=…` off the parent's
+        # screen and offers to open this app with it. Android registers the
+        # same scheme in its manifest. Without this key the square a parent is
+        # shown is a picture of a link nothing on this phone will follow.
+        CFBundleURLTypes:
+          - CFBundleURLName: ch.jorisda.schirmziit.enroll
+            CFBundleURLSchemes:
+              - schirmziit
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit

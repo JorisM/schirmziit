@@ -4,6 +4,11 @@ import SwiftUI
 /// reading the code off the dashboard.
 struct AgentPairingView: View {
     let model: AgentModel
+    /// A `schirmziit://enroll` link the phone was opened with — the system
+    /// camera reading the square the parent has on screen. It fills the two
+    /// fields that are otherwise typed off another screen, and fills nothing
+    /// else: the phone still gets a name and the parent still presses pair.
+    var scanned: EnrollLink?
 
     @State private var server = AgentDefaults.server
     @State private var code = ""
@@ -55,5 +60,19 @@ struct AgentPairingView: View {
             }
         }
         .scrollContentBackground(.hidden)
+        // Both, not one: the link can arrive before this screen exists (a cold
+        // launch from the camera) or while it is already up (the app was
+        // running behind the camera).
+        .onAppear { fill(from: scanned) }
+        .onChange(of: scanned) { _, link in fill(from: link) }
+    }
+
+    /// Filled in, never submitted. Pairing consumes a one-shot code, and a
+    /// screen that pairs on arrival would burn the code on a mis-scan — and
+    /// this phone still has no name until someone gives it one.
+    private func fill(from link: EnrollLink?) {
+        guard let link else { return }
+        server = link.server
+        code = link.code
     }
 }

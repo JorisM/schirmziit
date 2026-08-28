@@ -16,11 +16,16 @@ data class ParentChild(val id: String, val displayName: String, val todayMs: Lon
  * A minted one-shot enrolment code.
  *
  * `qrPayload` is the `schirmziit://enroll?url=…&code=…` deep link a camera is
- * meant to read. Android is the one place that could render it as a QR — zxing
- * is already a dependency here, for the child app's scanner — and does not yet;
- * see `docs/platform-matrix.md`.
+ * meant to read, and `qr` is that link already drawn by the server. `qr` is
+ * null when the server could not draw it; the code and the address still pair
+ * the phone, which is how every phone was paired before the square existed.
  */
-data class Enrollment(val code: String, val expiresAtMillis: Long, val qrPayload: String)
+data class Enrollment(
+    val code: String,
+    val expiresAtMillis: Long,
+    val qrPayload: String,
+    val qr: QrMatrix?,
+)
 
 /**
  * What a purge actually removed, straight from the server's `rows_affected`.
@@ -236,6 +241,7 @@ class ParentClient(
                 // valid forever: treat it as already gone rather than guess.
                 ?: 0L,
             qrPayload = parsed.optString("qr_payload"),
+            qr = qrMatrixFrom(parsed.optJSONObject("qr")),
         )
     }
 

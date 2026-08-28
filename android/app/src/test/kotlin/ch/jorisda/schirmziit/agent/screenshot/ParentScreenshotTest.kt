@@ -21,6 +21,7 @@ import ch.jorisda.schirmziit.agent.parent.ParentChild
 import ch.jorisda.schirmziit.agent.parent.ParentDevice
 import ch.jorisda.schirmziit.agent.parent.Purged
 import ch.jorisda.schirmziit.agent.parent.PurgeState
+import ch.jorisda.schirmziit.agent.parent.QrMatrix
 import ch.jorisda.schirmziit.agent.ui.parent.ChildDetailScreen
 import ch.jorisda.schirmziit.agent.ui.parent.ChildrenScreen
 import ch.jorisda.schirmziit.agent.ui.parent.ErrorPanel
@@ -369,6 +370,18 @@ class ParentScreenshotTest {
 
     @Test
     @Config(qualifiers = LIGHT_EN)
+    fun `a code the server could not draw is still a usable code`() {
+        // Dark modules on a light ground in both themes, so the dark golden
+        // above and this one differ everywhere except the square. What must
+        // not appear here is an empty frame: it reads as a broken card, and
+        // the code and the address under it pair the phone perfectly well.
+        shoot("parent-pair-nosquare-en-light") {
+            pairCard(PairingState(enrollment = enrollment(qr = null)))
+        }
+    }
+
+    @Test
+    @Config(qualifiers = LIGHT_EN)
     fun `a failed mint keeps the code already on screen`() {
         shoot("parent-pair-stale-en-light") {
             pairCard(
@@ -390,11 +403,31 @@ class ParentScreenshotTest {
         }
     }
 
-    private fun enrollment() = Enrollment(
+    private fun enrollment(qr: QrMatrix? = pairingSquare()) = Enrollment(
         code = "K7MNPQ",
         expiresAtMillis = MINTED_AT + 15 * 60 * 1000L,
         qrPayload = "schirmziit://enroll?url=https://api.schirmziit.ch&code=K7MNPQ",
+        qr = qr,
     )
+
+    /**
+     * A real, version-4 square — the one `crates/core`'s own test pins, copied
+     * into this module's test resources. A made-up checkerboard would make
+     * these goldens useless for the one thing they can show: whether what a
+     * parent is handed looks like a QR code at all.
+     *
+     * It encodes the same address and the same code shown beside it, so a
+     * reviewer who scans one of these images gets the card they are looking at
+     * rather than a fixture from somewhere else.
+     */
+    private fun pairingSquare(): QrMatrix {
+        val rows = checkNotNull(javaClass.getResourceAsStream("/enroll_qr.txt"))
+            .bufferedReader()
+            .readLines()
+            .filter { it.isNotBlank() }
+            .map { line -> line.map { if (it == '#') '1' else '0' }.joinToString("") }
+        return QrMatrix(rows.size, rows)
+    }
 
     // ─── deleting a child's figures ──────────────────────────────────────
 

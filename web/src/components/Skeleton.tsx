@@ -75,6 +75,36 @@ export function HeroSkeleton() {
   )
 }
 
+export function WeekSkeleton() {
+  // Two figures side by side and two mover rows under them — the shape the
+  // card settles into, so the page below it does not jump when the week lands.
+  return (
+    <Frame>
+      <div className="flex flex-col gap-4">
+        <span className="h-4 w-28 rounded-[4px]" style={{ background: 'var(--hairline)' }} />
+        <div className="flex gap-8">
+          {Array.from({ length: 2 }, (_, index) => (
+            <div key={index} className="flex flex-col gap-2">
+              <span className="h-3 w-20 rounded-[4px]" style={{ background: 'var(--hairline)' }} />
+              <span className="h-7 w-24 rounded-[6px]" style={{ background: 'var(--hairline)' }} />
+              <span className="h-3 w-28 rounded-[4px]" style={{ background: 'var(--hairline)' }} />
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-col gap-2">
+          {['72%', '58%'].map((width) => (
+            <span
+              key={width}
+              className="h-3 rounded-[4px]"
+              style={{ width, background: 'var(--hairline)' }}
+            />
+          ))}
+        </div>
+      </div>
+    </Frame>
+  )
+}
+
 export function RowsSkeleton() {
   // Four rows at decreasing widths: the real table is sorted biggest-first, so a
   // flat block would settle into a shape the eye did not expect.

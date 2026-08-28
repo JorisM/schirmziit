@@ -11,10 +11,18 @@ import { DeviceStatus } from '../components/DeviceStatus'
 import { ErrorPanel } from '../components/ErrorPanel'
 import { PairDevice } from '../components/PairDevice'
 import { PurgeData } from '../components/PurgeData'
-import { HeroSkeleton, RibbonSkeleton, RowsSkeleton, StripSkeleton } from '../components/Skeleton'
+import { WeekInsight } from '../components/WeekInsight'
+import {
+  HeroSkeleton,
+  RibbonSkeleton,
+  RowsSkeleton,
+  StripSkeleton,
+  WeekSkeleton,
+} from '../components/Skeleton'
 import { formatDuration, useI18n } from '../i18n'
 
 type UsageResponse = components['schemas']['UsageResponse']
+type InsightResponse = components['schemas']['InsightResponse']
 
 const STRIP_DAYS = 14
 
@@ -45,6 +53,13 @@ export function ChildDetail({ childId }: { childId: string }) {
     `/v1/children/${childId}/usage?from=${selected}&to=${selected}&bucket=hour&tz=${localZone()}`,
     api.get,
     { refreshInterval: 60_000, shouldRetryOnError: false },
+  )
+  // The week only changes when a day ends, so this is not on the minute-by-
+  // minute poll the two usage reads are on.
+  const { data: insight, error: insightError, mutate: refreshInsight } = useSWR<InsightResponse>(
+    `/v1/children/${childId}/insight?date=${today()}&tz=${localZone()}`,
+    api.get,
+    { refreshInterval: 900_000, shouldRetryOnError: false },
   )
 
   if (error) {
@@ -111,6 +126,25 @@ export function ChildDetail({ childId }: { childId: string }) {
           <StripSkeleton />
         )}
       </section>
+
+      {/* Between the fortnight and the day: it answers the question the strip
+          raises and the day cannot — was this week unusual. A failed insight
+          leaves the rest of the screen alone; the day is why the parent came. */}
+      {insight ? (
+        <WeekInsight week={insight.week} />
+      ) : insightError ? (
+        <section className="card p-6">
+          <ErrorPanel
+            error={insightError as AppError}
+            variant="banner"
+            onRetry={() => void refreshInsight()}
+          />
+        </section>
+      ) : (
+        <section className="card p-6">
+          <WeekSkeleton />
+        </section>
+      )}
 
       {/* The hero is the day's total in the display face, with the numbers that
           qualify it right beneath — a big number alone invites the wrong

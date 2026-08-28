@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+# Ship this checkout to your own cluster.
+#
+#   bin/deploy              the api + dashboard image, and the site
+#   bin/deploy api          only the api + dashboard
+#   bin/deploy site         only the marketing site
+#   bin/deploy api site x   any further name is passed through as a service
+#   bin/deploy --force ...  deploy anyway from a dirty or non-main checkout
+#
+# This repo deliberately knows nothing about where it is deployed: no host, no
+# registry, no domain, no cluster, no path. Schirmziit is public and a deploy
+# target is not. Everything specific lives in the deploy checkout — the private
+# repo that holds your manifests — and this script only knows how to find it:
+#
+#   git config schirmziit.deployRepo /path/to/that/checkout
+#
+# That lands in .git/config, which is never committed. SCHIRMZIIT_DEPLOY_REPO
+# overrides it for a single run. The command run inside that checkout defaults
+# to `nu bin/deploy-k8s.nu` and is `git config schirmziit.deployCommand` (or
+# SCHIRMZIIT_DEPLOY_CMD) if yours is called something else. Service names are
+# the deploy checkout's, not this repo's, so they are configurable too:
+# schirmziit.deployApiService and schirmziit.deploySiteService.
+#
+# No dev shell here on purpose: a deploy runs the deploy checkout's toolchain
+# (docker, kubectl, whatever it wraps), not this repo's build toolchain.
+source "$(dirname "${BASH_SOURCE[0]}")/_lib.sh"
+
+force=0
+targets=()
+for arg in "$@"; do
+  case "$arg" in
+    --force|-f) force=1 ;;
+    -*) die "unknown flag: $arg (--force)" ;;
+    *) targets+=("$arg") ;;
+  esac
+done
+
+cfg() { git -C "$root" config --get "$1" 2>/dev/null || true; }
+
+deploy_repo="${SCHIRMZIIT_DEPLOY_REPO:-$(cfg schirmziit.deployRepo)}"
+[ -n "$deploy_repo" ] || die "no deploy checkout configured.
+    Point this at the private repo that holds your manifests:
+      git config schirmziit.deployRepo /path/to/that/checkout
+    (or set SCHIRMZIIT_DEPLOY_REPO for one run).
+    Self-hosting instead? deploy/README.md and deploy/docker-compose.yml."
+[ -d "$deploy_repo/.git" ] || die "schirmziit.deployRepo is not a git checkout"
+
+deploy_cmd="${SCHIRMZIIT_DEPLOY_CMD:-$(cfg schirmziit.deployCommand)}"
+deploy_cmd="${deploy_cmd:-nu bin/deploy-k8s.nu}"
+
+api_service="$(cfg schirmziit.deployApiService)"
+site_service="$(cfg schirmziit.deploySiteService)"
+api_service="${api_service:-schirmziit}"
+site_service="${site_service:-schirmziit-site}"
+
+[ ${#targets[@]} -eq 0 ] && targets=(api site)
+services=()
+for target in "${targets[@]}"; do
+  case "$target" in
+    api)  services+=("$api_service") ;;
+    site) services+=("$site_service") ;;
+    # Anything else is a service in the deploy checkout that this repo has no
+    # business naming — analytics, a database, whatever rides along.
+    *)    services+=("$target") ;;
+  esac
+done
+
+# The image is built from the *primary* checkout, because that is the path the
+# deploy checkout points its build context at. From a worktree you would deploy
+# main's code while looking at your branch, which reads as a deploy that did
+# nothing.
+if [ -f "$root/.git" ]; then
+  warn "this is a linked worktree — the build context is the primary checkout, not this branch"
+  [ "$force" -eq 1 ] || die "deploy from the primary checkout, or --force if you meant it"
+fi
+
+# The deploy checkout's HEAD sha is part of every image tag, and its manifests
+# are applied as they are on disk. Deploying from a dirty or detached tree means
+# nothing in git describes what is now running.
+deploy_branch="$(git -C "$deploy_repo" rev-parse --abbrev-ref HEAD)"
+deploy_dirty="$(git -C "$deploy_repo" status --porcelain)"
+if [ "$deploy_branch" != "main" ] || [ -n "$deploy_dirty" ]; then
+  [ "$deploy_branch" = "main" ] || warn "deploy checkout is on $deploy_branch, not main"
+  [ -z "$deploy_dirty" ] || warn "deploy checkout has uncommitted changes — commit first, the sha is the image tag"
+  [ "$force" -eq 1 ] || die "refusing to deploy; --force overrides"
+fi
+
+# This repo's own tree only ever gets built, never tagged from — so a dirty tree
+# is a warning, not a stop. It still means the running image is code that exists
+# on this laptop and nowhere else.
+[ -z "$(git -C "$root" status --porcelain)" ] \
+  || warn "this checkout has uncommitted changes — they will be in the image"
+
+command -v "${deploy_cmd%% *}" >/dev/null 2>&1 \
+  || die "${deploy_cmd%% *} not found on PATH — the deploy checkout's toolchain is missing"
+
+say "deploying ${services[*]}"
+cd "$deploy_repo"
+exec $deploy_cmd "${services[@]}"

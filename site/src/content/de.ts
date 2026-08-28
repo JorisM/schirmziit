@@ -3,6 +3,34 @@ import type { Site } from './strings'
 /** Schweizer Hochdeutsch: kein ß, du-Form. */
 export const de: Site = {
   htmlLang: 'de-CH',
+
+  ogLocale: 'de_CH',
+
+  // The home page leads with the brand because it is the brand page; every
+  // other title leads with what the page is, which is what someone scanning a
+  // result list is looking for.
+  meta: {
+    home: {
+      title: 'Schirmziit — Bildschirmzeit für Familien',
+      description:
+        'Sieh, wie lange und wann das Handy deines Kindes benutzt wird. Keine Inhalte, kein Standort, nichts wird blockiert. Offen und selbst gehostet.',
+    },
+    selfHost: {
+      title: 'Selbst hosten — Schirmziit',
+      description:
+        'Ein Programm und eine Postgres-Datenbank auf deinem eigenen Server. Docker Compose, Reverse Proxy, Backup — Schritt für Schritt.',
+    },
+    hosted: {
+      title: 'Gehostete Version — Schirmziit',
+      description:
+        'Du willst keinen Server betreiben. Wir hosten Schirmziit für dich — vorerst klein, offen und in der Schweiz.',
+    },
+    privacy: {
+      title: 'Datenschutz — Schirmziit',
+      description:
+        'Nutzungszeiten pro Stunde, sonst nichts. Keine Inhalte, kein Standort, keine Weitergabe. Was gespeichert wird, wie lange, und wer es sieht.',
+    },
+  },
   swissLabel: 'Entwickelt in der Schweiz',
   nav: { home: 'Übersicht', selfHost: 'Selbst hosten', hosted: 'Gehostet', privacy: 'Datenschutz' },
 

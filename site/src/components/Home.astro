@@ -9,7 +9,7 @@ const { locale } = Astro.props
 const t = sites[locale]
 const base = prefix(locale)
 ---
-<Base locale={locale} page="home" title={`Schirmziit — ${t.home.title}`} description={t.home.lead}>
+<Base locale={locale} page="home">
   <p class="kicker">{t.home.kicker}</p>
   <h1>{t.home.title}</h1>
   <p class="lead">{t.home.lead}</p>

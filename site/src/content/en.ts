@@ -2,6 +2,34 @@ import type { Site } from './strings'
 
 export const en: Site = {
   htmlLang: 'en',
+
+  ogLocale: 'en_GB',
+
+  // The home page leads with the brand because it is the brand page; every
+  // other title leads with what the page is, which is what someone scanning a
+  // result list is looking for.
+  meta: {
+    home: {
+      title: 'Schirmziit — Screen time for families',
+      description:
+        'See how long and when your child’s phone is used. No content, no location, nothing blocked. Open source, and you can host it yourself.',
+    },
+    selfHost: {
+      title: 'Self-hosting — Schirmziit',
+      description:
+        'One program and a Postgres database on your own server. Docker Compose, reverse proxy, backups — step by step.',
+    },
+    hosted: {
+      title: 'Hosted version — Schirmziit',
+      description:
+        'You do not want to run a server. We will host Schirmziit for you — small, open and in Switzerland for now.',
+    },
+    privacy: {
+      title: 'Privacy — Schirmziit',
+      description:
+        'Hourly usage times, nothing else. No content, no location, no sharing. What is stored, how long, and who sees it.',
+    },
+  },
   swissLabel: 'Made in Switzerland',
   nav: { home: 'Overview', selfHost: 'Self-hosting', hosted: 'Hosted', privacy: 'Privacy' },
 

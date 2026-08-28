@@ -316,6 +316,62 @@
         }
       }
     },
+    "/v1/children/{id}/insight": {
+      "get": {
+        "tags": [
+          "usage"
+        ],
+        "operationId": "insight",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Child id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "description": "The local date the parent is looking at. Today is part of neither week\n— the comparison ends yesterday — but it decides where the two weeks\nfall, and only the client knows which day it is where the family lives.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "tz",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The last full week against the one before it",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InsightResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such child in this family"
+          },
+          "422": {
+            "description": "Unknown timezone"
+          }
+        }
+      }
+    },
     "/v1/children/{id}/usage": {
       "get": {
         "tags": [
@@ -645,6 +701,32 @@
   },
   "components": {
     "schemas": {
+      "AppMove": {
+        "type": "object",
+        "description": "One app, in both weeks. `ms` may be lower than `previous_ms`; a mover moves\nin either direction and the renderer says which.",
+        "required": [
+          "package",
+          "label",
+          "foreground_ms",
+          "previous_foreground_ms"
+        ],
+        "properties": {
+          "foreground_ms": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "label": {
+            "type": "string"
+          },
+          "package": {
+            "type": "string"
+          },
+          "previous_foreground_ms": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
       "ChildResponse": {
         "type": "object",
         "required": [
@@ -1046,6 +1128,26 @@
           }
         }
       },
+      "InsightResponse": {
+        "type": "object",
+        "required": [
+          "child_id",
+          "tz",
+          "week"
+        ],
+        "properties": {
+          "child_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tz": {
+            "type": "string"
+          },
+          "week": {
+            "$ref": "#/components/schemas/WeekComparison"
+          }
+        }
+      },
       "MeResponse": {
         "type": "object",
         "required": [
@@ -1308,6 +1410,77 @@
           "locale": {
             "type": "string",
             "description": "One of `de`, `fr`, `it`, `en`."
+          }
+        }
+      },
+      "WeekComparison": {
+        "type": "object",
+        "description": "Seven days against the seven before them.",
+        "required": [
+          "from",
+          "to",
+          "previous_from",
+          "previous_to",
+          "total_ms",
+          "previous_total_ms",
+          "evening_ms",
+          "previous_evening_ms",
+          "evening_from_hour",
+          "movers",
+          "previous_measured"
+        ],
+        "properties": {
+          "evening_from_hour": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Shipped rather than assumed, so a renderer can name the hour it is\ntalking about instead of hard-coding a 21 of its own.",
+            "minimum": 0
+          },
+          "evening_ms": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Screen time from `evening_from_hour` to local midnight, a subset of\n`total_ms` and never something to add to it."
+          },
+          "from": {
+            "type": "string",
+            "format": "date",
+            "description": "First and last local day of the recent week, both inclusive."
+          },
+          "movers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AppMove"
+            },
+            "description": "Ranked by distance moved, longest first, at most [`MAX_MOVERS`]."
+          },
+          "previous_evening_ms": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "previous_from": {
+            "type": "string",
+            "format": "date",
+            "description": "The week before, both inclusive."
+          },
+          "previous_measured": {
+            "type": "boolean",
+            "description": "False when no device reported anything in the earlier week. A week\nagainst nothing is not a doubling, it is a first week, and every\nsurface has to say so rather than print a percentage."
+          },
+          "previous_to": {
+            "type": "string",
+            "format": "date"
+          },
+          "previous_total_ms": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "to": {
+            "type": "string",
+            "format": "date"
+          },
+          "total_ms": {
+            "type": "integer",
+            "format": "int64"
           }
         }
       }

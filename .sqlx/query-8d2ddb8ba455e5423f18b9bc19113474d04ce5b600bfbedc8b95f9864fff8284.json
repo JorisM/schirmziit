@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS(\n             SELECT 1 FROM device_hours h\n             JOIN devices d ON d.id = h.device_id\n             WHERE d.child_id = $1 AND h.hour_start >= $2 AND h.hour_start < $3\n           ) AS \"measured!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "measured!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "8d2ddb8ba455e5423f18b9bc19113474d04ce5b600bfbedc8b95f9864fff8284"
+}

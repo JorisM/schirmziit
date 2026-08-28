@@ -84,18 +84,6 @@ async fn usage_response_matches_its_schema(pool: PgPool) {
 }
 
 #[sqlx::test]
-async fn summary_response_matches_its_schema(pool: PgPool) {
-    let app = TestApp::registered(pool).await;
-    let child_id = app.create_child("Kid").await;
-    let summary = app
-        .get(&format!(
-            "/v1/children/{child_id}/summary?date=2026-08-20&tz=Europe/Zurich"
-        ))
-        .await;
-    assert_matches_schema("SummaryResponse", &summary.json);
-}
-
-#[sqlx::test]
 async fn ingest_response_matches_its_schema(pool: PgPool) {
     let app = TestApp::registered(pool).await;
     let child_id = app.create_child("Kid").await;

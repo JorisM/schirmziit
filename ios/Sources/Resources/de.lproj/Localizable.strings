@@ -197,3 +197,14 @@
 "data.deleted.hours" = "Stundenwerte pro App";
 "data.deleted.devicehours" = "Gerätestunden";
 "data.deleted.days" = "Tagessummen";
+
+/* Letzte Woche im Vergleich zur Woche davor */
+"week.title" = "Letzte Woche";
+"week.total" = "Bildschirmzeit";
+"week.evening.from %@" = "Abends ab %@";
+"week.more %@" = "%@ mehr als in der Woche davor";
+"week.less %@" = "%@ weniger als in der Woche davor";
+"week.same" = "Gleich viel wie in der Woche davor";
+"week.movers" = "Was sich verändert hat";
+"week.movers.none" = "Keine App hat sich um mehr als fünf Minuten verändert.";
+"week.first" = "In der Woche davor hat kein Handy gemeldet — es gibt noch nichts zum Vergleichen.";

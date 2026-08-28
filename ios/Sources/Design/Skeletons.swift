@@ -49,6 +49,34 @@ struct RibbonSkeleton: View {
     }
 }
 
+struct WeekSkeleton: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                .fill(Palette.hairline)
+                .frame(width: 120, height: 14)
+            // Two figures side by side, the shape the card settles into, so the
+            // sections below it do not jump when the week lands.
+            HStack(alignment: .top, spacing: 24) {
+                ForEach(0..<2, id: \.self) { _ in
+                    VStack(alignment: .leading, spacing: 6) {
+                        RoundedRectangle(cornerRadius: 4, style: .continuous)
+                            .fill(Palette.hairline)
+                            .frame(width: 80, height: 10)
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .fill(Palette.hairline)
+                            .frame(width: 96, height: 26)
+                        RoundedRectangle(cornerRadius: 4, style: .continuous)
+                            .fill(Palette.hairline)
+                            .frame(width: 110, height: 10)
+                    }
+                }
+            }
+        }
+        .modifier(Pulse())
+    }
+}
+
 struct RowsSkeleton: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {

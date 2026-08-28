@@ -136,6 +136,10 @@ export const it: Site = {
         },
         overview14: { label: 'Gli ultimi quattordici giorni a colpo d’occhio' },
         dayDetail: { label: 'Un giorno, ora per ora' },
+        weekComparison: {
+          label: 'La settimana scorsa rispetto a quella precedente',
+          note: 'Il tempo sullo schermo e le sere dalle 21:00, con le app che sono cambiate. Sette giorni conclusi: il giorno in corso non viene confrontato, perché non è ancora finito.',
+        },
         childOwnNumbers: { label: 'Il bambino vede gli stessi numeri sul suo telefono' },
         manageChildren: { label: 'Aggiungere e rimuovere un bambino' },
         revokeDevice: { label: 'Scollegare un telefono' },

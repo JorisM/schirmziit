@@ -48,6 +48,17 @@ child setup with the address filled in on a phone with no role yet, and does
 minted must not hand their dashboard phone to child mode. `EnrollLink` is as
 strict as Android's `EnrollPayloadParser`: https only, localhost excepted.
 
+`WeekInsightView` sits between the fortnight and the day, and answers the
+question the strip raises and one day cannot: was this week unusual. It renders
+and compares nothing — `crates/core::insight` compares and
+`GET /v1/children/{id}/insight` serves it, so this phone, an Android parent
+phone and the dashboard cannot say different things about the same week. It
+loads on its own, so a week that fails is a banner where the card was and
+nothing else; the day is why the parent opened the screen. A week with no
+measured week behind it says so rather than printing a rise of a hundred per
+cent, and nothing on the card scores the child: it names what moved, in both
+directions, against no target.
+
 `PurgeDataView` sits below it, outside the usage load for the same reason: a day
 that failed to fetch is one of the moments a parent is most likely to want the
 figures gone. It is the only write here that answers with a body, and the counts

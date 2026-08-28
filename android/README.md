@@ -78,6 +78,24 @@ legible as one. `purgedDay` then blanks the fortnight and the day and re-reads
 both — the one place this app deliberately drops loaded numbers, because those
 bars describe rows the server has just deleted.
 
+### Last week against the one before
+
+`WeekInsightCard` sits between the fortnight and the day, where it answers the
+question the strip raises and a single day cannot. It renders and compares
+nothing: `crates/core::insight` does the arithmetic and
+`GET /v1/children/{id}/insight` serves it, so this phone, an iPhone and the
+dashboard cannot end up saying different things about the same week.
+
+`weekComparisonFrom` reads every field with `get`, not `opt` — a body missing a
+total is not a week of no screen time, it is a body this app cannot read, and a
+card of zeroes out of a captcha page is a lost week rendered as a quiet one. The
+week is loaded on its own and a tapped day neither reloads nor clears it, so a
+week that fails costs a banner where the card was and nothing else.
+
+The card names what moved, in both directions, against no target and with no
+streak anyone can lose. Direction is a word as well as an arrow, and the whole
+delta line is read to TalkBack as one phrase.
+
 ### The pairing square
 
 `PairDeviceCard` draws the matrix the server sent (`QrMatrixImage`), dark on

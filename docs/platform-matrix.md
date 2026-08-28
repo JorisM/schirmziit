@@ -35,6 +35,7 @@ measured only by someone who builds and installs the app themselves.
 | Parent and child role in one app | ✓ `RoleChoiceScreen`, `RoleStore` | ✓ role choice, `RoleStore` | `–` |
 | Last fourteen days | ✓ `ChildDetailScreen.DayStrip` | ✓ `DayStripView` | ✓ `DayStrip` |
 | One day, hour by hour | ✓ `HourRibbon`, `AppRows` | ✓ `DayRibbonView`, `AppRowsView` | ✓ `DayRibbon`, `AppBars` |
+| Last week against the one before | ✓ `WeekInsightCard` | ✓ `WeekInsightView` | ✓ `WeekInsight` |
 | The child's own numbers on the child's phone | ✓ `MyTimeScreen` | ✓ `AgentMyTimeView` | `–` device tokens have no browser session |
 | Add and remove a child | ✓ `ChildrenScreen` | ✓ `ChildrenView` | ✓ `Children` |
 | Disconnect a device | ✓ `ChildDetailScreen`, long press | ✓ `ChildDetailView.revokeDevice` | ✓ `ChildDetail` |
@@ -61,6 +62,18 @@ measured only by someone who builds and installs the app themselves.
   so the system camera reads the square and offers to open the app — which fills
   the form rather than pairing on arrival, because a one-shot code must not be
   burnt by a mis-scan. Android scans in the app as well, with zxing.
+- **One week is compared with the one before it, and only the server does it.**
+  `crates/core::insight` compares; `/v1/children/{id}/insight` serves the
+  comparison; three renderers print it. A week is the seven *complete* local
+  days ending yesterday — the day a parent is standing in is not compared,
+  because a day still being lived is always shorter than the one it is measured
+  against, and an insight that reads "down three hours" every morning is worse
+  than no insight. Evenings are counted from 21:00 by the child's own clock,
+  `background_ms` is not in the comparison at all, and `previous_measured`
+  travels with the numbers so a week against silence reads as a first week
+  rather than a doubling. It names what moved and never who: no target, no
+  streak, no score.
+
 - **Deleting a child's figures no longer needs a browser.** All three surfaces
   ask twice, and all three show the server's own `rows_affected` afterwards:
   "deleted" with nothing behind it is the one claim a family has no way to

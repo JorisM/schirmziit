@@ -1,4 +1,8 @@
-FROM node:24-alpine AS build
+# $BUILDPLATFORM: this stage emits a static site, identical whatever built it,
+# and node under qemu-amd64 on Apple Silicon wedges the step outright — pnpm
+# finishes, then node dies on an libuv assertion. nginx below still gets built
+# for the target platform, which is the half that has to match the cluster.
+FROM --platform=$BUILDPLATFORM node:24-alpine AS build
 WORKDIR /site
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN corepack enable && pnpm install --frozen-lockfile

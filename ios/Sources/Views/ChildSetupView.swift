@@ -4,9 +4,15 @@ import SwiftUI
 /// and the app keeps a device token instead of their session.
 struct ChildSetupView: View {
     let model: AgentModel
+    /// The address out of a scanned `schirmziit://enroll` link. The code in
+    /// that link is no use on this screen — a fresh phone is enrolled here
+    /// through the parent's own sign-in — but the address is the half that
+    /// gets typed wrong, and a wrong one enrols the phone once and then never
+    /// reports again.
+    var server: String?
     let onCancel: () -> Void
 
-    @State private var server = AgentDefaults.server
+    @State private var typedServer = AgentDefaults.server
     @State private var email = ""
     @State private var password = ""
     @State private var label = ""
@@ -27,6 +33,10 @@ struct ChildSetupView: View {
             }
             .schirmziitList()
             .navigationTitle(L("agent.setup.title"))
+            // Both, not one: a scan can launch this app cold or reach it while
+            // this screen is already up.
+            .onAppear { if let server { typedServer = server } }
+            .onChange(of: server) { _, scanned in if let scanned { typedServer = scanned } }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(S("agent.setup.cancel")) {
@@ -44,7 +54,7 @@ struct ChildSetupView: View {
         Section { L("agent.setup.intro").font(.callout).foregroundStyle(Palette.inkMuted) }
 
         Section(header: L("signin.server")) {
-            TextField(S("signin.server.placeholder"), text: $server)
+            TextField(S("signin.server.placeholder"), text: $typedServer)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
                 .keyboardType(.URL)
@@ -63,7 +73,7 @@ struct ChildSetupView: View {
 
         Section {
             Button {
-                Task { _ = await model.signInForChildSetup(server: server, email: email, password: password) }
+                Task { _ = await model.signInForChildSetup(server: typedServer, email: email, password: password) }
             } label: {
                 HStack {
                     Spacer()

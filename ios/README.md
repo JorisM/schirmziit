@@ -39,6 +39,15 @@ refused outright by some scanners. A server that sent no matrix costs a scan and
 nothing else: the code and the address below it pair the phone exactly as they
 did before.
 
+Scanning that square with an iPhone works because the app registers the
+`schirmziit://` scheme (`CFBundleURLTypes` in `project.yml`) and `RootView`
+hands what arrives to `EnrollLinkRoute`. What a link may do depends on what the
+phone already is: it fills the pairing form on a phone asking for a code, opens
+child setup with the address filled in on a phone with no role yet, and does
+**nothing** on a parent's own phone — a parent scanning the code they just
+minted must not hand their dashboard phone to child mode. `EnrollLink` is as
+strict as Android's `EnrollPayloadParser`: https only, localhost excepted.
+
 `PurgeDataView` sits below it, outside the usage load for the same reason: a day
 that failed to fetch is one of the moments a parent is most likely to want the
 figures gone. It is the only write here that answers with a body, and the counts

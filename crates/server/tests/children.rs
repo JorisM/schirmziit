@@ -58,6 +58,34 @@ async fn enrollment_code_is_human_typable_and_carries_the_public_url(pool: PgPoo
     assert!(enrollment.json["expires_at"].is_string());
 }
 
+/// The square has to be the square of *this* code. A matrix built from a
+/// stale payload, or from the URL without the code, scans cleanly and enrols
+/// nothing — the failure a parent would blame their camera for.
+#[sqlx::test]
+async fn the_pairing_link_ships_drawn_as_well_as_written(pool: PgPool) {
+    let app = TestApp::registered(pool).await;
+    let child_id = app.create_child("Kid").await;
+
+    let enrollment = app
+        .post_json(
+            &format!("/v1/children/{child_id}/enrollments"),
+            serde_json::json!({}),
+        )
+        .await;
+
+    let payload = enrollment.json["qr_payload"].as_str().unwrap();
+    let drawn = &enrollment.json["qr"];
+    assert_eq!(
+        drawn,
+        &serde_json::to_value(schirmziit_core::qr::encode(payload).unwrap()).unwrap()
+    );
+    // Four quiet modules a side around a version-4 matrix. Asserted here and
+    // not only in the core test because the wire shape is what three clients
+    // draw from.
+    assert_eq!(drawn["size"], 41);
+    assert_eq!(drawn["rows"].as_array().unwrap().len(), 41);
+}
+
 #[sqlx::test]
 async fn enrollment_code_is_stored_hashed(pool: PgPool) {
     let app = TestApp::registered(pool.clone()).await;

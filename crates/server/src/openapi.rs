@@ -34,6 +34,7 @@ use utoipa::OpenApi;
         crate::routes::children::NewChild,
         crate::routes::children::ChildResponse,
         crate::routes::children::EnrollmentResponse,
+        schirmziit_core::qr::QrCode,
         crate::routes::children::ClaimDevice,
         crate::routes::children::ClaimedDeviceResponse,
         crate::routes::children::DeviceResponse,

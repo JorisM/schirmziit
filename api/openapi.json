@@ -926,6 +926,17 @@
             "type": "string",
             "format": "date-time"
           },
+          "qr": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/QrCode",
+                "description": "`qr_payload` drawn, so no client needs an encoder and all three draw\nthe same square. Null only when the payload does not fit in any QR\nversion — see `schirmziit_core::qr::encode`. A client that gets null\nkeeps showing the code and the URL as text, which is what it showed\nbefore this field existed: a square that cannot be drawn costs a scan,\nnever the pairing."
+              }
+            ]
+          },
           "qr_payload": {
             "type": "string"
           }
@@ -1207,6 +1218,29 @@
           "deleted_usage_hours": {
             "type": "integer",
             "format": "int64",
+            "minimum": 0
+          }
+        }
+      },
+      "QrCode": {
+        "type": "object",
+        "description": "A square of modules, row by row, `1` dark and `0` light — the quiet zone\nincluded, so `size` is what a renderer draws and nothing more is needed.\n\nCharacters rather than booleans: this crosses the API as JSON, where 33\nrows of `\"1011…\"` stay readable in a response a self-hoster is debugging,\nand an array of 1681 booleans does not.",
+        "required": [
+          "size",
+          "rows"
+        ],
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "`size` strings of `size` characters each."
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Modules per side, quiet zone included.",
             "minimum": 0
           }
         }

@@ -385,6 +385,7 @@ export interface components {
             code: string;
             /** Format: date-time */
             expires_at: string;
+            qr?: null | components["schemas"]["QrCode"];
             qr_payload: string;
         };
         /** @enum {string} */
@@ -487,6 +488,23 @@ export interface components {
             deleted_usage_days: number;
             /** Format: int64 */
             deleted_usage_hours: number;
+        };
+        /**
+         * @description A square of modules, row by row, `1` dark and `0` light — the quiet zone
+         *     included, so `size` is what a renderer draws and nothing more is needed.
+         *
+         *     Characters rather than booleans: this crosses the API as JSON, where 33
+         *     rows of `"1011…"` stay readable in a response a self-hoster is debugging,
+         *     and an array of 1681 booleans does not.
+         */
+        QrCode: {
+            /** @description `size` strings of `size` characters each. */
+            rows: string[];
+            /**
+             * Format: int32
+             * @description Modules per side, quiet zone included.
+             */
+            size: number;
         };
         RegisteredResponse: {
             /** Format: uuid */

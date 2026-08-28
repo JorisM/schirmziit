@@ -7,9 +7,11 @@ name: release
 # `needs: release-please` in the same run instead. That run is also the push
 # that merged the Release PR, so its commit is the one the tag points at.
 #
-# The container image self-hosters pull is published here. While this repository
-# is private the package is private too — make the package public before
-# pointing outside users at ghcr.io/jorism/schirmziit.
+# The container image self-hosters pull is published here. A package inherits
+# the repository's visibility only when it is first created, and this one was
+# created private; making the repository public does not follow it, and there is
+# no REST endpoint that does either. If `docker compose up` starts answering 401
+# for outside users, the package settings page is where that is fixed.
 on:
   push:
     branches: [main]

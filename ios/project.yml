@@ -1,34 +1,21 @@
-# Generated project: xcodegen keeps the Xcode project declarative, the same way
-# the rest of this repo avoids clicked-together state.
-#
-# One app, two roles. A parent installs Schirmziit, signs in, and tells it what
-# the phone is: their own (dashboard) or their child's (reporting). Two apps
-# meant two store listings, two review cycles, and a parent who downloaded the
-# wrong one.
 name: Schirmziit
 options:
   bundleIdPrefix: ch.jorisda.schirmziit
   deploymentTarget:
-    iOS: "17.0"
+    iOS: '17.0'
   createIntermediateGroups: true
-
 packages:
   SnapshotTesting:
     url: https://github.com/pointfreeco/swift-snapshot-testing
     from: 1.19.4
-
 settings:
   base:
-    SWIFT_VERSION: "5.10"
-    MARKETING_VERSION: "0.1.0"
-    CURRENT_PROJECT_VERSION: "1"
-    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    SWIFT_VERSION: '5.10'
+    MARKETING_VERSION: 0.2.0
+    CURRENT_PROJECT_VERSION: '1'
+    ENABLE_USER_SCRIPT_SANDBOXING: 'YES'
     SWIFT_STRICT_CONCURRENCY: complete
-
 targets:
-  # Everything except @main lives here. Not a style choice: the Family Controls
-  # extensions cannot be installed on a simulator, so a test bundle hosted by
-  # the app can never launch. Tests link this framework instead.
   SchirmziitKit:
     type: framework
     platform: iOS
@@ -41,8 +28,6 @@ targets:
       - path: AgentSources/Agent
       - path: AgentSources/Views
       - path: Generated/schirmziit_core.swift
-      # Opaque folders, so the four locales stay four locales instead of being
-      # flattened into one variant group.
       - path: Sources/Resources/en.lproj
         type: folder
       - path: Sources/Resources/de.lproj
@@ -57,9 +42,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.kit
-        GENERATE_INFOPLIST_FILE: YES
-        DEFINES_MODULE: YES
-
+        GENERATE_INFOPLIST_FILE: 'YES'
+        DEFINES_MODULE: 'YES'
   Schirmziit:
     type: application
     platform: iOS
@@ -71,67 +55,31 @@ targets:
         embed: true
       - target: SchirmziitMonitor
       - target: SchirmziitReport
-    # Both app targets generate this one file, so the properties are an anchor
-    # reused below rather than a copy: two copies drift, and the second target
-    # written wins silently.
     info:
       path: Sources/Resources/Info.plist
-      properties: &appInfo
-        # Without this key iOS runs the app in legacy compatibility mode: it
-        # renders at an older screen size and letterboxes the result, which on
-        # every modern iPhone is a black bar above the app and one below it. An
-        # empty dictionary is the whole opt-in — it means "no launch image, use
-        # the system background".
+      properties: &ref_0
         UILaunchScreen: {}
-        # A modern app in the iPad device family has to support all four
-        # orientations or opt out of multitasking, and the launch-screen key
-        # above is what makes it modern — without these the build warns "All
-        # interface orientations must be supported unless the app requires full
-        # screen". The iPhone default (no upside down) is left alone.
         UISupportedInterfaceOrientations~ipad:
           - UIInterfaceOrientationPortrait
           - UIInterfaceOrientationPortraitUpsideDown
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
-        # The home-screen name, per target: "Schirmziit" for this one,
-        # "SchirmziitLocal" for the free-team build, so a phone carrying both
-        # says which is which. Spelled out because INFOPLIST_KEY_* settings are
-        # ignored when GENERATE_INFOPLIST_FILE is NO, as it is here.
         CFBundleDisplayName: $(PRODUCT_NAME)
-        # What makes the pairing square scannable on an iPhone: the system
-        # camera reads `schirmziit://enroll?url=…&code=…` off the parent's
-        # screen and offers to open this app with it. Android registers the
-        # same scheme in its manifest. Without this key the square a parent is
-        # shown is a picture of a link nothing on this phone will follow.
         CFBundleURLTypes:
           - CFBundleURLName: ch.jorisda.schirmziit.enroll
             CFBundleURLSchemes:
               - schirmziit
-        # The sentence iOS puts in its own prompt when the pairing screen opens
-        # the scanner. Written for the child holding the phone, because that is
-        # who reads it, and specific about the one use: an app that measures
-        # screen time asking for a camera has to say why in the prompt itself,
-        # not in a help page nobody opens. The four translations are in
-        # `*.lproj/InfoPlist.strings`; this is the fallback.
-        NSCameraUsageDescription:
+        NSCameraUsageDescription: >-
           Schirmziit uses the camera once, to read the pairing code your parents
           show you. Nothing is photographed, kept, or sent anywhere.
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit
-        # The catalog sits inside Sources/Resources, which the target already
-        # takes whole; only the name has to be declared.
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         CODE_SIGN_STYLE: Automatic
         CODE_SIGN_ENTITLEMENTS: Sources/Resources/Schirmziit.entitlements
-        GENERATE_INFOPLIST_FILE: NO
-        TARGETED_DEVICE_FAMILY: "1,2"
-
-  # Installable on a phone signed by a free Personal Team, which cannot sign
-  # Family Controls or App Groups — so this target claims neither and embeds no
-  # extensions. Parent mode works fully; child mode shows its "not available on
-  # this build" state, which is exactly what is true. The `Schirmziit` target
-  # above stays the real thing, for when Apple grants the entitlement.
+        GENERATE_INFOPLIST_FILE: 'NO'
+        TARGETED_DEVICE_FAMILY: 1,2
   SchirmziitLocal:
     type: application
     platform: iOS
@@ -143,48 +91,32 @@ targets:
         embed: true
     info:
       path: Sources/Resources/Info.plist
-      properties: *appInfo
+      properties: *ref_0
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.local
-        # No PRODUCT_NAME override: it would build SchirmziitLocal.app on top of
-        # the real target's Schirmziit.app in the same directory, and the
-        # leftover PlugIns then fail installation. It is also what tells the two
-        # apart on a phone that has both — see CFBundleDisplayName above.
         CODE_SIGN_STYLE: Automatic
         CODE_SIGN_ENTITLEMENTS: Sources/Resources/SchirmziitLocal.entitlements
-        GENERATE_INFOPLIST_FILE: NO
-        TARGETED_DEVICE_FAMILY: "1,2"
-
+        GENERATE_INFOPLIST_FILE: 'NO'
+        TARGETED_DEVICE_FAMILY: 1,2
   SchirmziitMonitor:
     type: app-extension
     platform: iOS
     sources:
       - path: AgentMonitor
       - path: AgentShared
-    # xcodegen writes this file from the properties below, so an NSExtension
-    # dictionary added to the plist by hand is gone on the next `ios-project`.
-    # Without it installd rejects the whole app: an .appex that declares no
-    # extension point is not something iOS can host.
     info:
       path: AgentMonitor/Info.plist
       properties:
-        # installd requires this of every appex, separately from NSExtension, and
-        # rejects the whole app without it: "does not have a CFBundleDisplayName
-        # key with a non-zero length string value". The product name, which reads
-        # the same in all four languages.
         CFBundleDisplayName: Schirmziit
         NSExtension:
           NSExtensionPointIdentifier: com.apple.deviceactivity.monitor-extension
-          # Module.Class — the DeviceActivityMonitor subclass in
-          # MonitorExtension.swift, in this target's module.
           NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).SchirmziitMonitor
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.monitor
         CODE_SIGN_ENTITLEMENTS: AgentMonitor/Monitor.entitlements
-        GENERATE_INFOPLIST_FILE: NO
-
+        GENERATE_INFOPLIST_FILE: 'NO'
   SchirmziitReport:
     type: app-extension
     platform: iOS
@@ -194,31 +126,22 @@ targets:
     info:
       path: AgentReport/Info.plist
       properties:
-        # Same installd requirement as the monitor extension above.
         CFBundleDisplayName: Schirmziit
         NSExtension:
           NSExtensionPointIdentifier: com.apple.deviceactivityui.report-extension
-          # No principal class: a DeviceActivityReportExtension is a SwiftUI
-          # scene entered through @main, not an NSObject the system instantiates.
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.report
         CODE_SIGN_ENTITLEMENTS: AgentReport/Report.entitlements
-        GENERATE_INFOPLIST_FILE: NO
-
+        GENERATE_INFOPLIST_FILE: 'NO'
   SchirmziitTests:
     type: bundle.unit-test
     platform: iOS
     sources:
-      # Golden images are compared at runtime from #filePath, not built — listing
-      # them as inputs makes deleting one break the build instead of the test.
       - path: Tests
         excludes:
-          - "__Snapshots__/**"
+          - __Snapshots__/**
       - path: AgentTests
-      # Copied as opaque folders: a variant group would flatten the four
-      # locales into one Localizable.strings and the parity test would pass
-      # while reading a single language.
       - path: Sources/Resources/en.lproj
         type: folder
       - path: Sources/Resources/de.lproj
@@ -229,8 +152,6 @@ targets:
         type: folder
       - path: ../api/openapi.json
         buildPhase: resources
-      # The square `crates/core`'s own test pins, so the goldens below show a
-      # real code rather than a checkerboard that happens to be square.
       - path: ../crates/core/tests/golden/enroll_qr.txt
         buildPhase: resources
     dependencies:
@@ -240,19 +161,18 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit.tests
-        GENERATE_INFOPLIST_FILE: YES
-
+        GENERATE_INFOPLIST_FILE: 'YES'
 schemes:
   SchirmziitLocal:
     build:
       targets:
         SchirmziitLocal: all
-
   Schirmziit:
     build:
       targets:
         Schirmziit: all
-        SchirmziitTests: [test]
+        SchirmziitTests:
+          - test
     test:
       targets:
         - SchirmziitTests

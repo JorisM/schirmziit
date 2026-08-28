@@ -6,6 +6,14 @@ on:
   pull_request:
   workflow_dispatch:
 
+# Unlike release.yml, this workflow has no side effects: a superseded run proves
+# nothing about a commit nobody will merge. Pushing three times to a branch used
+# to leave three full runs going, the macOS job among them at ten times the cost
+# of the others.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   rust:
     runs-on: ubuntu-latest

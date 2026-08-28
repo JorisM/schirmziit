@@ -92,6 +92,7 @@ export type Strings = {
     pairNewCode: string
     pairServerLabel: string
     pairServerHint: string
+    pairQrAlt: string
     pairExpired: string
   }
 

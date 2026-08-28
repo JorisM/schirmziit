@@ -28,6 +28,56 @@ final class ContractTests: XCTestCase {
         XCTAssertEqual(children.first?.displayName, "Fairphone kid")
     }
 
+    func testDecodesTheWeekComparisonAsTheServerSendsIt() throws {
+        let json = #"""
+        {
+          "child_id": "c8a19dc2-892d-4895-a82f-a80633152679",
+          "tz": "Europe/Zurich",
+          "week": {
+            "from": "2026-08-13", "to": "2026-08-19",
+            "previous_from": "2026-08-06", "previous_to": "2026-08-12",
+            "total_ms": 44400000, "previous_total_ms": 42000000,
+            "evening_ms": 7200000, "previous_evening_ms": 4800000,
+            "evening_from_hour": 21,
+            "movers": [
+              {"package":"com.zhiliaoapp.musically","label":"TikTok",
+               "foreground_ms":9000000,"previous_foreground_ms":3600000}
+            ],
+            "previous_measured": true
+          }
+        }
+        """#
+        let insight = try decode(json, as: InsightResponse.self)
+
+        XCTAssertEqual(insight.week.eveningFromHour, 21)
+        XCTAssertEqual(insight.week.deltaMs, 2_400_000)
+        XCTAssertEqual(insight.week.eveningDeltaMs, 2_400_000)
+        XCTAssertEqual(insight.week.movers.first?.deltaMs, 5_400_000)
+        XCTAssertTrue(insight.week.previousMeasured)
+    }
+
+    /// A first week is the state a new family is in for seven days, so it has to
+    /// decode as readily as a full one.
+    func testDecodesAWeekWithNothingBehindIt() throws {
+        let json = #"""
+        {
+          "child_id": "c8a19dc2-892d-4895-a82f-a80633152679",
+          "tz": "Europe/Zurich",
+          "week": {
+            "from": "2026-08-13", "to": "2026-08-19",
+            "previous_from": "2026-08-06", "previous_to": "2026-08-12",
+            "total_ms": 3600000, "previous_total_ms": 0,
+            "evening_ms": 0, "previous_evening_ms": 0,
+            "evening_from_hour": 21, "movers": [], "previous_measured": false
+          }
+        }
+        """#
+        let insight = try decode(json, as: InsightResponse.self)
+
+        XCTAssertFalse(insight.week.previousMeasured)
+        XCTAssertTrue(insight.week.movers.isEmpty)
+    }
+
     func testDecodesUsageResponseAsTheServerSendsIt() throws {
         let json = #"""
         {

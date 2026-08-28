@@ -115,6 +115,47 @@ struct UsageResponse: Codable, Sendable {
     var unlocks: Int { deviceTotals.reduce(0) { $0 + $1.unlockCount } }
 }
 
+/// One app in both weeks. `deltaMs` may be negative; a mover moves in either
+/// direction and the view says which.
+struct AppMove: Codable, Sendable, Equatable, Identifiable {
+    let package: String
+    let label: String
+    let foregroundMs: Int
+    let previousForegroundMs: Int
+
+    var id: String { package }
+    var deltaMs: Int { foregroundMs - previousForegroundMs }
+}
+
+/// Seven complete days against the seven before them, as the server compared
+/// them. Nothing here is recomputed on the phone.
+struct WeekComparison: Codable, Sendable, Equatable {
+    let from: String
+    let to: String
+    let previousFrom: String
+    let previousTo: String
+    let totalMs: Int
+    let previousTotalMs: Int
+    /// From `eveningFromHour` to local midnight — a subset of `totalMs`, and
+    /// never something to add to it.
+    let eveningMs: Int
+    let previousEveningMs: Int
+    let eveningFromHour: Int
+    let movers: [AppMove]
+    /// False when no phone reported the earlier week at all. A week against
+    /// silence is a first week, not a doubling, and the view has to say so.
+    let previousMeasured: Bool
+
+    var deltaMs: Int { totalMs - previousTotalMs }
+    var eveningDeltaMs: Int { eveningMs - previousEveningMs }
+}
+
+struct InsightResponse: Codable, Sendable, Equatable {
+    let childId: String
+    let tz: String
+    let week: WeekComparison
+}
+
 /// RFC 9457 problem+json, as the server sends it.
 struct ApiProblem: Codable, Sendable, Error {
     let type: String

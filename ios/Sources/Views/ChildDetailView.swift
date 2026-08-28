@@ -7,6 +7,8 @@ struct ChildDetailView: View {
     @State var usage: UsageResponse?
     @State var strip: UsageResponse?
     @State var stripError: AppError?
+    @State var insight: InsightResponse?
+    @State var insightError: AppError?
     @State private var selected = ISO8601DateFormatter.dayOnly.string(from: Date())
     @State private var error: AppError?
     // Owned here, not by DayRibbonView, so a List row recycle during scroll
@@ -56,6 +58,22 @@ struct ChildDetailView: View {
                     ErrorView(error: stripError) { Task { await loadStrip() } }
                 } else {
                     StripSkeleton()
+                }
+            }
+
+            // Between the fortnight and the day: it answers the question the
+            // strip raises and a single day cannot. Independent of `usage` —
+            // a failed week costs the week and nothing else, because the day
+            // is why the parent opened this screen.
+            Section {
+                if let insight {
+                    WeekInsightView(week: insight.week)
+                } else if let insightError {
+                    ErrorView(error: insightError, placement: .banner) {
+                        Task { await loadInsight() }
+                    }
+                } else {
+                    WeekSkeleton()
                 }
             }
 
@@ -166,7 +184,9 @@ struct ChildDetailView: View {
                 // but these bars describe rows the server has just deleted.
                 usage = nil
                 strip = nil
+                insight = nil
                 await loadStrip()
+                await loadInsight()
                 await load()
             }
         }
@@ -190,6 +210,7 @@ struct ChildDetailView: View {
         // screen while it re-fetches, not blank a loaded day back to skeletons.
         .refreshable { await load(resetting: false) }
         .task { await loadStrip() }
+        .task { await loadInsight() }
         // id: selected — selecting a day re-issues the day request and nothing
         // else. The strip is fourteen days of rows; re-fetching it on every tap
         // would be the expensive half of the screen doing the least work.
@@ -243,6 +264,19 @@ struct ChildDetailView: View {
         }
     }
 
+    @MainActor
+    func loadInsight() async {
+        switch await Self.fetchInsight(client: client, childId: child.id, date: today) {
+        case .success(let response):
+            insight = response
+            insightError = nil
+        case .failure(let failure):
+            // `insight` is left alone for the same reason the strip is: a failed
+            // refresh must not blank a week the parent is reading.
+            insightError = failure
+        }
+    }
+
     /// Shared by both requests so a captcha page, a timeout or a 500 always becomes
     /// a `.failure` the caller must handle — never a silently-swallowed `nil` that a
     /// view can zero-fill into a fake quiet fortnight. Swift's `Result` needs its
@@ -253,6 +287,24 @@ struct ChildDetailView: View {
     /// much larger act than dropping one of their devices.
     static func revokeDevice(client: ApiClient, deviceId: String) async -> WriteOutcome {
         await WriteOutcome.of { try await client.delete("v1/devices/\(deviceId)") }
+    }
+
+    /// The week is asked for by the phone's own local date: only this device
+    /// knows which day it is where the family lives, and the server counts the
+    /// two weeks back from it.
+    static func fetchInsight(client: ApiClient, childId: String, date: String) async -> InsightOutcome {
+        let zone = TimeZone.current.identifier
+        do {
+            let insight = try await client.get(
+                "v1/children/\(childId)/insight?date=\(date)&tz=\(zone)",
+                as: InsightResponse.self
+            )
+            return .success(insight)
+        } catch let caught as AppError {
+            return .failure(caught)
+        } catch {
+            return .failure(AppError.transport(error, endpoint: "v1/children/\(childId)/insight"))
+        }
     }
 
     static func fetchUsage(
@@ -279,6 +331,11 @@ struct ChildDetailView: View {
 
 enum FetchOutcome {
     case success(UsageResponse)
+    case failure(AppError)
+}
+
+enum InsightOutcome {
+    case success(InsightResponse)
     case failure(AppError)
 }
 

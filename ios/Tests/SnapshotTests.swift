@@ -541,6 +541,50 @@ final class SnapshotTests: XCTestCase {
         )
     }
 
+    // MARK: - Last week against the one before it
+
+    private func comparison(
+        previousMeasured: Bool = true,
+        movers: [AppMove] = [
+            AppMove(package: "com.zhiliaoapp.musically", label: "TikTok",
+                    foregroundMs: 9_000_000, previousForegroundMs: 3_600_000),
+            AppMove(package: "com.games.puzzle", label: "Puzzle",
+                    foregroundMs: 1_200_000, previousForegroundMs: 4_800_000),
+        ]
+    ) -> WeekComparison {
+        // Fixed dates and fixed figures: the card shows a week that has ended,
+        // so nothing here needs to move with the clock.
+        WeekComparison(
+            from: "2026-08-13", to: "2026-08-19",
+            previousFrom: "2026-08-06", previousTo: "2026-08-12",
+            totalMs: 44_400_000, previousTotalMs: previousMeasured ? 42_000_000 : 0,
+            eveningMs: 7_200_000, previousEveningMs: previousMeasured ? 4_800_000 : 0,
+            eveningFromHour: 21,
+            movers: previousMeasured ? movers : [],
+            previousMeasured: previousMeasured
+        )
+    }
+
+    func testWeekInsight() {
+        assert(listed(WeekInsightView(week: comparison())), named: "week-insight")
+    }
+
+    /// A family's first seven days. The week is still worth reading; the
+    /// comparison is the part that does not exist yet, and saying so is the
+    /// whole point of `previous_measured`.
+    func testWeekInsightWithNoWeekBehindIt() {
+        assert(
+            listed(WeekInsightView(week: comparison(previousMeasured: false))),
+            named: "week-insight-first"
+        )
+    }
+
+    /// Nothing moved by more than five minutes — an empty list would read as a
+    /// broken card, so the card says it instead.
+    func testWeekInsightWhenNothingMoved() {
+        assert(listed(WeekInsightView(week: comparison(movers: []))), named: "week-insight-steady")
+    }
+
     /// The strip's `Section` sits outside `if let usage` in `ChildDetailView`, so
     /// a day switch — which clears `usage` while the new day's request is in
     /// flight — must never touch it: the parent's finger is still on the bar

@@ -197,3 +197,14 @@
 "data.deleted.hours" = "Valori orari per app";
 "data.deleted.devicehours" = "Ore del dispositivo";
 "data.deleted.days" = "Totali giornalieri";
+
+/* La settimana scorsa rispetto a quella precedente */
+"week.title" = "La settimana scorsa";
+"week.total" = "Tempo sullo schermo";
+"week.evening.from %@" = "La sera dalle %@";
+"week.more %@" = "%@ in più rispetto alla settimana precedente";
+"week.less %@" = "%@ in meno rispetto alla settimana precedente";
+"week.same" = "Come la settimana precedente";
+"week.movers" = "Che cosa è cambiato";
+"week.movers.none" = "Nessuna app è cambiata di più di cinque minuti.";
+"week.first" = "Nella settimana precedente nessun telefono ha segnalato nulla: non c’è ancora nulla da confrontare.";

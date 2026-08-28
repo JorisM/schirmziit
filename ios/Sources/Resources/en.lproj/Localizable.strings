@@ -197,3 +197,14 @@
 "data.deleted.hours" = "Hourly figures per app";
 "data.deleted.devicehours" = "Device hours";
 "data.deleted.days" = "Daily totals";
+
+/* Last week against the one before it */
+"week.title" = "Last week";
+"week.total" = "Screen time";
+"week.evening.from %@" = "Evenings from %@";
+"week.more %@" = "%@ more than the week before";
+"week.less %@" = "%@ less than the week before";
+"week.same" = "The same as the week before";
+"week.movers" = "What moved";
+"week.movers.none" = "No app moved by more than five minutes.";
+"week.first" = "No phone reported the week before this one, so there is nothing to compare with yet.";

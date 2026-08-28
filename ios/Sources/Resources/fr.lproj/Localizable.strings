@@ -197,3 +197,14 @@
 "data.deleted.hours" = "Chiffres horaires par application";
 "data.deleted.devicehours" = "Heures d’appareil";
 "data.deleted.days" = "Totaux journaliers";
+
+/* La semaine dernière comparée à la précédente */
+"week.title" = "La semaine dernière";
+"week.total" = "Temps d’écran";
+"week.evening.from %@" = "Le soir dès %@";
+"week.more %@" = "%@ de plus que la semaine précédente";
+"week.less %@" = "%@ de moins que la semaine précédente";
+"week.same" = "Comme la semaine précédente";
+"week.movers" = "Ce qui a changé";
+"week.movers.none" = "Aucune application n’a bougé de plus de cinq minutes.";
+"week.first" = "Aucun téléphone n’a rien signalé la semaine précédente : il n’y a encore rien à comparer.";

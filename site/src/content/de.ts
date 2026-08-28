@@ -114,11 +114,11 @@ export const de: Site = {
         revokeDevice: { label: 'Ein Handy trennen' },
         pairingCode: {
           label: 'Verbindungs-Code für ein Kinderhandy erzeugen',
-          note: 'In der Übersicht im Browser. Im iPhone-Eltern-Modus noch nicht — dort verbindest du ein Kinderhandy über dein Eltern-Login, ohne Code.',
+          note: 'Wird als QR-Code und als sechs Zeichen angezeigt — in der Übersicht und in beiden Handy-Apps. Das Kinderhandy scannt den Code, oder jemand tippt die sechs Zeichen und die Serveradresse ein.',
         },
         deleteData: {
           label: 'Gespeicherte Zahlen eines Kindes löschen',
-          note: 'Löscht Stundenwerte und Tagessummen und sagt, wie viele Zeilen weg sind. Das Kind bleibt verbunden und meldet weiter. Im iPhone-Eltern-Modus noch nicht.',
+          note: 'Löscht Stundenwerte und Tagessummen und sagt, wie viele Zeilen weg sind. Das Kind bleibt verbunden und meldet weiter.',
         },
         helpLinks: {
           label: 'Hilfe und Schweizer Beratungsstellen',

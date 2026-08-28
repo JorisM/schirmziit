@@ -113,11 +113,11 @@ export const en: Site = {
         revokeDevice: { label: 'Disconnect a phone' },
         pairingCode: {
           label: 'Create a connect code for a child’s phone',
-          note: 'In the dashboard in the browser. Not in the iPhone parent mode yet — there you connect a child’s phone with your parent login instead, no code.',
+          note: 'Shown as a QR code and as six characters, in the dashboard and in both phone apps. The child’s phone scans the code, or someone types the six characters and the server address.',
         },
         deleteData: {
           label: 'Delete a child’s stored figures',
-          note: 'Deletes hourly figures and daily totals and says how many rows went. The child stays connected and keeps reporting. Not in the iPhone parent mode yet.',
+          note: 'Deletes hourly figures and daily totals and says how many rows went. The child stays connected and keeps reporting.',
         },
         helpLinks: {
           label: 'Help and the Swiss advice services',

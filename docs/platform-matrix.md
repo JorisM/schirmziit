@@ -40,18 +40,27 @@ measured only by someone who builds and installs the app themselves.
 | Disconnect a device | ✓ `ChildDetailScreen`, long press | ✓ `ChildDetailView.revokeDevice` | ✓ `ChildDetail` |
 | Enrol a child phone without typing a code | ✓ `ParentSetup` | ✓ parent session → device token | `–` |
 | Mint a pairing code for a child phone | ✓ `PairDeviceCard` | ✓ `PairDeviceView` | ✓ `PairDevice` |
+| Show that code as a QR | ✓ `QrMatrixImage` | ✓ `QrMatrixView` | ✓ `QrCode` |
+| Enrol by scanning it | ✓ in-app scanner (zxing) and the `schirmziit://enroll` deep link | `~` the system camera opens the app and fills the form; no in-app scanner | `–` |
 | Delete a child's stored figures | ✓ `PurgeDataCard` | ✓ `PurgeDataView` | ✓ `PurgeData` |
 | Help and the four Swiss services | ✓ incl. Beratung 147 | ✓ parent `HelpView`; child `AgentHelpView` incl. 147 | ✓ `Help` |
 | de/fr/it/en | ✓ | ✓ | ✓ |
 
 ## Gaps worth naming
 
-- **The pairing code is typed, not scanned.** `mint_enrollment` returns a
-  `schirmziit://enroll?url=…&code=…` payload meant for a camera, and both
-  `PairDevice` and `PairDeviceView` show the code and the server address as text
-  instead: rendering a QR needs an encoder, and no dependency here has one. Until
-  that lands, the second step says "type" in all four languages on both surfaces
-  — the copy follows the code, not the intention.
+- **The pairing code is drawn once, in Rust, and painted three times.**
+  `crates/core::qr` encodes the `schirmziit://enroll?url=…&code=…` payload and
+  the server ships the matrix with the code, so no client owns an encoder —
+  three encoders would be three chances to hand a family a square that scans as
+  something else. The quiet zone travels inside the matrix rather than as a
+  reminder in three renderers, and every surface draws dark on light in both
+  themes: an inverted QR is refused outright by some scanners. `qr` is nullable
+  and a client that gets null shows the code and the address as text, which is
+  what pairing was before the square existed.
+- **An iPhone has no in-app scanner.** It registers the `schirmziit://` scheme,
+  so the system camera reads the square and offers to open the app — which fills
+  the form rather than pairing on arrival, because a one-shot code must not be
+  burnt by a mis-scan. Android scans in the app as well, with zxing.
 - **Deleting a child's figures no longer needs a browser.** All three surfaces
   ask twice, and all three show the server's own `rows_affected` afterwards:
   "deleted" with nothing behind it is the one claim a family has no way to

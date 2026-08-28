@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { BackgroundWave, FULL_SCALE_MS, backgroundHours, wavePath } from './BackgroundWave'
 import { LocaleProvider } from '../i18n'
@@ -143,5 +143,27 @@ describe('BackgroundWave', () => {
     show({ series: series([{ start: '2026-08-20T22:00:00+02:00', background_ms: 1_800_000 }]), measured: true })
     expect(screen.getByTitle('22:00 — 30 min')).toBeInTheDocument()
     expect(screen.getByTitle('03:00 — 0 min')).toBeInTheDocument()
+  })
+})
+
+describe('hovering the wave must not move it', () => {
+  // Same trap the ribbon had: the readout took the help text's place, so
+  // hovering shrank the caption, the wave slid up out from under the cursor,
+  // mouseleave fired, and the page flickered between the two heights.
+  const help =
+    'Music, podcasts or audiobooks that played while the screen was off. This is counted on its own — it is not screen time and is never added to it.'
+
+  it('keeps the help text while an hour is hovered', () => {
+    show({ series: series([{ start: '2026-08-20T22:00:00+02:00', background_ms: 1_800_000 }]), measured: true })
+    fireEvent.mouseEnter(screen.getByTitle('22:00 — 30 min'))
+    expect(screen.getByText('22:00 — 30 min')).toBeInTheDocument()
+    expect(screen.getByText(help)).toBeInTheDocument()
+  })
+
+  it('reserves the readout line before anything is hovered', () => {
+    show({ series: [], measured: true })
+    const readout = document.querySelector('[data-wave-readout]') as HTMLElement
+    expect(readout).not.toBeNull()
+    expect(readout.textContent).toBe('\u00a0')
   })
 })

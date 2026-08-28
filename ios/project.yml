@@ -107,6 +107,15 @@ targets:
           - CFBundleURLName: ch.jorisda.schirmziit.enroll
             CFBundleURLSchemes:
               - schirmziit
+        # The sentence iOS puts in its own prompt when the pairing screen opens
+        # the scanner. Written for the child holding the phone, because that is
+        # who reads it, and specific about the one use: an app that measures
+        # screen time asking for a camera has to say why in the prompt itself,
+        # not in a help page nobody opens. The four translations are in
+        # `*.lproj/InfoPlist.strings`; this is the fallback.
+        NSCameraUsageDescription:
+          Schirmziit uses the camera once, to read the pairing code your parents
+          show you. Nothing is photographed, kept, or sent anywhere.
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ch.jorisda.schirmziit

@@ -42,7 +42,7 @@ measured only by someone who builds and installs the app themselves.
 | Enrol a child phone without typing a code | ✓ `ParentSetup` | ✓ parent session → device token | `–` |
 | Mint a pairing code for a child phone | ✓ `PairDeviceCard` | ✓ `PairDeviceView` | ✓ `PairDevice` |
 | Show that code as a QR | ✓ `QrMatrixImage` | ✓ `QrMatrixView` | ✓ `QrCode` |
-| Enrol by scanning it | ✓ in-app scanner (zxing) and the `schirmziit://enroll` deep link | `~` the system camera opens the app and fills the form; no in-app scanner | `–` |
+| Enrol by scanning it | ✓ in-app scanner (zxing) and the `schirmziit://enroll` deep link | ✓ in-app scanner (`QrScannerSheet`, AVFoundation) and the same deep link | `–` |
 | Delete a child's stored figures | ✓ `PurgeDataCard` | ✓ `PurgeDataView` | ✓ `PurgeData` |
 | Help and the four Swiss services | ✓ incl. Beratung 147 | ✓ parent `HelpView`; child `AgentHelpView` incl. 147 | ✓ `Help` |
 | de/fr/it/en | ✓ | ✓ | ✓ |
@@ -58,10 +58,17 @@ measured only by someone who builds and installs the app themselves.
   themes: an inverted QR is refused outright by some scanners. `qr` is nullable
   and a client that gets null shows the code and the address as text, which is
   what pairing was before the square existed.
-- **An iPhone has no in-app scanner.** It registers the `schirmziit://` scheme,
-  so the system camera reads the square and offers to open the app — which fills
-  the form rather than pairing on arrival, because a one-shot code must not be
-  burnt by a mis-scan. Android scans in the app as well, with zxing.
+- **Both phones scan in the app, and neither pairs on the scan.** A square fills
+  the address and the code in and stops there: the code is one-shot, so a screen
+  that paired on arrival would spend it on a mis-scan, and the phone still has
+  no name until someone gives it one. Either phone can also be reached from the
+  outside — both register `schirmziit://`, so the system camera opens the app
+  with the link and it lands in the same place. On the iPhone the live camera
+  itself is the one part with no test behind it (a simulator has none), so
+  everything that could be decided away from it was: `ScanReader` answers a
+  square once rather than thirty times a second, and `ScanAccess` separates a
+  refused camera from a phone that has none — a child told to grant access on a
+  device with no camera goes looking for a switch that is not there.
 - **One week is compared with the one before it, and only the server does it.**
   `crates/core::insight` compares; `/v1/children/{id}/insight` serves the
   comparison; three renderers print it. A week is the seven *complete* local

@@ -147,6 +147,10 @@ export const fr: Site = {
           label: 'Créer un code de connexion pour le téléphone d’un enfant',
           note: 'Affiché comme QR code et comme six caractères, dans le tableau de bord et dans les deux applications. Le téléphone de l’enfant scanne le code, ou quelqu’un saisit les six caractères et l’adresse du serveur.',
         },
+        scanCode: {
+          label: 'Se connecter en scannant le code',
+          note: 'Les deux applications lisent le carré elles-mêmes. Le scan remplit l’adresse et le code ; la connexion se fait ensuite par un appui, car un code ne sert qu’une fois.',
+        },
         deleteData: {
           label: 'Supprimer les chiffres enregistrés d’un enfant',
           note: 'Supprime les chiffres horaires et les totaux journaliers et indique combien de lignes ont disparu. L’enfant reste connecté et continue d’envoyer.',

@@ -147,6 +147,10 @@ export const it: Site = {
           label: 'Creare un codice di collegamento per il telefono di un bambino',
           note: 'Mostrato come codice QR e come sei caratteri, nella panoramica e in entrambe le app. Il telefono del bambino scansiona il codice, oppure qualcuno digita i sei caratteri e l’indirizzo del server.',
         },
+        scanCode: {
+          label: 'Collegarsi scansionando il codice',
+          note: 'Entrambe le app leggono il quadrato da sole. La scansione compila indirizzo e codice; il collegamento avviene poi con un tocco, perché un codice vale una volta sola.',
+        },
         deleteData: {
           label: 'Cancellare i numeri salvati di un bambino',
           note: 'Cancella i valori orari e i totali giornalieri e dice quante righe sono sparite. Il bambino resta collegato e continua a inviare.',

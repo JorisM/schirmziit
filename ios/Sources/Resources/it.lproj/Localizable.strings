@@ -106,6 +106,13 @@
 "agent.pairing.label.placeholder" = "Il mio iPhone";
 "agent.pairing.submit" = "Collega";
 "agent.pairing.working" = "Collegamento…";
+"agent.pairing.scan" = "Scansiona il codice";
+"agent.pairing.scan.title" = "Scansiona il codice";
+"agent.pairing.scan.hint" = "Metti nel riquadro il quadrato sullo schermo dei tuoi genitori.";
+"agent.pairing.scan.notours" = "Quel quadrato non è un codice Schirmziit. Chiedi quello della dashboard.";
+"agent.pairing.scan.refused" = "Schirmziit non può usare la fotocamera. Consentila in Impostazioni, oppure chiudi e digita il codice.";
+"agent.pairing.scan.settings" = "Apri Impostazioni";
+"agent.pairing.scan.nocamera" = "Questo telefono non ha una fotocamera utilizzabile da Schirmziit. Chiudi e digita il codice.";
 
 "agent.status.queue" = "In coda";
 "agent.status.pending" = "Ore in attesa";

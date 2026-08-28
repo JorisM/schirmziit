@@ -142,12 +142,12 @@ export const de: Site = {
       'Du bist für Updates, Backups und TLS zuständig.',
       'Kostenlos, ohne Konto bei uns.',
     ],
-    hostedTitle: 'Gehostet (Beta)',
+    hostedTitle: 'Gehostet (private Alpha)',
     hostedFor: 'Für dich, wenn du keinen Server betreiben willst.',
     hostedPoints: [
       'Wir betreiben es — vorerst auf unserem eigenen Homelab in der Schweiz.',
       'Daten liegen in der Schweiz, nicht bei einem Hyperscaler.',
-      'Während der Beta kostenlos und mit begrenzten Plätzen.',
+      'Während der Alpha kostenlos und mit begrenzten Plätzen.',
       'Du kannst jederzeit auf Selbst-hosten wechseln, es ist dieselbe Software.',
     ],
   },
@@ -206,16 +206,16 @@ export const de: Site = {
     whereTitle: 'Wo die Daten liegen',
     whereBody:
       'Auf unserer eigenen Hardware in der Schweiz, nicht bei einem grossen Cloud-Anbieter. Dieselbe Software, die du auch selbst hosten könntest, mit denselben Grenzen: Nutzungszeiten ja, Inhalte nein.',
-    betaTitle: 'Wie ehrlich klein das ist',
-    betaBody:
-      'Das läuft im Moment auf einem Homelab, betrieben von einer Person. Das reicht für die Familien einer Beta und ist nicht als Firma mit Bereitschaftsdienst verkleidet. Wenn genug Leute mitmachen, bauen wir es richtig aus.',
+    scaleTitle: 'Wie ehrlich klein das ist',
+    scaleBody:
+      'Das läuft im Moment auf einem Homelab, betrieben von einer Person. Das reicht für die Familien einer Alpha und ist nicht als Firma mit Bereitschaftsdienst verkleidet. Wenn genug Leute mitmachen, bauen wir es richtig aus.',
     priceTitle: 'Preis',
     priceBody:
-      'Während der Beta gratis. Später wird es etwas kosten müssen, damit es sich selbst trägt — Selbst-hosten bleibt in jedem Fall kostenlos.',
+      'Während der Alpha gratis. Später wird es etwas kosten müssen, damit es sich selbst trägt — Selbst-hosten bleibt in jedem Fall kostenlos.',
     joinTitle: 'Mitmachen',
     joinBody:
       'Schreib uns eine kurze Mail mit dem Betriebssystem des Kinderhandys. Wir melden uns, sobald ein Platz frei ist.',
-    joinCta: 'Für die Beta melden',
+    joinCta: 'Für die Alpha melden',
   },
 
   privacy: {
@@ -237,7 +237,7 @@ export const de: Site = {
       },
       {
         title: 'Wer es sieht',
-        body: 'Dein Konto und das Kind auf seinem eigenen Handy. Beim Selbst-hosten sonst niemand. In der gehosteten Beta technisch zusätzlich der Betreiber, der die Datenbank verwaltet — mehr Leute nicht.',
+        body: 'Dein Konto und das Kind auf seinem eigenen Handy. Beim Selbst-hosten sonst niemand. In der gehosteten Alpha technisch zusätzlich der Betreiber, der die Datenbank verwaltet — mehr Leute nicht.',
       },
       {
         title: 'Dritte',

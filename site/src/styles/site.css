@@ -54,6 +54,10 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
+/* Every in-page anchor has to clear the sticky header, or the heading it jumps
+   to lands underneath it. The banner's own CTA is one of these. */
+html { scroll-padding-top: 5rem; }
+
 body {
   margin: 0;
   background: var(--paper);
@@ -93,9 +97,9 @@ header.site {
 header.site .wrap {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem 1.25rem;
+  gap: 0.75rem 1.5rem;
   align-items: center;
-  padding-block: 0.75rem;
+  padding-block: 1rem;
 }
 .brand {
   display: inline-flex;
@@ -112,13 +116,13 @@ header.site .wrap {
   color: var(--ink-muted);
   border: 1px solid var(--hairline);
   border-radius: 999px;
-  padding: 0.1rem 0.6rem;
+  padding: 0.2rem 0.65rem;
 }
-nav.site { margin-left: auto; display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+nav.site { margin-left: auto; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; align-items: center; }
 nav.site a { font-size: 0.95rem; }
 nav.site a[aria-current='page'] { color: var(--ink); text-decoration: none; font-weight: 600; }
 
-.langs { display: flex; gap: 0.5rem; font-size: 0.85rem; }
+.langs { display: flex; gap: 0.6rem; font-size: 0.85rem; margin-left: 0.25rem; }
 .langs a[aria-current='true'] { color: var(--ink); font-weight: 600; text-decoration: none; }
 
 main { padding: 3rem 0 4rem; }
@@ -132,7 +136,15 @@ main { padding: 3rem 0 4rem; }
   margin-bottom: 0.75rem;
 }
 
-.cards { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); }
+.cards {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  /* Enough that a card block reads as its own thing after a paragraph or a
+     list. This replaced a hand-written inline margin on the one block that
+     follows ol.steps and had nothing introducing it. */
+  margin-top: 2rem;
+}
 .card {
   background: var(--card);
   border: 1px solid var(--hairline);
@@ -211,7 +223,7 @@ main { padding: 3rem 0 4rem; }
 .matrix td.none .mark, .legend .mark.none { color: var(--ink-faint); }
 .matrix .word { color: var(--ink-muted); margin-left: 0.4rem; }
 
-.legend { display: flex; flex-wrap: wrap; gap: 1rem; color: var(--ink-muted); font-size: 0.85rem; }
+.legend { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 0.75rem; color: var(--ink-muted); font-size: 0.85rem; }
 .legend .mark { font-family: ui-monospace, monospace; }
 
 @media (max-width: 46rem) {
@@ -293,9 +305,9 @@ footer.site .wrap { display: flex; flex-wrap: wrap; gap: 1rem; align-items: cent
 .alpha .wrap {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem 0.9rem;
+  gap: 0.5rem 1rem;
   align-items: baseline;
-  padding-block: 0.6rem;
+  padding-block: 0.75rem;
 }
 .alpha p { margin: 0; max-width: 46rem; }
 .alpha-tag {
@@ -306,7 +318,7 @@ footer.site .wrap { display: flex; flex-wrap: wrap; gap: 1rem; align-items: cent
   color: var(--card);
   background: var(--urgent);
   border-radius: 999px;
-  padding: 0.1rem 0.6rem;
+  padding: 0.2rem 0.65rem;
   white-space: nowrap;
 }
 .alpha-cta { white-space: nowrap; font-weight: 600; }

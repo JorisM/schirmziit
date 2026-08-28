@@ -141,12 +141,12 @@ export const en: Site = {
       'Updates, backups and TLS are yours to handle.',
       'Free, with no account with us.',
     ],
-    hostedTitle: 'Hosted (beta)',
+    hostedTitle: 'Hosted (private alpha)',
     hostedFor: 'For you if you do not want to run a server.',
     hostedPoints: [
       'We run it — for now on our own homelab in Switzerland.',
       'Data sits in Switzerland, not at a hyperscaler.',
-      'Free during the beta, with limited places.',
+      'Free during the alpha, with limited places.',
       'You can switch to self-hosting whenever you like; it is the same software.',
     ],
   },
@@ -204,16 +204,16 @@ export const en: Site = {
     whereTitle: 'Where the data lives',
     whereBody:
       'On our own hardware in Switzerland, not at a large cloud provider. The same software you could host yourself, with the same limits: usage times yes, content no.',
-    betaTitle: 'How honestly small this is',
-    betaBody:
-      'This currently runs on a homelab operated by one person. That is fine for a beta’s worth of families and is not dressed up as a company with an on-call rota. If enough people join, we build it out properly.',
+    scaleTitle: 'How honestly small this is',
+    scaleBody:
+      'This currently runs on a homelab operated by one person. That is fine for an alpha’s worth of families and is not dressed up as a company with an on-call rota. If enough people join, we build it out properly.',
     priceTitle: 'Price',
     priceBody:
-      'Free during the beta. Later it will have to cost something to pay for itself — self-hosting stays free either way.',
+      'Free during the alpha. Later it will have to cost something to pay for itself — self-hosting stays free either way.',
     joinTitle: 'Joining',
     joinBody:
       'Send us a short mail saying which operating system the child’s phone runs. We will get back to you when a place opens up.',
-    joinCta: 'Ask for a beta place',
+    joinCta: 'Ask for an alpha place',
   },
 
   privacy: {
@@ -234,7 +234,7 @@ export const en: Site = {
       },
       {
         title: 'Who can see it',
-        body: 'Your account, and the child on their own phone. When you self-host, nobody else. On the hosted beta, technically also the operator who administers the database — and no one beyond that.',
+        body: 'Your account, and the child on their own phone. When you self-host, nobody else. On the hosted alpha, technically also the operator who administers the database — and no one beyond that.',
       },
       {
         title: 'Third parties',

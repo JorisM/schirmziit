@@ -141,12 +141,12 @@ export const it: Site = {
       'Aggiornamenti, backup e TLS sono a tuo carico.',
       'Gratuito, senza alcun account presso di noi.',
     ],
-    hostedTitle: 'Ospitato (beta)',
+    hostedTitle: 'Ospitato (alpha privata)',
     hostedFor: 'Per te se non vuoi gestire un server.',
     hostedPoints: [
       'Lo gestiamo noi — per ora sul nostro homelab in Svizzera.',
       'I dati stanno in Svizzera, non presso un grande fornitore cloud.',
-      'Gratuito durante la beta, con posti limitati.',
+      'Gratuito durante l’alpha, con posti limitati.',
       'Puoi passare al self-hosting quando vuoi: è lo stesso software.',
     ],
   },
@@ -204,16 +204,16 @@ export const it: Site = {
     whereTitle: 'Dove stanno i dati',
     whereBody:
       'Sul nostro hardware in Svizzera, non presso un grande fornitore cloud. Lo stesso software che potresti ospitare tu, con gli stessi limiti: i tempi di utilizzo sì, i contenuti no.',
-    betaTitle: 'Quanto è piccolo, onestamente',
-    betaBody:
-      'Oggi gira su un homelab gestito da una persona sola. Basta per le famiglie di una beta e non è camuffato da azienda con un servizio di picchetto. Se partecipano abbastanza persone, lo costruiremo come si deve.',
+    scaleTitle: 'Quanto è piccolo, onestamente',
+    scaleBody:
+      'Oggi gira su un homelab gestito da una persona sola. Basta per le famiglie di un’alpha e non è camuffato da azienda con un servizio di picchetto. Se partecipano abbastanza persone, lo costruiremo come si deve.',
     priceTitle: 'Prezzo',
     priceBody:
-      'Gratuito durante la beta. Più avanti dovrà costare qualcosa per sostenersi — il self-hosting resterà gratuito in ogni caso.',
+      'Gratuito durante l’alpha. Più avanti dovrà costare qualcosa per sostenersi — il self-hosting resterà gratuito in ogni caso.',
     joinTitle: 'Partecipare',
     joinBody:
       'Scrivici una breve mail indicando il sistema operativo del telefono del bambino. Ti rispondiamo appena si libera un posto.',
-    joinCta: 'Chiedere un posto in beta',
+    joinCta: 'Chiedere un posto in alpha',
   },
 
   privacy: {
@@ -235,7 +235,7 @@ export const it: Site = {
       },
       {
         title: 'Chi li vede',
-        body: 'Il tuo account e il bambino sul proprio telefono. Con il self-hosting nessun altro. Nella beta ospitata, tecnicamente anche chi gestisce il database — e nessun altro oltre.',
+        body: 'Il tuo account e il bambino sul proprio telefono. Con il self-hosting nessun altro. Nell’alpha ospitata, tecnicamente anche chi gestisce il database — e nessun altro oltre.',
       },
       {
         title: 'Terze parti',

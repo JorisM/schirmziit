@@ -16,6 +16,49 @@ app and Postgres (`deploy/`).
 **What runs where is a table, not a paragraph: [`docs/platform-matrix.md`](docs/platform-matrix.md).**
 It is the honest state, gaps included.
 
+## Run it, self-hosted
+
+Two containers, a reverse proxy you already have, and about five minutes.
+
+```sh
+git clone https://github.com/JorisM/schirmziit.git
+cd schirmziit/deploy
+cp .env.example .env      # set POSTGRES_PASSWORD and PUBLIC_URL
+docker compose up -d
+```
+
+`PUBLIC_URL` is the address phones and browsers actually reach, and it is baked
+into every pairing QR code — a wrong value gives you phones that pair once and
+never sync again. The app binds to `127.0.0.1:8080`; terminate TLS in front of
+it. The first account you register wins, then registration closes
+(`ALLOW_REGISTRATION`). [`deploy/README.md`](deploy/README.md) has the rest.
+
+Measuring a phone still needs the agent installed on it, and that is where the
+platform matrix matters. Neither store carries it yet: the Android artifacts on
+the releases page are unsigned build output, so the installable build is a local
+one, and an iPhone can only be measured by someone who builds and installs the
+app themselves until Apple grants Family Controls (Distribution).
+
+## Work on it
+
+One command installs everything — the toolchain is declared in `flake.nix`, so
+nix fetches Rust with every target, the Android SDK and NDK, jdk, node, pnpm and
+xcodegen. Xcode is the exception: Apple ships it through the App Store only, and
+the iOS scripts say so if it is missing.
+
+```sh
+bin/setup     # once: nix, then the dev shell
+bin/doctor    # what this machine has, and what it lacks
+bin/dev       # api :8099, dashboard :5173, site :4321
+bin/check     # every gate, all of them even after one fails
+```
+
+Nothing needs a special terminal — every script re-enters the nix dev shell
+itself. The gates live in the `justfile` and can be run directly
+(`just rust-check web-check android-check ios-check`); `bin/*` are thin wrappers
+over them. `bin/android-install` and `bin/ios-install` put a build on a real
+phone over wifi, and `bin/record` re-records the screen goldens, deliberately.
+
 ## Contributing
 
 Pull requests welcome — bug reports and translation fixes just as much as code.

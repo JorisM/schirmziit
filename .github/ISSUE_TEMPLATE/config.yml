@@ -1,0 +1,14 @@
+# No forced templates — an issue written in the reporter's own words is worth
+# more than a filled-in form. These links exist because three kinds of report
+# should not land in the issue tracker at all.
+blank_issues_enabled: true
+contact_links:
+  - name: A security problem
+    url: https://github.com/JorisM/schirmziit/security/advisories/new
+    about: Report it privately, not here. Anything that could let the wrong person read a child's figures.
+  - name: Does it do X on Android or iPhone?
+    url: https://github.com/JorisM/schirmziit/blob/main/docs/platform-matrix.md
+    about: The honest state of both platforms, gaps included. Check here before filing a gap as a bug.
+  - name: Blocking, time limits, content filtering
+    url: https://github.com/JorisM/schirmziit#schirmziit
+    about: Deliberately out of scope. Open a discussion first — it is a product decision before it is a patch.

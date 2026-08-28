@@ -148,6 +148,10 @@ export const de: Site = {
           label: 'Verbindungs-Code für ein Kinderhandy erzeugen',
           note: 'Wird als QR-Code und als sechs Zeichen angezeigt — in der Übersicht und in beiden Handy-Apps. Das Kinderhandy scannt den Code, oder jemand tippt die sechs Zeichen und die Serveradresse ein.',
         },
+        scanCode: {
+          label: 'Verbinden durch Scannen des Codes',
+          note: 'Beide Handy-Apps lesen das Quadrat selbst. Das Scannen füllt Adresse und Code aus; verbunden wird erst auf Knopfdruck, denn ein Code gilt nur einmal.',
+        },
         deleteData: {
           label: 'Gespeicherte Zahlen eines Kindes löschen',
           note: 'Löscht Stundenwerte und Tagessummen und sagt, wie viele Zeilen weg sind. Das Kind bleibt verbunden und meldet weiter.',

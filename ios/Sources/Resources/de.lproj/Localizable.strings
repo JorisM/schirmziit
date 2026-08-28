@@ -106,6 +106,13 @@
 "agent.pairing.label.placeholder" = "Mein iPhone";
 "agent.pairing.submit" = "Verbinden";
 "agent.pairing.working" = "Verbinde…";
+"agent.pairing.scan" = "Code scannen";
+"agent.pairing.scan.title" = "Code scannen";
+"agent.pairing.scan.hint" = "Halte das Quadrat vom Bildschirm deiner Eltern in den Rahmen.";
+"agent.pairing.scan.notours" = "Das ist kein Schirmziit-Code. Lass dir den Code aus dem Dashboard zeigen.";
+"agent.pairing.scan.refused" = "Schirmziit kann die Kamera nicht nutzen. Erlaube sie in den Einstellungen, oder schliesse das hier und tippe den Code ein.";
+"agent.pairing.scan.settings" = "Einstellungen öffnen";
+"agent.pairing.scan.nocamera" = "Dieses Handy hat keine Kamera, die Schirmziit nutzen kann. Schliesse das hier und tippe den Code ein.";
 
 "agent.status.queue" = "Warteschlange";
 "agent.status.pending" = "Wartende Stunden";

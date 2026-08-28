@@ -106,6 +106,13 @@
 "agent.pairing.label.placeholder" = "Mon iPhone";
 "agent.pairing.submit" = "Connecter";
 "agent.pairing.working" = "Connexion…";
+"agent.pairing.scan" = "Scanner le code";
+"agent.pairing.scan.title" = "Scanner le code";
+"agent.pairing.scan.hint" = "Place dans le cadre le carré affiché sur l'écran de tes parents.";
+"agent.pairing.scan.notours" = "Ce carré n'est pas un code Schirmziit. Demande celui du tableau de bord.";
+"agent.pairing.scan.refused" = "Schirmziit ne peut pas utiliser la caméra. Autorise-la dans les Réglages, ou ferme cette page et saisis le code.";
+"agent.pairing.scan.settings" = "Ouvrir les Réglages";
+"agent.pairing.scan.nocamera" = "Ce téléphone n'a pas de caméra utilisable par Schirmziit. Ferme cette page et saisis le code.";
 
 "agent.status.queue" = "File d'attente";
 "agent.status.pending" = "Heures en attente";

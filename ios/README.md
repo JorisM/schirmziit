@@ -48,6 +48,19 @@ child setup with the address filled in on a phone with no role yet, and does
 minted must not hand their dashboard phone to child mode. `EnrollLink` is as
 strict as Android's `EnrollPayloadParser`: https only, localhost excepted.
 
+The pairing screen also scans **in the app** (`QrScannerSheet`), which is what
+Android has always done: leaving to the system camera and coming back is a child
+hunting for the right app to reopen. Whatever it reads goes through the same
+`EnrollLink`, fills the same two fields, and stops — pairing stays a press,
+because the code is claimable once and a mis-scan must not spend it. A live
+`AVCaptureSession` needs a camera and a simulator has none, so the view is kept
+as thin as the camera makes unavoidable and the decisions live beside it:
+`ScanReader` turns thirty frames a second of the same square into one answer
+(and one complaint per *different* stranger, not a message that flickers), and
+`ScanAccess` keeps "you refused the camera" apart from "this device has none" —
+the second is a child sent to Settings for a switch that does not exist. The
+goldens are those two text states; the viewfinder itself is judged on a phone.
+
 `WeekInsightView` sits between the fortnight and the day, and answers the
 question the strip raises and one day cannot: was this week unusual. It renders
 and compares nothing — `crates/core::insight` compares and

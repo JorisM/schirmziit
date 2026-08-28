@@ -147,6 +147,10 @@ export const en: Site = {
           label: 'Create a connect code for a child’s phone',
           note: 'Shown as a QR code and as six characters, in the dashboard and in both phone apps. The child’s phone scans the code, or someone types the six characters and the server address.',
         },
+        scanCode: {
+          label: 'Connect by scanning the code',
+          note: 'Both phone apps read the square themselves. Scanning fills in the address and the code; connecting is still a press, because a code is valid once.',
+        },
         deleteData: {
           label: 'Delete a child’s stored figures',
           note: 'Deletes hourly figures and daily totals and says how many rows went. The child stays connected and keeps reporting.',

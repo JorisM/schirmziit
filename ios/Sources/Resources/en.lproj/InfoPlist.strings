@@ -1,0 +1,3 @@
+/* The sentence iOS shows in its own camera prompt, when the pairing screen
+   opens the scanner. Read by the child holding the phone. */
+"NSCameraUsageDescription" = "Schirmziit uses the camera once, to read the pairing code your parents show you. Nothing is photographed, kept, or sent anywhere.";

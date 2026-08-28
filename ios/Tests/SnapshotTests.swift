@@ -199,6 +199,32 @@ final class SnapshotTests: XCTestCase {
         assert(ChildSetupView(model: agent(role: nil), onCancel: {}), named: "child-setup")
     }
 
+    /// The screen the scanner hangs off. The button above the fields is what the
+    /// image is for: a child reading a code aloud off a parent's screen and
+    /// typing a URL underneath it is the slowest part of setting this up.
+    func testChildPairing() {
+        assert(AgentRootView(model: agent()), named: "child-pairing")
+    }
+
+    /// The live camera cannot be photographed here — a simulator has none — so
+    /// these are the two states that are all text. They are also the two worth
+    /// an image: they are what a child reads when the scanner is the one thing
+    /// on the screen that will not work, and both have to point at the typed
+    /// code rather than dead-end.
+    func testScannerWhenTheCameraIsRefused() {
+        assert(
+            QrScannerSheet(onFound: { _ in }, onCancel: {}, pinned: .refused),
+            named: "scan-refused"
+        )
+    }
+
+    func testScannerOnAPhoneWithNoCamera() {
+        assert(
+            QrScannerSheet(onFound: { _ in }, onCancel: {}, pinned: .noCamera),
+            named: "scan-no-camera"
+        )
+    }
+
     func testChildHelp() {
         assert(AgentHelpView(), named: "child-help")
     }

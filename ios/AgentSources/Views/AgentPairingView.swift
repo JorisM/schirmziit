@@ -13,6 +13,7 @@ struct AgentPairingView: View {
     @State private var server = AgentDefaults.server
     @State private var code = ""
     @State private var label = ""
+    @State private var scanning = false
 
     var body: some View {
         Form {
@@ -20,6 +21,17 @@ struct AgentPairingView: View {
                 L("agent.pairing.intro")
                     .font(.callout)
                     .foregroundStyle(Palette.inkMuted)
+            }
+
+            // Above the fields, because it is the way past them: the address and
+            // the code are the two things typed off another screen, and both are
+            // in the square the parent already has open.
+            Section {
+                Button {
+                    scanning = true
+                } label: {
+                    Label(title: { L("agent.pairing.scan") }, icon: { Image(systemName: "qrcode.viewfinder") })
+                }
             }
 
             Section(header: L("agent.pairing.server")) {
@@ -65,11 +77,21 @@ struct AgentPairingView: View {
         // running behind the camera).
         .onAppear { fill(from: scanned) }
         .onChange(of: scanned) { _, link in fill(from: link) }
+        .sheet(isPresented: $scanning) {
+            QrScannerSheet(
+                onFound: { link in
+                    fill(from: link)
+                    scanning = false
+                },
+                onCancel: { scanning = false }
+            )
+        }
     }
 
     /// Filled in, never submitted. Pairing consumes a one-shot code, and a
     /// screen that pairs on arrival would burn the code on a mis-scan — and
-    /// this phone still has no name until someone gives it one.
+    /// this phone still has no name until someone gives it one. The camera and
+    /// the system's own scan arrive here alike, for the same reason.
     private func fill(from link: EnrollLink?) {
         guard let link else { return }
         server = link.server

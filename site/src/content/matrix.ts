@@ -31,6 +31,7 @@ export const matrixRowKeys = [
   'manageChildren',
   'revokeDevice',
   'pairingCode',
+  'scanCode',
   'deleteData',
   'helpLinks',
   'languages',
@@ -64,6 +65,9 @@ export const matrix: MatrixRow[] = [
   { key: 'manageChildren', group: 'view', status: { android: 'yes', ios: 'yes', web: 'yes' } },
   { key: 'revokeDevice', group: 'view', status: { android: 'yes', ios: 'yes', web: 'yes' } },
   { key: 'pairingCode', group: 'view', status: { android: 'yes', ios: 'yes', web: 'yes' } },
+  // The browser is where the square is *shown*, never where it is read: a
+  // dashboard scanning its own code would be a parent enrolling their laptop.
+  { key: 'scanCode', group: 'view', status: { android: 'yes', ios: 'yes', web: null } },
   { key: 'deleteData', group: 'view', status: { android: 'yes', ios: 'yes', web: 'yes' } },
   { key: 'helpLinks', group: 'view', status: { android: 'yes', ios: 'yes', web: 'yes' } },
   { key: 'languages', group: 'view', status: { android: 'yes', ios: 'yes', web: 'yes' } },

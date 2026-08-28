@@ -19,7 +19,9 @@
 # to `nu bin/deploy-k8s.nu` and is `git config schirmziit.deployCommand` (or
 # SCHIRMZIIT_DEPLOY_CMD) if yours is called something else. Service names are
 # the deploy checkout's, not this repo's, so they are configurable too:
-# schirmziit.deployApiService and schirmziit.deploySiteService.
+# schirmziit.deployApiService and schirmziit.deploySiteService. Which of its
+# paths are actually deployed is schirmziit.deployPaths, and only dirt in those
+# stops a deploy.
 #
 # No dev shell here on purpose: a deploy runs the deploy checkout's toolchain
 # (docker, kubectl, whatever it wraps), not this repo's build toolchain.
@@ -43,7 +45,10 @@ deploy_repo="${SCHIRMZIIT_DEPLOY_REPO:-$(cfg schirmziit.deployRepo)}"
       git config schirmziit.deployRepo /path/to/that/checkout
     (or set SCHIRMZIIT_DEPLOY_REPO for one run).
     Self-hosting instead? deploy/README.md and deploy/docker-compose.yml."
-[ -d "$deploy_repo/.git" ] || die "schirmziit.deployRepo is not a git checkout"
+# Ask git, rather than looking for a .git directory: in a worktree it is a file,
+# and a path one level inside the checkout is still the right checkout.
+git -C "$deploy_repo" rev-parse --git-dir >/dev/null 2>&1 \
+  || die "schirmziit.deployRepo is not a git checkout: $deploy_repo"
 
 deploy_cmd="${SCHIRMZIIT_DEPLOY_CMD:-$(cfg schirmziit.deployCommand)}"
 deploy_cmd="${deploy_cmd:-nu bin/deploy-k8s.nu}"
@@ -74,15 +79,36 @@ if [ -f "$root/.git" ]; then
   [ "$force" -eq 1 ] || die "deploy from the primary checkout, or --force if you meant it"
 fi
 
-# The deploy checkout's HEAD sha is part of every image tag, and its manifests
-# are applied as they are on disk. Deploying from a dirty or detached tree means
-# nothing in git describes what is now running.
+# The deploy checkout's HEAD sha is part of every image tag, so a deploy from a
+# branch is a deploy nobody can find again from main.
 deploy_branch="$(git -C "$deploy_repo" rev-parse --abbrev-ref HEAD)"
-deploy_dirty="$(git -C "$deploy_repo" status --porcelain)"
-if [ "$deploy_branch" != "main" ] || [ -n "$deploy_dirty" ]; then
-  [ "$deploy_branch" = "main" ] || warn "deploy checkout is on $deploy_branch, not main"
-  [ -z "$deploy_dirty" ] || warn "deploy checkout has uncommitted changes — commit first, the sha is the image tag"
+if [ "$deploy_branch" != "main" ]; then
+  warn "deploy checkout is on $deploy_branch, not main"
   [ "$force" -eq 1 ] || die "refusing to deploy; --force overrides"
+fi
+
+# Uncommitted work in that checkout is mostly not a deploy's business — it is a
+# whole homelab, and a stray note under docs/ never reached a pod. Only the
+# paths it applies off disk matter, and this repo must not know what those are:
+#
+#   git config schirmziit.deployPaths 'path/to/manifests other/path'
+#
+# Unset, dirt is reported and nothing more — refusing every deploy over an
+# unrelated edit is how a guard gets learned as "always pass --force".
+deploy_dirty="$(git -C "$deploy_repo" status --porcelain)"
+if [ -n "$deploy_dirty" ]; then
+  deploy_paths="${SCHIRMZIIT_DEPLOY_PATHS:-$(cfg schirmziit.deployPaths)}"
+  # $deploy_paths is split on purpose below: the config holds a path list.
+  # shellcheck disable=SC2086
+  if [ -z "$deploy_paths" ]; then
+    warn "deploy checkout has uncommitted changes; set schirmziit.deployPaths to have them checked"
+  elif [ -n "$(git -C "$deploy_repo" status --porcelain -- $deploy_paths)" ]; then
+    warn "deploy checkout has uncommitted changes to what it deploys — commit first"
+    git -C "$deploy_repo" status --short -- $deploy_paths >&2
+    [ "$force" -eq 1 ] || die "refusing to deploy; --force overrides"
+  else
+    warn "deploy checkout has uncommitted changes, none of them to what it deploys"
+  fi
 fi
 
 # This repo's own tree only ever gets built, never tagged from — so a dirty tree
@@ -95,5 +121,5 @@ command -v "${deploy_cmd%% *}" >/dev/null 2>&1 \
   || die "${deploy_cmd%% *} not found on PATH — the deploy checkout's toolchain is missing"
 
 say "deploying ${services[*]}"
-cd "$deploy_repo"
+cd "$deploy_repo" || die "cannot enter $deploy_repo"
 exec $deploy_cmd "${services[@]}"

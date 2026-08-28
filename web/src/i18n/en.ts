@@ -87,7 +87,8 @@ export const en: Strings = {
     revoked: 'disconnected',
     pairTitle: 'Connect a phone',
     pairStep1: 'Open Schirmziit on your child’s phone.',
-    pairStep2: 'Type the six characters there, along with the server address below.',
+    pairStep2:
+      'Scan the square below with that phone’s camera — or type the six characters and the server address.',
     pairStep3: 'Done. The phone then reports about every 30 minutes.',
     codeExpires: 'Valid until',
     codeLabel: 'Code',
@@ -97,6 +98,7 @@ export const en: Strings = {
     pairServerLabel: 'Server address',
     pairServerHint:
       'This exact address has to be reachable from the child’s phone — otherwise it connects once and then never reports again.',
+    pairQrAlt: 'QR code carrying the server address and the pairing code',
     pairExpired: 'This code has expired. Create a new one.',
   },
 

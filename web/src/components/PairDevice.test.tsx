@@ -64,6 +64,33 @@ describe('PairDevice', () => {
     expect(screen.queryByText(/schirmziit:\/\//)).toBeNull()
   })
 
+  it('shows the square the server drew, beside the code it drew it from', async () => {
+    vi.spyOn(api, 'post').mockResolvedValue({
+      ...enrollment,
+      qr: { size: 3, rows: ['101', '010', '101'] },
+    } as never)
+    renderPanel()
+
+    await userEvent.click(screen.getByRole('button', { name: locales.en.devices.pairCreateCode }))
+
+    await waitFor(() => expect(screen.getByRole('img', { name: locales.en.devices.pairQrAlt })).toBeTruthy())
+    // The code stays. A parent whose child's phone has no working camera, or
+    // who is reading this over the phone, pairs by typing exactly as before.
+    expect(screen.getByText('K7MPQ2')).toBeTruthy()
+  })
+
+  it('pairs by code alone when the server drew no square', async () => {
+    vi.spyOn(api, 'post').mockResolvedValue({ ...enrollment, qr: null } as never)
+    renderPanel()
+
+    await userEvent.click(screen.getByRole('button', { name: locales.en.devices.pairCreateCode }))
+
+    await waitFor(() => expect(screen.getByText('K7MPQ2')).toBeTruthy())
+    // Not an empty frame where the square would be: a missing matrix is a
+    // missing convenience, and a blank box reads as a broken page.
+    expect(screen.queryByRole('img', { name: locales.en.devices.pairQrAlt })).toBeNull()
+  })
+
   it('mints a second code on request', async () => {
     const post = vi.spyOn(api, 'post').mockResolvedValue(enrollment as never)
     renderPanel()

@@ -88,7 +88,8 @@ export const de: Strings = {
     revoked: 'getrennt',
     pairTitle: 'Handy verbinden',
     pairStep1: 'Öffne Schirmziit auf dem Handy des Kindes.',
-    pairStep2: 'Tippe dort die sechs Zeichen ein, dazu die Serveradresse unten.',
+    pairStep2:
+      'Scanne das Quadrat unten mit der Kamera dieses Handys — oder tippe die sechs Zeichen und die Serveradresse ein.',
     pairStep3: 'Fertig. Das Handy meldet sich danach etwa alle 30 Minuten.',
     codeExpires: 'Gültig bis',
     codeLabel: 'Code',
@@ -98,6 +99,7 @@ export const de: Strings = {
     pairServerLabel: 'Serveradresse',
     pairServerHint:
       'Genau diese Adresse muss das Kinderhandy erreichen — sonst verbindet es sich einmal und meldet danach nie wieder.',
+    pairQrAlt: 'QR-Code mit der Serveradresse und dem Code',
     pairExpired: 'Dieser Code ist abgelaufen. Erzeuge einen neuen.',
   },
 

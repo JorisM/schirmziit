@@ -3,6 +3,7 @@ import { api, AppError } from '../api/client'
 import { unexpected } from '../api/errors'
 import type { components } from '../api/schema'
 import { ErrorPanel } from './ErrorPanel'
+import { QrCode } from './QrCode'
 import { useI18n } from '../i18n'
 
 type Enrollment = components['schemas']['EnrollmentResponse']
@@ -76,6 +77,12 @@ export function PairDevice({ childId }: { childId: string }) {
             <li>{t.devices.pairStep2}</li>
             <li>{t.devices.pairStep3}</li>
           </ol>
+
+          {/* Only when the server drew one. The code and the address below are
+              the whole pairing on their own — they were, before this square
+              existed — so a matrix the server could not build costs a scan and
+              nothing else. */}
+          {code.qr && <QrCode matrix={code.qr} label={t.devices.pairQrAlt} />}
 
           <div>
             <p className="text-sm" style={{ color: 'var(--ink-faint)' }}>

@@ -88,7 +88,8 @@ export const it: Strings = {
     revoked: 'disconnesso',
     pairTitle: 'Collega un telefono',
     pairStep1: 'Apri Schirmziit sul telefono del bambino.',
-    pairStep2: 'Digita lì i sei caratteri e anche l’indirizzo del server qui sotto.',
+    pairStep2:
+      'Scansiona il quadrato qui sotto con la fotocamera di quel telefono — oppure digita i sei caratteri e l’indirizzo del server.',
     pairStep3: 'Fatto. Il telefono invia poi i dati circa ogni 30 minuti.',
     codeExpires: 'Valido fino a',
     codeLabel: 'Codice',
@@ -98,6 +99,7 @@ export const it: Strings = {
     pairServerLabel: 'Indirizzo del server',
     pairServerHint:
       'Il telefono del bambino deve raggiungere esattamente questo indirizzo — altrimenti si collega una volta e poi non invia più nulla.',
+    pairQrAlt: 'Codice QR con l’indirizzo del server e il codice',
     pairExpired: 'Questo codice è scaduto. Creane uno nuovo.',
   },
 

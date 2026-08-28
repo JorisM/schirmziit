@@ -108,6 +108,10 @@ export const fr: Site = {
         },
         overview14: { label: 'Les quatorze derniers jours d’un coup d’œil' },
         dayDetail: { label: 'Une journée, heure par heure' },
+        weekComparison: {
+          label: 'La semaine dernière comparée à la précédente',
+          note: 'Le temps d’écran et les soirées dès 21:00, avec les applications qui ont changé. Sept jours terminés : la journée en cours n’est pas comparée, elle n’est pas finie.',
+        },
         childOwnNumbers: { label: 'L’enfant voit les mêmes chiffres sur son téléphone' },
         manageChildren: { label: 'Ajouter et retirer un enfant' },
         revokeDevice: { label: 'Déconnecter un téléphone' },

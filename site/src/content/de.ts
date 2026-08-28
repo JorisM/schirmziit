@@ -109,6 +109,10 @@ export const de: Site = {
         },
         overview14: { label: 'Übersicht über 14 Tage' },
         dayDetail: { label: 'Ein Tag, Stunde für Stunde' },
+        weekComparison: {
+          label: 'Letzte Woche im Vergleich zur Woche davor',
+          note: 'Bildschirmzeit und die Abende ab 21:00, dazu die Apps, die sich verändert haben. Sieben abgeschlossene Tage: der laufende Tag wird nicht verglichen, weil er noch nicht vorbei ist.',
+        },
         childOwnNumbers: { label: 'Das Kind sieht auf seinem Handy dieselben Zahlen' },
         manageChildren: { label: 'Kind anlegen und entfernen' },
         revokeDevice: { label: 'Ein Handy trennen' },

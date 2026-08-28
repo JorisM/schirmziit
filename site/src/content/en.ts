@@ -108,6 +108,10 @@ export const en: Site = {
         },
         overview14: { label: 'The last fourteen days at a glance' },
         dayDetail: { label: 'One day, hour by hour' },
+        weekComparison: {
+          label: 'Last week against the week before',
+          note: 'Screen time and evenings from 21:00, plus the apps that moved. Seven finished days: the day you are in is not compared, because it is not over.',
+        },
         childOwnNumbers: { label: 'The child sees the same numbers on their own phone' },
         manageChildren: { label: 'Add and remove a child' },
         revokeDevice: { label: 'Disconnect a phone' },

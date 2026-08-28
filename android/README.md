@@ -274,3 +274,33 @@ Two Android-specific gotchas, both found the hard way:
 * `createComposeRule()` wants a host activity a library-less unit test does not
   have. Roborazzi's `captureRoboImage("…") { composable }` captures a composable
   directly and needs none.
+
+## Release builds
+
+A release APK is signed, and the key is not in this repository: it lives in the
+password manager and reaches CI as the secrets `ANDROID_KEYSTORE_B64` and
+`ANDROID_KEYSTORE_PASSWORD`, written out and handed to gradle by
+`.github/workflows/release.yml`. Nothing else needs it — `assembleDebug`, the
+gate and the snapshots never touch signing.
+
+Gradle takes the keystore from a property or the environment, and
+`buildSrc/src/main/kotlin/ReleaseSigning.kt` decides what those mean. Neither
+set is the ordinary case and stays unsigned; only one of the two set is a
+mistake and throws, because a build that quietly falls back to unsigned still
+produces a file called a release that no phone can install.
+
+    cd android
+    ./gradlew assembleRelease \
+      -Psz.keystore=/path/to/schirmziit-release.jks \
+      -Psz.keystorePassword="$PASSWORD"
+
+    # what any downloader can check for themselves
+    "$ANDROID_HOME"/build-tools/*/apksigner verify --print-certs \
+      app/build/outputs/apk/release/app-release.apk
+
+The certificate SHA-256 is
+`E3:B8:41:58:2A:7A:0B:5B:1D:82:F7:BF:FB:97:D1:71:96:09:66:94:55:41:16:DA:83:C6:D0:DC:7A:A9:3E:E4`,
+and the release workflow checks the finished APK against it before uploading.
+That key is the app's identity to every phone that already has it: signing a
+later release with a different one means every family uninstalls and re-pairs.
+v3 signing is enabled so a rotation is at least possible.

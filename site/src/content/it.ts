@@ -128,7 +128,7 @@ export const it: Site = {
         offline: { label: 'Senza internet i valori aspettano sul telefono' },
         install: {
           label: 'Installabile senza un computer di sviluppo',
-          note: 'Android: oggi un APK, non ancora il Play Store. iPhone: TestFlight e App Store richiedono l’autorizzazione di Apple per la distribuzione, che manca ancora.',
+          note: 'Android: un APK firmato con la chiave di rilascio del progetto, ma non ancora il Play Store — quindi gli aggiornamenti non sono automatici. iPhone: TestFlight e App Store richiedono l’autorizzazione di Apple per la distribuzione, che manca ancora.',
         },
         roles: {
           label: 'Ruolo genitore e ruolo bambino in una sola app',

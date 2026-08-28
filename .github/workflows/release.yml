@@ -117,24 +117,66 @@ jobs:
       - run: cargo ndk -t arm64-v8a -t x86_64 -o android/app/src/main/jniLibs build -p schirmziit-core --release
       - run: cargo run --quiet --bin uniffi-bindgen -- generate --library target/aarch64-linux-android/release/libschirmziit_core.so --language kotlin --out-dir android/app/src/main/kotlin
 
+      # The release key is a GitHub secret because it can be nowhere else: it is
+      # what every installed copy of the app recognises, so losing it means no
+      # future release can upgrade one. The original lives in the password
+      # manager; this is a copy, and a secret cannot be read back out of GitHub.
+      #
+      # A fork has neither secret, and that is not an error — it gets the
+      # unsigned build this workflow published before the key existed. An unset
+      # secret expands to the empty string, which Gradle reads as "no keystore"
+      # (android/buildSrc/src/main/kotlin/ReleaseSigning.kt).
+      - name: Write out the keystore, if this repository has one
+        id: keystore
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+        run: |
+          set -euo pipefail
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "::warning::no ANDROID_KEYSTORE_B64 — this release will be unsigned"
+            exit 0
+          fi
+          printf '%s' "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "path=$RUNNER_TEMP/release.jks" >> "$GITHUB_OUTPUT"
+
       - run: ./gradlew assembleRelease bundleRelease
         working-directory: android
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ steps.keystore.outputs.path }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
 
-      # Named "unsigned" because they are. An APK with no signature cannot be
-      # installed on any phone, and a file called app-release.apk sitting on a
-      # release page reads like one that can. The installable build today is a
-      # local debug build — docs/platform-matrix.md says so. Signing arrives
-      # with a keystore secret and changes only these two lines.
+      # The name says which one it is. An APK with no signature cannot be
+      # installed on any phone, and a file called schirmziit-agent-0.2.0.apk on
+      # a release page reads like one that can — so the unsigned build keeps the
+      # suffix it had, and only a signed one loses it.
       - name: Name the artifacts for what they are
+        id: artifacts
         run: |
           set -euo pipefail
           v='${{ needs.release-please.outputs.version }}'
           mkdir -p dist
-          cp android/app/build/outputs/apk/release/app-release-unsigned.apk \
-             "dist/schirmziit-agent-$v-unsigned.apk"
-          cp android/app/build/outputs/bundle/release/app-release.aab \
-             "dist/schirmziit-agent-$v-unsigned.aab"
+          if [ -n '${{ steps.keystore.outputs.path }}' ]; then
+            cp android/app/build/outputs/apk/release/app-release.apk "dist/schirmziit-agent-$v.apk"
+            cp android/app/build/outputs/bundle/release/app-release.aab "dist/schirmziit-agent-$v.aab"
+          else
+            cp android/app/build/outputs/apk/release/app-release-unsigned.apk \
+               "dist/schirmziit-agent-$v-unsigned.apk"
+            cp android/app/build/outputs/bundle/release/app-release.aab \
+               "dist/schirmziit-agent-$v-unsigned.aab"
+          fi
           ls -l dist/
+
+      # A half-configured keystore, a build that fell back to unsigned, a
+      # different key: all three end as a download that fails on the phone with
+      # nothing to explain it. The fingerprint is the app's identity to every
+      # device that already has it, so it is checked here rather than trusted.
+      - name: The releases page must never carry an APK a phone refuses
+        if: steps.keystore.outputs.path != ''
+        run: |
+          set -euo pipefail
+          apksigner=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          "$apksigner" verify --print-certs dist/*.apk | tee certs.txt
+          grep -qi 'certificate SHA-256 digest: e3b841582a7a0b5b1d82f7bffb97d17196096694554116da83c6d0dc7aa93ee4' certs.txt
 
       - run: gh release upload '${{ needs.release-please.outputs.tag_name }}' dist/* --clobber
         env:

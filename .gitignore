@@ -12,6 +12,12 @@
 /android/app/src/test/resources/darwin-aarch64
 /android/app/src/test/resources/linux-x86-64
 
+# A signing key is never committed: it is the app's identity to every phone that
+# already has it. The real one lives in the password manager and reaches CI as a
+# secret. This is a net, not the rule — the rule is in android/README.md.
+*.jks
+*.keystore
+
 # Xcode
 ios/Schirmziit.xcodeproj/
 ios/*.xcworkspace/

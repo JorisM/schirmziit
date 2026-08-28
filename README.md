@@ -34,10 +34,11 @@ it. The first account you register wins, then registration closes
 (`ALLOW_REGISTRATION`). [`deploy/README.md`](deploy/README.md) has the rest.
 
 Measuring a phone still needs the agent installed on it, and that is where the
-platform matrix matters. Neither store carries it yet: the Android artifacts on
-the releases page are unsigned build output, so the installable build is a local
-one, and an iPhone can only be measured by someone who builds and installs the
-app themselves until Apple grants Family Controls (Distribution).
+platform matrix matters. Neither store carries it yet. The Android release is a
+signed APK on the releases page — installable, but not updated for you, since
+nothing is watching for a new one. An iPhone can only be measured by someone who
+builds and installs the app themselves until Apple grants Family Controls
+(Distribution).
 
 ## Work on it
 

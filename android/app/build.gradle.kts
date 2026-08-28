@@ -9,6 +9,16 @@ plugins {
 // computed from it in buildSrc, so the two cannot drift apart.
 val appVersion = "0.1.0" // x-release-please-version
 
+// Where the release key comes from, and what an absent one means, is decided in
+// buildSrc/ReleaseSigning.kt where it can be tested. A Gradle property wins over
+// the environment, so a local release build can be pointed at the keystore
+// without exporting anything into the shell that runs it.
+val releaseSigning = releaseSigningOf(
+    keystore = (findProperty("sz.keystore") as String?) ?: System.getenv("ANDROID_KEYSTORE_PATH"),
+    password = (findProperty("sz.keystorePassword") as String?) ?: System.getenv("ANDROID_KEYSTORE_PASSWORD"),
+    alias = (findProperty("sz.keyAlias") as String?) ?: System.getenv("ANDROID_KEY_ALIAS"),
+)
+
 android {
     namespace = "ch.jorisda.schirmziit.agent"
     compileSdk = 37
@@ -21,6 +31,40 @@ android {
         versionName = appVersion
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
+    }
+
+    signingConfigs {
+        releaseSigning?.let { signing ->
+            create("release") {
+                storeFile = file(signing.keystore).also {
+                    // The keystore is written out of a secret a step earlier, so
+                    // a missing file here means that step failed quietly. Say
+                    // which path was tried; a signing failure two tasks later
+                    // names neither the file nor the reason.
+                    require(it.isFile) { "no keystore at ${it.absolutePath}" }
+                }
+                storePassword = signing.password
+                keyAlias = signing.alias
+                // One password, twice: the keystore is a PKCS12, which holds a
+                // single password for the store and the key alike.
+                keyPassword = signing.password
+
+                // v2 covers every phone this app runs on (v1 is for API < 24,
+                // and minSdk is 26). v3 is off by default and switched on here
+                // because it is what makes a later key rotation possible at
+                // all — without it, this key is the app's identity forever.
+                enableV2Signing = true
+                enableV3Signing = true
+            }
+        }
+    }
+
+    buildTypes {
+        getByName("release") {
+            // Null wherever no keystore was configured, which is AGP's own
+            // default and leaves app-release-unsigned.apk exactly as it was.
+            signingConfig = signingConfigs.findByName("release")
+        }
     }
 
     buildFeatures { compose = true }

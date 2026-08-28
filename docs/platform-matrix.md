@@ -18,7 +18,7 @@ than the code does is the one lie this repo cannot afford.
 | App display names | ✓ | `~` iOS withholds some, and the bundle id is uploaded instead |
 | Offline queue, nothing lost | ✓ | ✓ |
 | Minimum OS | Android 8 (`minSdk = 26`) | iOS 17 |
-| Install without a developer machine | `~` APK, no Play Store listing | `·` TestFlight/App Store need **Family Controls (Distribution)**, which Apple grants per bundle id and which is still outstanding |
+| Install without a developer machine | `~` signed APK from the release workflow, no Play Store listing | `·` TestFlight/App Store need **Family Controls (Distribution)**, which Apple grants per bundle id and which is still outstanding |
 | Wire format from `crates/core` | ✓ | ✓ |
 
 The entitlement line is the one people ask about: a paid Apple Developer Program
@@ -80,6 +80,22 @@ measured only by someone who builds and installs the app themselves.
   travels with the numbers so a week against silence reads as a first week
   rather than a doubling. It names what moved and never who: no target, no
   streak, no score.
+
+- **The Android release is signed, and that key is the app's identity.** What
+  the release workflow published before was build output with a name that read
+  like a download: an unsigned APK cannot be installed on any phone. It is
+  signed now, by a key that lives in the password manager and reaches CI as
+  `ANDROID_KEYSTORE_B64`. Three things guard the failure that is invisible
+  until a phone refuses the file: `buildSrc/ReleaseSigning.kt` refuses half a
+  keystore instead of falling back to unsigned, the artifact keeps its
+  `-unsigned` suffix when there is no key, and the workflow reads the
+  certificate fingerprint back off the finished APK before it uploads anything.
+  A fork has no secret and gets the unsigned build deliberately, rather than a
+  red workflow. Losing the key is the one unrecoverable failure here: every
+  installed copy recognises that key and no other, so a replacement means
+  uninstalling, and uninstalling loses the pairing on that phone. v3 signing is
+  switched on for the same reason — it is what makes a later key rotation
+  possible at all.
 
 - **Deleting a child's figures no longer needs a browser.** All three surfaces
   ask twice, and all three show the server's own `rows_affected` afterwards:

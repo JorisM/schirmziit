@@ -103,6 +103,44 @@ final class ContractTests: XCTestCase {
             "https://api.schirmziit.ch"
         )
         XCTAssertEqual(enrollment.expiresAt.timeIntervalSince1970, 1_787_814_900, accuracy: 1)
+        // An older server, or one whose public URL is too long to draw, sends
+        // no square. That is a missing convenience, not a failed mint: the code
+        // above still pairs the phone.
+        XCTAssertNil(enrollment.qr)
+    }
+
+    func testDecodesTheSquareTheServerDrew() throws {
+        let enrollment = try decode(
+            #"""
+            {"code":"A2B3C4","expires_at":"2026-08-27T07:15:00Z","qr_payload":"x",
+             "qr":{"size":3,"rows":["101","010","101"]}}
+            """#,
+            as: EnrollmentResponse.self
+        )
+        let qr = try XCTUnwrap(enrollment.qr)
+        XCTAssertTrue(qr.isDrawable)
+        // Read by row, then column. A renderer fed a transposed matrix still
+        // draws a plausible square, and a plausible square scans as nothing.
+        XCTAssertTrue(qr.isDark(x: 0, y: 0))
+        XCTAssertFalse(qr.isDark(x: 1, y: 0))
+        XCTAssertTrue(qr.isDark(x: 1, y: 1))
+    }
+
+    /// Every one of these decodes, and every one of them would draw a square a
+    /// camera cannot read — which a parent reads as their own phone being at
+    /// fault. `isDrawable` is what keeps them off the screen.
+    func testASquareThatIsNotSquareIsNotDrawn() throws {
+        let ragged = try decode(
+            #"{"size":3,"rows":["101","01","101"]}"#, as: QrMatrix.self
+        )
+        let short = try decode(#"{"size":3,"rows":["101","010"]}"#, as: QrMatrix.self)
+        let empty = try decode(#"{"size":0,"rows":[]}"#, as: QrMatrix.self)
+        let notModules = try decode(#"{"size":2,"rows":["1x","01"]}"#, as: QrMatrix.self)
+
+        XCTAssertFalse(ragged.isDrawable)
+        XCTAssertFalse(short.isDrawable)
+        XCTAssertFalse(empty.isDrawable)
+        XCTAssertFalse(notModules.isDrawable)
     }
 
     func testDecodesMe() throws {

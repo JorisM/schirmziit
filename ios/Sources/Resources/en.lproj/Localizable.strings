@@ -49,7 +49,8 @@
 
 "devices.pair.title" = "Connect a phone";
 "devices.pair.step1" = "Open Schirmziit on your child's phone.";
-"devices.pair.step2" = "Type the six characters there, along with the server address below.";
+"devices.pair.step2" = "Scan the square below with that phone's camera — or type the six characters and the server address.";
+"devices.pair.qr" = "QR code carrying the server address and the pairing code";
 "devices.pair.step3" = "Done. The phone then reports about every 30 minutes.";
 "devices.pair.code" = "Code";
 "devices.pair.server" = "Server address";

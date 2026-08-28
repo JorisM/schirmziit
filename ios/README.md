@@ -32,8 +32,12 @@ enrol one, and hiding the control behind a failed fetch would lock them out of
 the fix. It mints on press, never on appearance — a code lives fifteen minutes
 and is claimable once — and shows the server address from the deep link beside
 it, because a phone enrolled against the wrong host enrols once and then goes
-quiet for good. Typed, not scanned: rendering the `schirmziit://enroll?…` payload
-as a QR needs an encoder no target here has.
+quiet for good. Above both sits the square: `QrMatrixView` draws the matrix the
+server sent — nothing here encodes anything, the one encoder is
+`crates/core::qr` — dark on light in both themes, because an inverted QR is
+refused outright by some scanners. A server that sent no matrix costs a scan and
+nothing else: the code and the address below it pair the phone exactly as they
+did before.
 
 `PurgeDataView` sits below it, outside the usage load for the same reason: a day
 that failed to fetch is one of the moments a parent is most likely to want the

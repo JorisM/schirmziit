@@ -356,15 +356,16 @@ final class SnapshotTests: XCTestCase {
     /// environment, so a wall-clock expiry would render a different time on
     /// every run and on every machine. The far-future one is what keeps the
     /// "valid until" image from expiring on its own some morning.
-    private func pairing(expiresAt: Double, expired: Bool) -> some View {
+    private func pairing(expiresAt: Double, expired: Bool, qr: QrMatrix? = pairingSquare()) -> some View {
         List {
             PairDeviceView(
                 client: ApiClient(),
                 childId: "kid",
                 enrollment: EnrollmentResponse(
-                    code: "A2B3C4",
+                    code: "K7MNPQ",
                     expiresAt: Date(timeIntervalSince1970: expiresAt),
-                    qrPayload: "schirmziit://enroll?url=https://api.schirmziit.ch&code=A2B3C4"
+                    qrPayload: "schirmziit://enroll?url=https://api.schirmziit.ch&code=K7MNPQ",
+                    qr: qr
                 ),
                 expired: expired
             )
@@ -373,8 +374,32 @@ final class SnapshotTests: XCTestCase {
         .environment(\.timeZone, TimeZone(identifier: "Europe/Zurich")!)
     }
 
+    /// The real version-4 square `crates/core`'s test pins, carried into this
+    /// bundle as a resource. It encodes the same address and the same code
+    /// shown beside it, so scanning one of these goldens gives back the card
+    /// being looked at rather than a fixture from somewhere else.
+    private static func pairingSquare() -> QrMatrix {
+        let url = Bundle(for: SnapshotTests.self).url(forResource: "enroll_qr", withExtension: "txt")
+        let text = (try? String(contentsOf: url!, encoding: .utf8)) ?? ""
+        let rows = text.split(separator: "\n").map { line in
+            String(line.map { $0 == "#" ? "1" : "0" })
+        }
+        return QrMatrix(size: rows.count, rows: rows)
+    }
+
     func testPairDevice() {
         assert(pairing(expiresAt: 4_091_498_100, expired: false), named: "pair-device")
+    }
+
+    /// A server that drew no square — an older one, or one whose public URL is
+    /// too long to encode. What must not appear is an empty frame: the code and
+    /// the address pair the phone exactly as they did before the square
+    /// existed.
+    func testPairDeviceWithoutASquare() {
+        assert(
+            pairing(expiresAt: 4_091_498_100, expired: false, qr: nil),
+            named: "pair-device-no-square"
+        )
     }
 
     /// An expired code shown as usable sends a parent to a phone that refuses

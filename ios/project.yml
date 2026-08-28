@@ -211,6 +211,10 @@ targets:
         type: folder
       - path: ../api/openapi.json
         buildPhase: resources
+      # The square `crates/core`'s own test pins, so the goldens below show a
+      # real code rather than a checkerboard that happens to be square.
+      - path: ../crates/core/tests/golden/enroll_qr.txt
+        buildPhase: resources
     dependencies:
       - target: SchirmziitKit
       - package: SnapshotTesting

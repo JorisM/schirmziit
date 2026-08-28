@@ -1,5 +1,12 @@
 # Build the dashboard first; the Rust binary embeds web/dist via rust-embed.
-FROM node:24-alpine AS web
+#
+# $BUILDPLATFORM, not the target platform: this stage emits static files, which
+# are the same bytes whatever built them, and node under qemu-amd64 on an Apple
+# Silicon machine does not merely run slowly — pnpm finishes and node then dies
+# on `Assertion failed: errno == EEXIST (uv__io_poll)`, wedging the build step
+# with no output at all. Building it natively removes the emulator from the one
+# stage that never needed it.
+FROM --platform=$BUILDPLATFORM node:24-alpine AS web
 WORKDIR /build
 COPY web/package.json web/pnpm-lock.yaml web/pnpm-workspace.yaml ./web/
 RUN corepack enable && cd web && pnpm install --frozen-lockfile

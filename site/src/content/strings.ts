@@ -122,8 +122,8 @@ export type Site = {
     lead: string
     whereTitle: string
     whereBody: string
-    betaTitle: string
-    betaBody: string
+    scaleTitle: string
+    scaleBody: string
     priceTitle: string
     priceBody: string
     joinTitle: string

@@ -141,12 +141,12 @@ export const fr: Site = {
       'Mises à jour, sauvegardes et TLS sont à ta charge.',
       'Gratuit, sans compte chez nous.',
     ],
-    hostedTitle: 'Hébergé (bêta)',
+    hostedTitle: 'Hébergé (alpha privée)',
     hostedFor: 'Pour toi si tu ne veux pas gérer de serveur.',
     hostedPoints: [
       'Nous le faisons tourner — pour l’instant sur notre propre homelab en Suisse.',
       'Les données sont en Suisse, pas chez un géant du cloud.',
-      'Gratuit pendant la bêta, avec un nombre de places limité.',
+      'Gratuit pendant l’alpha, avec un nombre de places limité.',
       'Tu peux passer à l’auto-hébergement quand tu veux : c’est le même logiciel.',
     ],
   },
@@ -205,16 +205,16 @@ export const fr: Site = {
     whereTitle: 'Où sont les données',
     whereBody:
       'Sur notre propre matériel en Suisse, pas chez un grand fournisseur cloud. Le même logiciel que tu pourrais héberger toi-même, avec les mêmes limites : les durées d’utilisation oui, les contenus non.',
-    betaTitle: 'À quel point c’est petit, honnêtement',
-    betaBody:
-      'Cela tourne aujourd’hui sur un homelab géré par une seule personne. C’est suffisant pour les familles d’une bêta, et ce n’est pas déguisé en entreprise avec une équipe de garde. Si assez de gens participent, nous construirons cela correctement.',
+    scaleTitle: 'À quel point c’est petit, honnêtement',
+    scaleBody:
+      'Cela tourne aujourd’hui sur un homelab géré par une seule personne. C’est suffisant pour les familles d’une alpha, et ce n’est pas déguisé en entreprise avec une équipe de garde. Si assez de gens participent, nous construirons cela correctement.',
     priceTitle: 'Prix',
     priceBody:
-      'Gratuit pendant la bêta. Plus tard, il faudra bien que cela coûte quelque chose pour s’autofinancer — l’auto-hébergement restera gratuit dans tous les cas.',
+      'Gratuit pendant l’alpha. Plus tard, il faudra bien que cela coûte quelque chose pour s’autofinancer — l’auto-hébergement restera gratuit dans tous les cas.',
     joinTitle: 'Participer',
     joinBody:
       'Envoie-nous un court e-mail en indiquant le système d’exploitation du téléphone de l’enfant. Nous te répondrons dès qu’une place se libère.',
-    joinCta: 'Demander une place en bêta',
+    joinCta: 'Demander une place en alpha',
   },
 
   privacy: {
@@ -236,7 +236,7 @@ export const fr: Site = {
       },
       {
         title: 'Qui peut les voir',
-        body: 'Ton compte, et l’enfant sur son propre téléphone. En auto-hébergement, personne d’autre. Sur la bêta hébergée, techniquement aussi l’exploitant qui administre la base de données — et personne au-delà.',
+        body: 'Ton compte, et l’enfant sur son propre téléphone. En auto-hébergement, personne d’autre. Sur l’alpha hébergée, techniquement aussi l’exploitant qui administre la base de données — et personne au-delà.',
       },
       {
         title: 'Tiers',

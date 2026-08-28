@@ -14,14 +14,38 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+
+/**
+ * The colour a bone is painted in.
+ *
+ * `outlineVariant`, the palette's hairline — the same colour the dashboard and
+ * the iPhone draw their skeletons in. **Not `surfaceVariant`**: this theme
+ * fills that role with the paper colour, so bones painted in it were paper on
+ * paper, and every skeleton on every parent screen was an invisible hole where
+ * numbers were about to be. `SkeletonContrastTest` holds it there without
+ * anyone having to look at an image.
+ */
+internal fun skeletonBone(scheme: ColorScheme): Color = scheme.outlineVariant
+
+/**
+ * The faintest a breathing bone gets, and the strength it rests at.
+ *
+ * The pair is a floor, not a taste: a bone is a hairline on paper, and the two
+ * are close enough that dimming much below this leaves a skeleton nobody can
+ * see. `SkeletonContrastTest` asserts the dimmest frame is still legible.
+ */
+internal const val BONE_MIN_ALPHA = 0.55f
+internal const val BONE_FULL_ALPHA = 1f
 
 /**
  * Skeletons shaped like the content that replaces them — never a spinner over
@@ -36,14 +60,16 @@ private fun Bone(width: Dp? = null, height: Dp = 16.dp, modifier: Modifier = Mod
     val reduced = rememberReducedMotion()
     // A slow breath, not a shimmer sweep: this sits under a screen a parent
     // opens daily, and a gradient racing across it is the interface performing.
-    // Reduced motion holds it still at the mid tone.
+    // Reduced motion holds it at full opacity — not at the middle of the
+    // breath: nothing animating but a bone at half strength is a skeleton this
+    // palette's hairline cannot carry, and the result reads as an empty gap.
     val pulse = if (reduced) {
-        0.5f
+        BONE_FULL_ALPHA
     } else {
         val transition = rememberInfiniteTransition(label = "skeleton")
         val value by transition.animateFloat(
-            initialValue = 0.35f,
-            targetValue = 0.65f,
+            initialValue = BONE_MIN_ALPHA,
+            targetValue = BONE_FULL_ALPHA,
             animationSpec = infiniteRepeatable(
                 animation = tween(durationMillis = 900),
                 repeatMode = RepeatMode.Reverse,
@@ -58,7 +84,7 @@ private fun Bone(width: Dp? = null, height: Dp = 16.dp, modifier: Modifier = Mod
             .then(if (width != null) Modifier.width(width) else Modifier.fillMaxWidth())
             .height(height)
             .alpha(pulse)
-            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(4.dp)),
+            .background(skeletonBone(MaterialTheme.colorScheme), RoundedCornerShape(4.dp)),
     )
 }
 

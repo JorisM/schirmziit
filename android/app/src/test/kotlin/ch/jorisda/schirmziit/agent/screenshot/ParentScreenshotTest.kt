@@ -296,6 +296,17 @@ class ParentScreenshotTest {
         }
     }
 
+    @Test
+    @Config(qualifiers = LIGHT_EN)
+    fun `a screen still loading shows the shape of what is coming`() {
+        // The image that would have caught bones painted paper-on-paper: every
+        // skeleton on this screen at once, on the page they stand on. A hole
+        // here reads as a broken layout, not as "still loading".
+        shoot("parent-child-loading-en-light") {
+            childDetail(ChildDayState(selected = "2026-08-20", pending = "2026-08-20"))
+        }
+    }
+
     @Composable
     private fun childDetail(
         state: ChildDayState,

@@ -39,7 +39,7 @@ private val DarkAccent = Color(0xFF46B3BF)
 private val DarkWarn = Color(0xFFD69A4A)
 private val DarkUrgent = Color(0xFFDD7154)
 
-private val LightColors = lightColorScheme(
+internal val LightColors = lightColorScheme(
     primary = Accent,
     onPrimary = Card,
     secondary = InkMuted,
@@ -54,7 +54,7 @@ private val LightColors = lightColorScheme(
     tertiary = Warn,
 )
 
-private val DarkColors = darkColorScheme(
+internal val DarkColors = darkColorScheme(
     primary = DarkAccent,
     onPrimary = DarkPaper,
     secondary = DarkInkMuted,

@@ -4,9 +4,10 @@ import android.content.ComponentName
 import android.media.session.MediaSessionManager
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import ch.jorisda.schirmziit.agent.core.EventKind
 import ch.jorisda.schirmziit.agent.store.AgentDatabase
+import ch.jorisda.schirmziit.agent.store.PlaybackEventRow
 import ch.jorisda.schirmziit.agent.store.QueueDao
-import ch.jorisda.schirmziit.agent.store.RawEventRow
 
 /**
  * Turns media-session snapshots into raw events. Keeps only the set of packages
@@ -23,7 +24,23 @@ class PlaybackHandler(
         val events = playbackEvents(lastPlaying, current, nowMillis())
         lastPlaying = current.filter { it.playing }.map { it.packageName }.toSet()
         if (events.isEmpty()) return
-        dao.appendRaw(events.map { RawEventRow(atMillis = it.atMillis, json = it.kind.toString()) })
+        dao.appendPlayback(
+            events.mapNotNull { event ->
+                when (val kind = event.kind) {
+                    is EventKind.PlaybackStarted -> PlaybackEventRow(
+                        atMillis = event.atMillis,
+                        packageName = kind.packageName,
+                        started = true,
+                    )
+                    is EventKind.PlaybackStopped -> PlaybackEventRow(
+                        atMillis = event.atMillis,
+                        packageName = kind.packageName,
+                        started = false,
+                    )
+                    else -> null
+                }
+            },
+        )
     }
 }
 

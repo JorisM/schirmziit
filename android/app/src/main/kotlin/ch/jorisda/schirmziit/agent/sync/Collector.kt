@@ -1,8 +1,10 @@
 package ch.jorisda.schirmziit.agent.sync
 
 import ch.jorisda.schirmziit.agent.core.CoreBridge
+import ch.jorisda.schirmziit.agent.core.EventKind
 import ch.jorisda.schirmziit.agent.core.OpenApp
 import ch.jorisda.schirmziit.agent.core.PlaybackCarry
+import ch.jorisda.schirmziit.agent.core.RawEvent
 import ch.jorisda.schirmziit.agent.playback.PlaybackReader
 import ch.jorisda.schirmziit.agent.store.AgentSettings
 import ch.jorisda.schirmziit.agent.store.CarryOverRow
@@ -27,11 +29,11 @@ class Collector(
     private val dao: QueueDao,
     private val store: AgentSettings,
     /**
-     * Null when background listening is not wired up at all (older builds and
-     * tests). Absent or ungranted both mean the same thing on the wire:
-     * background_measured = false, which reads as "we do not know".
+     * Required, and deliberately without a default: it used to have one, and
+     * SyncWorker — the only caller that matters — quietly took it. Every hour a
+     * granted phone ever sent said background_measured = false.
      */
-    private val playback: PlaybackReader? = null,
+    private val playback: PlaybackReader,
     private val nowMillis: () -> Long = System::currentTimeMillis,
     private val tz: () -> String = { java.util.TimeZone.getDefault().id },
 ) {
@@ -48,9 +50,30 @@ class Collector(
         // a re-opened session starts at the same instant so it adds nothing.
         val from = minOf(carry?.sinceMillis ?: Long.MAX_VALUE, now - DEFAULT_LOOKBACK_MS)
 
-        val events = source.events(from, now)
-        dao.appendRaw(events.map { RawEventRow(atMillis = it.atMillis, json = it.kind.toString()) })
+        val usage = source.events(from, now)
+        dao.appendRaw(usage.map { RawEventRow(atMillis = it.atMillis, json = it.kind.toString()) })
         dao.pruneRawBefore(now - RAW_RETENTION_MS)
+
+        // Written by PlaybackListener whenever Android woke it, which is never
+        // this call. Read back over the same window as the usage events, and
+        // kept for as long: an hour gets recomputed, so consuming them here
+        // would empty a night that the next run still has to re-derive.
+        val playbackEvents = dao.playbackEvents(from, now).map { row ->
+            RawEvent(
+                atMillis = row.atMillis,
+                kind = if (row.started) {
+                    EventKind.PlaybackStarted(row.packageName)
+                } else {
+                    EventKind.PlaybackStopped(row.packageName)
+                },
+            )
+        }
+        dao.prunePlaybackBefore(now - RAW_RETENTION_MS)
+
+        // Usage first at an equal instant: a screen-off sharing a millisecond
+        // with a playback start has to be seen first, or the stretch reads as
+        // screen-on and background listening is counted as nothing at all.
+        val events = (usage + playbackEvents).sortedBy { it.atMillis }
 
         val playbackCarry = dao.playbackCarry()
         val stitched = bridge.stitch(
@@ -71,7 +94,7 @@ class Collector(
             unlockMillis = stitched.unlockMillis,
             tz = tz(),
             labels = labels,
-            backgroundMeasured = playback?.hasPermission() == true,
+            backgroundMeasured = playback.hasPermission(),
             computedAtMillis = now,
         )
 

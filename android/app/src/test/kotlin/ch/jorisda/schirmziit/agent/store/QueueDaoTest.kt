@@ -65,6 +65,36 @@ class QueueDaoTest {
     }
 
     @Test
+    fun `playback events come back in range, oldest first`() {
+        dao.appendPlayback(
+            listOf(
+                PlaybackEventRow(atMillis = 900L, packageName = "com.a", started = false),
+                PlaybackEventRow(atMillis = 100L, packageName = "com.a", started = true),
+                PlaybackEventRow(atMillis = 2_000L, packageName = "com.b", started = true),
+            ),
+        )
+
+        val rows = dao.playbackEvents(50L, 1_000L)
+
+        assertEquals(listOf(100L, 900L), rows.map { it.atMillis })
+        assertEquals(true, rows.first().started)
+    }
+
+    @Test
+    fun `playback events prune to the retention window`() {
+        dao.appendPlayback(
+            listOf(
+                PlaybackEventRow(atMillis = 100L, packageName = "com.a", started = true),
+                PlaybackEventRow(atMillis = 900L, packageName = "com.a", started = false),
+            ),
+        )
+
+        dao.prunePlaybackBefore(500L)
+
+        assertEquals(1, dao.playbackEventCount())
+    }
+
+    @Test
     fun `raw events prune to the retention window`() {
         dao.appendRaw(
             listOf(

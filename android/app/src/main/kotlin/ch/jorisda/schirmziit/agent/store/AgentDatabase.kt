@@ -13,8 +13,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         CarryOverRow::class,
         RawEventRow::class,
         PlaybackCarryRow::class,
+        PlaybackEventRow::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = false,
 )
 abstract class AgentDatabase : RoomDatabase() {
@@ -37,6 +38,18 @@ abstract class AgentDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(connection: SupportSQLiteDatabase) {
+                connection.execSQL(
+                    "CREATE TABLE IF NOT EXISTS playback_events (" +
+                        "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, " +
+                        "atMillis INTEGER NOT NULL, " +
+                        "packageName TEXT NOT NULL, " +
+                        "started INTEGER NOT NULL)",
+                )
+            }
+        }
+
         @Volatile
         private var instance: AgentDatabase? = null
 
@@ -45,7 +58,7 @@ abstract class AgentDatabase : RoomDatabase() {
                 context.applicationContext,
                 AgentDatabase::class.java,
                 "schirmziit-agent.db",
-            ).addMigrations(MIGRATION_1_2).build().also { instance = it }
+            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build().also { instance = it }
         }
     }
 }

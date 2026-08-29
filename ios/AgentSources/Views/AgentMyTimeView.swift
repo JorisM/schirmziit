@@ -13,10 +13,18 @@ struct AgentMyTimeView: View {
     private var today: String { ISO8601DateFormatter.dayOnly.string(from: Date()) }
 
     /// `AppTotalFfi.foregroundMs` is an `Int64`; `Formatting.splitApps` takes
-    /// the same `(label, ms: Int)` tuple `AppRowsView` maps `UsageSeries`
-    /// into, so this is the one place the type gets narrowed for it.
-    private func appSplit(_ apps: [AppTotalFfi]) -> (shown: [(label: String, ms: Int)], brief: [(label: String, ms: Int)]) {
-        Formatting.splitApps(apps.map { (label: $0.label, ms: Int(truncatingIfNeeded: $0.foregroundMs)) })
+    /// the same `Formatting.AppEntry` `AppRowsView` maps `UsageSeries` into,
+    /// so this is the one place the type gets narrowed for it.
+    private func appSplit(_ apps: [AppTotalFfi]) -> (shown: [Formatting.AppEntry], brief: [Formatting.AppEntry]) {
+        Formatting.splitApps(
+            apps.map {
+                Formatting.AppEntry(
+                    label: $0.label,
+                    ms: Int(truncatingIfNeeded: $0.foregroundMs),
+                    backgroundMs: Int(truncatingIfNeeded: $0.backgroundMs)
+                )
+            }
+        )
     }
 
     /// `DayDetailFfi.hours` is already the per-hour ribbon the core computed.
@@ -29,7 +37,11 @@ struct AgentMyTimeView: View {
             DeviceTotal(
                 start: String(format: "2000-01-01T%02d:00:00+00:00", hour),
                 screenOnMs: Int(truncatingIfNeeded: ms),
-                unlockCount: 0
+                unlockCount: 0,
+                // What the core said about this day, not a guess: an iPhone
+                // cannot observe background playback, so this is false here,
+                // and false has to keep meaning "unknown" rather than "none".
+                backgroundMeasured: model.myDay?.backgroundMeasured ?? false
             )
         }
     }
@@ -145,7 +157,7 @@ struct AgentMyTimeView: View {
         await model.selectMyDay(model.mySelectedDay)
     }
 
-    private func appRow(_ entry: (label: String, ms: Int), index: Int) -> some View {
+    private func appRow(_ entry: Formatting.AppEntry, index: Int) -> some View {
         HStack {
             Circle()
                 .fill(Palette.series[index % Palette.series.count])

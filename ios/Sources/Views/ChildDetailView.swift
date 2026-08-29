@@ -89,6 +89,21 @@ struct ChildDetailView: View {
                         L("child.unlocks \(usage.unlocks)")
                             .font(.subheadline)
                             .foregroundStyle(Palette.inkMuted)
+                        // Under the screen-time figure, never beside it and never
+                        // inside it: an audiobook heard with the screen off is
+                        // not time spent looking at a phone. Absent entirely when
+                        // no reporting phone could observe it — a zero here would
+                        // claim nothing played.
+                        if usage.backgroundMeasured {
+                            HStack(spacing: 6) {
+                                Image(systemName: "headphones")
+                                Text(verbatim: Formatting.duration(usage.backgroundMs))
+                                    .monospacedDigit()
+                                L("child.background.total")
+                            }
+                            .font(.subheadline)
+                            .foregroundStyle(Palette.backgroundWave)
+                        }
                     }
                     .padding(.vertical, 4)
                 }
@@ -116,7 +131,7 @@ struct ChildDetailView: View {
 
                 if !usage.series.isEmpty {
                     Section(header: L("child.apps")) {
-                        AppRowsView(series: usage.series)
+                        AppRowsView(series: usage.series, backgroundMeasured: usage.backgroundMeasured)
                     }
                 }
 

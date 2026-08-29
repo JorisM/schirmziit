@@ -28,6 +28,8 @@
 "child.unlocks %lld" = "%lld Mal entsperrt";
 "child.nodata" = "Heute noch nichts gemeldet";
 "child.nodata.hint" = "Das kann heissen: das Handy wurde nicht benutzt — oder es hat noch nicht gemeldet. Schau bei den Geräten unten.";
+"child.background.total" = "Im Hintergrund gehört";
+"child.background.app %@" = "%@ im Hintergrund gehört";
 "child.apps" = "Apps";
 "child.apps.brief" = "Apps unter einer Minute";
 "child.ribbon.title" = "Der Tag im Verlauf";

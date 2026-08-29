@@ -23,6 +23,15 @@ enum Formatting {
         return rest == 0 ? "\(hours) \(hourUnit)" : "\(hours) \(hourUnit) \(rest) \(minuteUnit)"
     }
 
+    /// One app's row: how long it was in the foreground, and how long it played
+    /// with the screen off. Two measures travelling together and never summed —
+    /// the ranking, the fold and the cap all read `ms` alone.
+    struct AppEntry: Equatable {
+        let label: String
+        let ms: Int
+        var backgroundMs: Int = 0
+    }
+
     /// Apps worth a row of their own, and the glances that are not.
     ///
     /// A launcher, a clock and a keyboard fill the list with rows nobody wants
@@ -30,10 +39,10 @@ enum Formatting {
     /// reachable — a parent and a child must be able to see the same numbers —
     /// but folded.
     static func splitApps(
-        _ apps: [(label: String, ms: Int)]
-    ) -> (shown: [(label: String, ms: Int)], brief: [(label: String, ms: Int)]) {
-        var shown: [(label: String, ms: Int)] = []
-        var brief: [(label: String, ms: Int)] = []
+        _ apps: [AppEntry]
+    ) -> (shown: [AppEntry], brief: [AppEntry]) {
+        var shown: [AppEntry] = []
+        var brief: [AppEntry] = []
         for app in apps {
             // Rounded, not raw: the row would render "0 s", which says nothing at all.
             if Int((Double(app.ms) / 1_000).rounded()) == 0 { continue }
@@ -58,9 +67,9 @@ enum Formatting {
     /// cap is applied to `shown` alone, after the split, which is exactly what
     /// this function does and nothing else does implicitly.
     static func visibleApps(
-        _ split: (shown: [(label: String, ms: Int)], brief: [(label: String, ms: Int)]),
+        _ split: (shown: [AppEntry], brief: [AppEntry]),
         cap: Int
-    ) -> (shown: [(label: String, ms: Int)], brief: [(label: String, ms: Int)]) {
+    ) -> (shown: [AppEntry], brief: [AppEntry]) {
         (Array(split.shown.prefix(cap)), split.brief)
     }
 

@@ -8,13 +8,18 @@ import SwiftUI
 /// the way `DayRibbonView`/`DayStripView` are.
 struct AppRowsView: View {
     let series: [UsageSeries]
+    /// False is "no phone reporting this day could observe it", so the rows say
+    /// nothing at all rather than a zero. See `UsageResponse.backgroundMeasured`.
+    let backgroundMeasured: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var shown = false
 
-    private var split: (shown: [(label: String, ms: Int)], brief: [(label: String, ms: Int)]) {
+    private var split: (shown: [Formatting.AppEntry], brief: [Formatting.AppEntry]) {
+        // Ranked and folded by foreground alone: background listening is a
+        // second measure of the same app, never a reason to promote its row.
         let ranked = series
             .sorted { $0.totalMs > $1.totalMs }
-            .map { (label: $0.label, ms: $0.totalMs) }
+            .map { Formatting.AppEntry(label: $0.label, ms: $0.totalMs, backgroundMs: $0.backgroundMs) }
         return Formatting.splitApps(ranked)
     }
 
@@ -40,12 +45,22 @@ struct AppRowsView: View {
         .onAppear { shown = true }
     }
 
-    private func row(_ entry: (label: String, ms: Int), index: Int) -> some View {
+    private func row(_ entry: Formatting.AppEntry, index: Int) -> some View {
         HStack {
             Circle()
                 .fill(Palette.series[index % Palette.series.count])
                 .frame(width: 10, height: 10)
-            Text(verbatim: entry.label)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(verbatim: entry.label)
+                // Its own line in its own colour, under the app it belongs to:
+                // beside the foreground figure it would read as one total.
+                if backgroundMeasured && entry.backgroundMs > 0 {
+                    L("child.background.app \(Formatting.duration(entry.backgroundMs))")
+                        .font(.caption)
+                        .monospacedDigit()
+                        .foregroundStyle(Palette.backgroundWave)
+                }
+            }
             Spacer()
             Text(verbatim: Formatting.duration(entry.ms))
                 .monospacedDigit()

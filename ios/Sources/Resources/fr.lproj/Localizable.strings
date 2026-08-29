@@ -28,6 +28,8 @@
 "child.unlocks %lld" = "%lld déverrouillages";
 "child.nodata" = "Rien de signalé aujourd'hui";
 "child.nodata.hint" = "Cela peut vouloir dire que le téléphone n'a pas été utilisé — ou qu'il n'a pas encore envoyé ses données. Regarde les appareils ci-dessous.";
+"child.background.total" = "Écouté en arrière-plan";
+"child.background.app %@" = "%@ écouté en arrière-plan";
 "child.apps" = "Applications";
 "child.apps.brief" = "Applis de moins d’une minute";
 "child.ribbon.title" = "La forme de la journée";

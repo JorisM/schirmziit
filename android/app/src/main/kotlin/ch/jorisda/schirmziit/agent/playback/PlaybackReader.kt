@@ -2,6 +2,7 @@ package ch.jorisda.schirmziit.agent.playback
 
 import android.content.ComponentName
 import android.content.Context
+import android.media.session.MediaController
 import android.media.session.MediaSessionManager
 import android.provider.Settings
 import ch.jorisda.schirmziit.agent.core.EventKind
@@ -27,6 +28,39 @@ interface PlaybackReader {
      * a family that declines simply reports background_measured = false.
      */
     fun hasPermission(): Boolean
+
+    /**
+     * Call [onChange] whenever the answer to [active] may have changed. Two
+     * different things have to trigger it: a session appearing or going away,
+     * and a session already in the list starting or stopping playback. The
+     * second is the one that matters — an app is opened long before a child
+     * presses play, so by then the session list has not changed for minutes.
+     */
+    fun watch(onChange: () -> Unit)
+
+    /** Release everything [watch] registered. */
+    fun unwatch()
+}
+
+/**
+ * Turns "something changed" into a snapshot, and a snapshot into events. The
+ * whole rule lives here rather than in the service so it can be tested without
+ * a device; what cannot be tested off-device is whether Android delivers the
+ * change at all, which is why [MediaSessionPlaybackReader] registers for both
+ * kinds and the phone is checked afterwards.
+ */
+class PlaybackWatcher(
+    private val reader: PlaybackReader,
+    private val handler: PlaybackHandler,
+) {
+    fun start() {
+        reader.watch { handler.onSnapshot(reader.active()) }
+        // Whatever is already playing when the service binds: a rebind in the
+        // middle of a night of listening has to re-open the stretch.
+        handler.onSnapshot(reader.active())
+    }
+
+    fun stop() = reader.unwatch()
 }
 
 /**
@@ -50,6 +84,54 @@ fun playbackEvents(
  * never touched; see [PlaybackState].
  */
 class MediaSessionPlaybackReader(private val context: Context) : PlaybackReader {
+
+    private val watched = mutableListOf<MediaController>()
+    private var onChange: (() -> Unit)? = null
+
+    private val sessionsChanged =
+        MediaSessionManager.OnActiveSessionsChangedListener { controllers ->
+            follow(controllers.orEmpty())
+            onChange?.invoke()
+        }
+
+    /**
+     * The callback the session list cannot give us: a controller already in the
+     * list flipping between playing and paused.
+     */
+    private val stateChanged = object : MediaController.Callback() {
+        override fun onPlaybackStateChanged(state: android.media.session.PlaybackState?) {
+            onChange?.invoke()
+        }
+
+        override fun onSessionDestroyed() {
+            onChange?.invoke()
+        }
+    }
+
+    override fun watch(onChange: () -> Unit) {
+        if (!hasPermission()) return
+        val manager = context.getSystemService(MediaSessionManager::class.java) ?: return
+        this.onChange = onChange
+        val component = ComponentName(context, PlaybackListener::class.java)
+        manager.addOnActiveSessionsChangedListener(sessionsChanged, component)
+        follow(runCatching { manager.getActiveSessions(component) }.getOrDefault(emptyList()))
+    }
+
+    override fun unwatch() {
+        context.getSystemService(MediaSessionManager::class.java)
+            ?.removeOnActiveSessionsChangedListener(sessionsChanged)
+        follow(emptyList())
+        onChange = null
+    }
+
+    /** Registers on exactly the controllers that exist now, and no others. */
+    private fun follow(controllers: List<MediaController>) {
+        watched.forEach { runCatching { it.unregisterCallback(stateChanged) } }
+        watched.clear()
+        controllers.forEach {
+            runCatching { it.registerCallback(stateChanged) }.onSuccess { _ -> watched += it }
+        }
+    }
 
     override fun active(): List<PlaybackState> {
         if (!hasPermission()) return emptyList()

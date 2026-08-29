@@ -66,7 +66,9 @@ class CollectorTest {
     /** One stretch of listening, written the way the bound listener writes it. */
     private fun listened(fromMillis: Long, toMillis: Long, packageName: String = "com.a") {
         var at = fromMillis
-        val handler = PlaybackHandler(db.queue()) { at }
+        // Inline: the real handler writes on its own thread, and this test has
+        // to see the rows before it collects.
+        val handler = PlaybackHandler(db.queue(), { at }, { it.run() })
         handler.onSnapshot(listOf(PlaybackState(packageName, playing = true)))
         at = toMillis
         handler.onSnapshot(emptyList())

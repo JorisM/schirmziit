@@ -6,6 +6,7 @@ import ch.jorisda.schirmziit.agent.store.PlaybackCarryRow
 import ch.jorisda.schirmziit.agent.store.PlaybackEventRow
 import ch.jorisda.schirmziit.agent.store.QueueDao
 import ch.jorisda.schirmziit.agent.store.RawEventRow
+import java.util.concurrent.Executor
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -57,7 +58,7 @@ class PlaybackHandlerTest {
         // what is already playing on reconnect, an audiobook that started before
         // the rebind would never be counted at all.
         val dao = FakeQueueDao()
-        val handler = PlaybackHandler(dao) { 42L }
+        val handler = PlaybackHandler(dao, { 42L }, Executor { it.run() })
 
         handler.onSnapshot(playing)
 
@@ -70,7 +71,7 @@ class PlaybackHandlerTest {
     @Test
     fun `an unchanged snapshot writes nothing`() {
         val dao = FakeQueueDao()
-        val handler = PlaybackHandler(dao) { 42L }
+        val handler = PlaybackHandler(dao, { 42L }, Executor { it.run() })
 
         handler.onSnapshot(playing)
         handler.onSnapshot(playing)
@@ -81,7 +82,7 @@ class PlaybackHandlerTest {
     @Test
     fun `playback ending is written as a stop`() {
         val dao = FakeQueueDao()
-        val handler = PlaybackHandler(dao) { 42L }
+        val handler = PlaybackHandler(dao, { 42L }, Executor { it.run() })
 
         handler.onSnapshot(playing)
         handler.onSnapshot(emptyList())
@@ -95,7 +96,7 @@ class PlaybackHandlerTest {
         // The service is bound long before anything plays; an empty snapshot on
         // connect must not queue a stop for a stretch that never started.
         val dao = FakeQueueDao()
-        PlaybackHandler(dao) { 42L }.onSnapshot(emptyList())
+        PlaybackHandler(dao, { 42L }, Executor { it.run() }).onSnapshot(emptyList())
         assertTrue(dao.playback.isEmpty())
     }
 }

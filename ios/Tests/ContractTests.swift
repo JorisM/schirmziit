@@ -89,10 +89,12 @@ final class ContractTests: XCTestCase {
           ],
           "series": [
             {"package":"com.zhiliaoapp.musically","label":"TikTok",
-             "points":[{"start":"2026-08-22T08:00:00+02:00","foreground_ms":1200000,"launch_count":9}]}
+             "points":[{"start":"2026-08-22T08:00:00+02:00","foreground_ms":1200000,"launch_count":9,
+                        "background_ms":0}]}
           ],
           "device_totals": [
-            {"start":"2026-08-22T08:00:00+02:00","screen_on_ms":1800000,"unlock_count":7}
+            {"start":"2026-08-22T08:00:00+02:00","screen_on_ms":1800000,"unlock_count":7,
+             "background_measured":true}
           ]
         }
         """#
@@ -106,6 +108,83 @@ final class ContractTests: XCTestCase {
         XCTAssertNotNil(usage.devices.first?.lastSeenAt)
         XCTAssertNil(usage.devices.last?.lastSeenAt)
         XCTAssertTrue(usage.devices.last?.stale == true)
+    }
+
+    /// Background listening is a measure of its own. The one thing this test
+    /// exists to stop is it ever being folded into screen time: an hour of
+    /// audiobook with the screen off is not an hour of screen.
+    func testBackgroundListeningIsItsOwnTotalAndNeverScreenTime() throws {
+        let json = #"""
+        {
+          "child_id": "c8a19dc2-892d-4895-a82f-a80633152679",
+          "from": "2026-08-29", "to": "2026-08-29", "bucket": "hour", "tz": "Europe/Zurich",
+          "devices": [],
+          "series": [
+            {"package":"com.audiobookshelf.app","label":"Audiobookshelf",
+             "points":[{"start":"2026-08-29T09:00:00+02:00","foreground_ms":402000,"launch_count":10,
+                        "background_ms":241000}]}
+          ],
+          "device_totals": [
+            {"start":"2026-08-29T09:00:00+02:00","screen_on_ms":414000,"unlock_count":8,
+             "background_measured":true}
+          ]
+        }
+        """#
+        let usage = try decode(json, as: UsageResponse.self)
+
+        XCTAssertEqual(usage.backgroundMs, 241_000)
+        XCTAssertEqual(usage.screenTimeMs, 402_000, "background listening must stay out of screen time")
+        XCTAssertTrue(usage.backgroundMeasured)
+        XCTAssertEqual(usage.series.first?.backgroundMs, 241_000)
+    }
+
+    /// `background_measured: false` says "no phone reporting this day could
+    /// observe it" — an iPhone, or an Android phone whose family declined the
+    /// grant. Showing that as a confident zero is the silent lie this product
+    /// exists not to tell, so the flag has to survive the wire on its own.
+    func testAnUnmeasuredDayIsNotAZero() throws {
+        let json = #"""
+        {
+          "child_id": "c8a19dc2-892d-4895-a82f-a80633152679",
+          "from": "2026-08-29", "to": "2026-08-29", "bucket": "hour", "tz": "Europe/Zurich",
+          "devices": [],
+          "series": [
+            {"package":"com.apple.mobilesafari","label":"Safari",
+             "points":[{"start":"2026-08-29T09:00:00+02:00","foreground_ms":60000,"launch_count":1,
+                        "background_ms":0}]}
+          ],
+          "device_totals": [
+            {"start":"2026-08-29T09:00:00+02:00","screen_on_ms":60000,"unlock_count":1,
+             "background_measured":false}
+          ]
+        }
+        """#
+        let usage = try decode(json, as: UsageResponse.self)
+
+        XCTAssertEqual(usage.backgroundMs, 0)
+        XCTAssertFalse(usage.backgroundMeasured, "an unobserved day must not read as a measured zero")
+    }
+
+    /// One Android phone with the grant and one iPhone: the day was observed by
+    /// something, so the number it produced is worth showing.
+    func testOneReportingDeviceIsEnoughToCallTheDayMeasured() throws {
+        let json = #"""
+        {
+          "child_id": "c8a19dc2-892d-4895-a82f-a80633152679",
+          "from": "2026-08-29", "to": "2026-08-29", "bucket": "hour", "tz": "Europe/Zurich",
+          "devices": [],
+          "series": [],
+          "device_totals": [
+            {"start":"2026-08-29T09:00:00+02:00","screen_on_ms":0,"unlock_count":0,
+             "background_measured":false},
+            {"start":"2026-08-29T10:00:00+02:00","screen_on_ms":0,"unlock_count":0,
+             "background_measured":true}
+          ]
+        }
+        """#
+        let usage = try decode(json, as: UsageResponse.self)
+
+        XCTAssertTrue(usage.backgroundMeasured)
     }
 
     func testDecodesProblemJson() throws {

@@ -28,6 +28,8 @@
 "child.unlocks %lld" = "%lld sblocchi";
 "child.nodata" = "Oggi non è stato segnalato nulla";
 "child.nodata.hint" = "Può significare che il telefono non è stato usato — oppure che non ha ancora inviato i dati. Guarda i dispositivi qui sotto.";
+"child.background.total" = "Ascoltato in sottofondo";
+"child.background.app %@" = "%@ ascoltato in sottofondo";
 "child.apps" = "App";
 "child.apps.brief" = "App sotto un minuto";
 "child.ribbon.title" = "La forma della giornata";

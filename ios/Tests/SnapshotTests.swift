@@ -484,7 +484,8 @@ final class SnapshotTests: XCTestCase {
             DeviceTotal(
                 start: String(format: "2026-08-22T%02d:00:00+02:00", hour),
                 screenOnMs: value * 60_000,
-                unlockCount: value > 0 ? 3 : 0
+                unlockCount: value > 0 ? 3 : 0,
+                backgroundMeasured: false
             )
         }
         assert(DayRibbonView(totals: totals).padding(), named: "day-ribbon")
@@ -502,7 +503,8 @@ final class SnapshotTests: XCTestCase {
             DeviceTotal(
                 start: String(format: "2026-08-22T%02d:00:00+02:00", hour),
                 screenOnMs: value * 60_000,
-                unlockCount: value > 0 ? 3 : 0
+                unlockCount: value > 0 ? 3 : 0,
+                backgroundMeasured: false
             )
         }
         assert(
@@ -523,32 +525,50 @@ final class SnapshotTests: XCTestCase {
         )
     }
 
+    /// Background listening under the app it belongs to, in its own colour, with
+    /// the foreground figure still the one on the right. The image is the check
+    /// that the two numbers never read as one.
+    func testAppRowsShowListeningUnderTheAppThatPlayedIt() {
+        let apps: [UsageSeries] = [
+            UsageSeries(package: "com.audiobookshelf.app", label: "Audiobookshelf", points: [
+                UsagePoint(start: "2026-08-29", foregroundMs: 402_000, launchCount: 10, backgroundMs: 4_241_000),
+            ]),
+            UsageSeries(package: "com.games.puzzle", label: "Puzzle", points: [
+                UsagePoint(start: "2026-08-29", foregroundMs: 1_800_000, launchCount: 4, backgroundMs: 0),
+            ]),
+        ]
+        assert(
+            List { Section(header: L("child.apps")) { AppRowsView(series: apps, backgroundMeasured: true) } },
+            named: "app-rows-background"
+        )
+    }
+
     func testAppRowsFoldTheSubMinuteGlances() {
         // Three ordinary apps, two glances under a minute (folded into one
         // disclosure row), and one that rounds to 0 s — the single case that
         // must not appear anywhere in the image, folded or not.
         let apps: [UsageSeries] = [
             UsageSeries(package: "com.games.puzzle", label: "Puzzle", points: [
-                UsagePoint(start: "2026-08-24", foregroundMs: 3_600_000, launchCount: 4),
+                UsagePoint(start: "2026-08-24", foregroundMs: 3_600_000, launchCount: 4, backgroundMs: 0),
             ]),
             UsageSeries(package: "com.chat.messenger", label: "Messenger", points: [
-                UsagePoint(start: "2026-08-24", foregroundMs: 1_800_000, launchCount: 9),
+                UsagePoint(start: "2026-08-24", foregroundMs: 1_800_000, launchCount: 9, backgroundMs: 0),
             ]),
             UsageSeries(package: "com.video.stream", label: "StreamTV", points: [
-                UsagePoint(start: "2026-08-24", foregroundMs: 600_000, launchCount: 2),
+                UsagePoint(start: "2026-08-24", foregroundMs: 600_000, launchCount: 2, backgroundMs: 0),
             ]),
             UsageSeries(package: "com.utility.check", label: "QuickCheck", points: [
-                UsagePoint(start: "2026-08-24", foregroundMs: 45_000, launchCount: 1),
+                UsagePoint(start: "2026-08-24", foregroundMs: 45_000, launchCount: 1, backgroundMs: 0),
             ]),
             UsageSeries(package: "com.weather", label: "Weather", points: [
-                UsagePoint(start: "2026-08-24", foregroundMs: 20_000, launchCount: 1),
+                UsagePoint(start: "2026-08-24", foregroundMs: 20_000, launchCount: 1, backgroundMs: 0),
             ]),
             UsageSeries(package: "com.system.blink", label: "Blink", points: [
-                UsagePoint(start: "2026-08-24", foregroundMs: 300, launchCount: 1),
+                UsagePoint(start: "2026-08-24", foregroundMs: 300, launchCount: 1, backgroundMs: 0),
             ]),
         ]
         assert(
-            List { Section(header: L("child.apps")) { AppRowsView(series: apps) } },
+            List { Section(header: L("child.apps")) { AppRowsView(series: apps, backgroundMeasured: false) } },
             named: "app-rows"
         )
     }
@@ -631,7 +651,8 @@ final class SnapshotTests: XCTestCase {
             return UsagePoint(
                 start: ISO8601DateFormatter.dayOnly.string(from: day),
                 foregroundMs: value * 60_000,
-                launchCount: value > 0 ? 1 : 0
+                launchCount: value > 0 ? 1 : 0,
+                backgroundMs: 0
             )
         }
         let strip = UsageResponse(

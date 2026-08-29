@@ -19,6 +19,11 @@ enum Palette {
     static let warn = Color(light: 0xC87C2C, dark: 0xD69A4A)
     static let urgent = Color(light: 0xB4472C, dark: 0xDD7154)
 
+    /// Background listening, and only that. Its own hue on purpose: the colour
+    /// is what stops a reader adding it to screen time at a glance. Same value
+    /// as the dashboard's `--background-wave`, so phone and browser agree.
+    static let backgroundWave = Color(light: 0x6A5ACD, dark: 0x9D92E8)
+
     /// Sequential ramp for the day ribbon: one hue, light to dark (inverted on
     /// dark backgrounds so "more" always means "more contrast against the page").
     static let ribbon: [Color] = [

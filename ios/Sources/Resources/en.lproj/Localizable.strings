@@ -28,6 +28,8 @@
 "child.unlocks %lld" = "%lld times unlocked";
 "child.nodata" = "Nothing reported today";
 "child.nodata.hint" = "That can mean the phone was not used — or that it has not reported yet. Check the devices below.";
+"child.background.total" = "Listened in the background";
+"child.background.app %@" = "%@ listened in the background";
 "child.apps" = "Apps";
 "child.apps.brief" = "Apps under a minute";
 "child.ribbon.title" = "The shape of the day";

@@ -43,9 +43,9 @@ final class FormattingTests: XCTestCase {
 
     func testHoursFromTotalsSumsPerLocalHour() {
         let hours = Formatting.hoursFromTotals([
-            DeviceTotal(start: "2026-08-21T08:00:00+02:00", screenOnMs: 100, unlockCount: 1),
-            DeviceTotal(start: "2026-08-21T08:00:00+02:00", screenOnMs: 200, unlockCount: 1),
-            DeviceTotal(start: "2026-08-21T23:00:00+02:00", screenOnMs: 50, unlockCount: 0),
+            DeviceTotal(start: "2026-08-21T08:00:00+02:00", screenOnMs: 100, unlockCount: 1, backgroundMeasured: false),
+            DeviceTotal(start: "2026-08-21T08:00:00+02:00", screenOnMs: 200, unlockCount: 1, backgroundMeasured: false),
+            DeviceTotal(start: "2026-08-21T23:00:00+02:00", screenOnMs: 50, unlockCount: 0, backgroundMeasured: false),
         ])
         XCTAssertEqual(hours.count, 24)
         XCTAssertEqual(hours[8], 300)
@@ -67,7 +67,7 @@ final class FormattingTests: XCTestCase {
         [UsageSeries(
             package: "com.a",
             label: "A",
-            points: points.map { UsagePoint(start: $0.0, foregroundMs: $0.1, launchCount: 1) }
+            points: points.map { UsagePoint(start: $0.0, foregroundMs: $0.1, launchCount: 1, backgroundMs: 0) }
         )]
     }
 
@@ -87,20 +87,20 @@ final class FormattingTests: XCTestCase {
 
     func testSplitAppsSeparatesTheGlancesFromTheDay() {
         let (shown, brief) = Formatting.splitApps([
-            (label: "A", ms: 3_600_000), (label: "B", ms: 45_000), (label: "C", ms: 60_000),
+            Formatting.AppEntry(label: "A", ms: 3_600_000), Formatting.AppEntry(label: "B", ms: 45_000), Formatting.AppEntry(label: "C", ms: 60_000),
         ])
         XCTAssertEqual(shown.map(\.label), ["A", "C"])
         XCTAssertEqual(brief.map(\.label), ["B"])
     }
 
     func testSplitAppsDropsAnAppThatRoundsToZeroSeconds() {
-        let (shown, brief) = Formatting.splitApps([(label: "A", ms: 3_600_000), (label: "Blink", ms: 300)])
+        let (shown, brief) = Formatting.splitApps([Formatting.AppEntry(label: "A", ms: 3_600_000), Formatting.AppEntry(label: "Blink", ms: 300)])
         XCTAssertEqual(shown.map(\.label), ["A"])
         XCTAssertTrue(brief.isEmpty)
     }
 
     func testSplitAppsKeepsAnAppThatRoundsToOneSecond() {
-        let (_, brief) = Formatting.splitApps([(label: "Blink", ms: 900)])
+        let (_, brief) = Formatting.splitApps([Formatting.AppEntry(label: "Blink", ms: 900)])
         XCTAssertEqual(brief.map(\.label), ["Blink"])
     }
 
@@ -110,11 +110,24 @@ final class FormattingTests: XCTestCase {
     /// `shown` — if the cap were applied to `shown + brief` together instead,
     /// this would fail by losing a brief app rather than a ranked one.
     func testVisibleAppsCapsShownRowsButNeverTheFoldedGlances() {
-        let ranked = (1...9).map { (label: "Ranked\($0)", ms: 60_000 + $0) }
-        let brief = [(label: "Brief1", ms: 30_000), (label: "Brief2", ms: 20_000)]
+        let ranked = (1...9).map { Formatting.AppEntry(label: "Ranked\($0)", ms: 60_000 + $0) }
+        let brief = [Formatting.AppEntry(label: "Brief1", ms: 30_000), Formatting.AppEntry(label: "Brief2", ms: 20_000)]
         let split = Formatting.splitApps(ranked + brief)
         let visible = Formatting.visibleApps(split, cap: 8)
         XCTAssertEqual(visible.shown.count, 8)
         XCTAssertEqual(visible.brief.map(\.label), ["Brief1", "Brief2"])
+    }
+
+    /// Background listening travels with the row it belongs to, and never
+    /// changes where that row lands: the fold and the rank read foreground only.
+    func testAnAppIsRankedAndFoldedByForegroundAloneNotByListening() {
+        let (shown, brief) = Formatting.splitApps([
+            Formatting.AppEntry(label: "Book", ms: 30_000, backgroundMs: 7_200_000),
+            Formatting.AppEntry(label: "Game", ms: 600_000, backgroundMs: 0),
+        ])
+
+        XCTAssertEqual(shown.map(\.label), ["Game"], "two hours of listening is not a minute of screen")
+        XCTAssertEqual(brief.map(\.label), ["Book"])
+        XCTAssertEqual(brief.first?.backgroundMs, 7_200_000, "the folded row keeps its listening")
     }
 }

@@ -83,6 +83,9 @@ struct UsagePoint: Codable, Sendable {
     let start: String
     let foregroundMs: Int
     let launchCount: Int
+    /// Media playing with the screen off. A separate measure from screen time,
+    /// never a part of `foregroundMs` and never added to it.
+    let backgroundMs: Int
 }
 
 struct UsageSeries: Codable, Sendable, Identifiable {
@@ -93,12 +96,17 @@ struct UsageSeries: Codable, Sendable, Identifiable {
     var id: String { package }
     var totalMs: Int { points.reduce(0) { $0 + $1.foregroundMs } }
     var launches: Int { points.reduce(0) { $0 + $1.launchCount } }
+    var backgroundMs: Int { points.reduce(0) { $0 + $1.backgroundMs } }
 }
 
 struct DeviceTotal: Codable, Sendable {
     let start: String
     let screenOnMs: Int
     let unlockCount: Int
+    /// False means no device reporting this bucket could observe background
+    /// playback — an iPhone, or an Android phone whose family declined the
+    /// grant. It never means nothing played.
+    let backgroundMeasured: Bool
 }
 
 struct UsageResponse: Codable, Sendable {
@@ -113,6 +121,12 @@ struct UsageResponse: Codable, Sendable {
 
     var screenTimeMs: Int { series.reduce(0) { $0 + $1.totalMs } }
     var unlocks: Int { deviceTotals.reduce(0) { $0 + $1.unlockCount } }
+    /// Kept apart from `screenTimeMs` on purpose: adding the two would count an
+    /// audiobook heard with the screen off as time spent looking at a phone.
+    var backgroundMs: Int { series.reduce(0) { $0 + $1.backgroundMs } }
+    /// One device that could observe it is enough for the number to mean
+    /// something; all of them blind is what makes it unknown.
+    var backgroundMeasured: Bool { deviceTotals.contains { $0.backgroundMeasured } }
 }
 
 /// One app in both weeks. `deltaMs` may be negative; a mover moves in either

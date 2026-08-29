@@ -40,6 +40,22 @@ data class PlaybackCarryRow(
     val sinceMillis: Long?,
 )
 
+/**
+ * A media session started or stopped playing, written by PlaybackListener when
+ * the system tells it and read back by the collector on its own cadence. The
+ * two never meet in memory — the listener is bound and unbound by Android, the
+ * collector runs from WorkManager — so this table is the only join between
+ * them. Typed columns rather than [RawEventRow]: a stretch of listening is
+ * data that has to survive to the wire, not a debug line.
+ */
+@Entity(tableName = "playback_events")
+data class PlaybackEventRow(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val atMillis: Long,
+    val packageName: String,
+    val started: Boolean,
+)
+
 /** Debug-only ring buffer. Never uploaded; pruned to 7 days. */
 @Entity(tableName = "raw_events")
 data class RawEventRow(
@@ -82,6 +98,26 @@ interface QueueDao {
 
     @Query("SELECT COUNT(*) FROM raw_events")
     fun rawCount(): Int
+
+    @Insert
+    fun appendPlayback(rows: List<PlaybackEventRow>)
+
+    /**
+     * Inclusive at both ends, and never consumed: the collector re-derives an
+     * hour it has already queued, so an event read once has to still be there
+     * the next time that hour is recomputed.
+     */
+    @Query(
+        "SELECT * FROM playback_events WHERE atMillis >= :fromMillis AND atMillis <= :toMillis " +
+            "ORDER BY atMillis ASC",
+    )
+    fun playbackEvents(fromMillis: Long, toMillis: Long): List<PlaybackEventRow>
+
+    @Query("DELETE FROM playback_events WHERE atMillis < :millis")
+    fun prunePlaybackBefore(millis: Long)
+
+    @Query("SELECT COUNT(*) FROM playback_events")
+    fun playbackEventCount(): Int
 
     @Query("SELECT * FROM playback_carry WHERE id = 0")
     fun playbackCarry(): PlaybackCarryRow?

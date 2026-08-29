@@ -13,6 +13,7 @@ import androidx.work.WorkerParameters
 import ch.jorisda.schirmziit.agent.R
 import ch.jorisda.schirmziit.agent.core.CoreBridge
 import ch.jorisda.schirmziit.agent.notify.OngoingNotice
+import ch.jorisda.schirmziit.agent.playback.MediaSessionPlaybackReader
 import ch.jorisda.schirmziit.agent.store.AgentDatabase
 import ch.jorisda.schirmziit.agent.store.AgentStore
 import ch.jorisda.schirmziit.agent.usage.AndroidUsageSource
@@ -38,6 +39,10 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
             source = source,
             dao = AgentDatabase.get(applicationContext).queue(),
             store = store,
+            // Read, never listened to: the same grant PlaybackListener needs,
+            // checked here so the hour can say whether background listening
+            // could be observed at all.
+            playback = MediaSessionPlaybackReader(applicationContext),
         )
         collector.collect()
 

@@ -5,6 +5,10 @@ import androidx.test.core.app.ApplicationProvider
 import ch.jorisda.schirmziit.agent.core.CoreBridge
 import ch.jorisda.schirmziit.agent.core.EventKind
 import ch.jorisda.schirmziit.agent.core.RawEvent
+import ch.jorisda.schirmziit.agent.playback.FakePlaybackReader
+import ch.jorisda.schirmziit.agent.playback.PlaybackHandler
+import ch.jorisda.schirmziit.agent.playback.PlaybackReader
+import ch.jorisda.schirmziit.agent.playback.PlaybackState
 import ch.jorisda.schirmziit.agent.store.AgentDatabase
 import ch.jorisda.schirmziit.agent.store.FakeAgentSettings
 import ch.jorisda.schirmziit.agent.usage.FakeUsageSource
@@ -13,6 +17,7 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -44,14 +49,28 @@ class CollectorTest {
         server.shutdown()
     }
 
-    private fun collector(events: List<RawEvent>, now: Long) = Collector(
+    private fun collector(
+        events: List<RawEvent>,
+        now: Long,
+        playback: PlaybackReader = FakePlaybackReader(),
+    ) = Collector(
         bridge = CoreBridge(),
         source = FakeUsageSource(events, mapOf("com.a" to "App A")),
         dao = db.queue(),
         store = store,
+        playback = playback,
         nowMillis = { now },
         tz = { "Europe/Zurich" },
     )
+
+    /** One stretch of listening, written the way the bound listener writes it. */
+    private fun listened(fromMillis: Long, toMillis: Long, packageName: String = "com.a") {
+        var at = fromMillis
+        val handler = PlaybackHandler(db.queue()) { at }
+        handler.onSnapshot(listOf(PlaybackState(packageName, playing = true)))
+        at = toMillis
+        handler.onSnapshot(emptyList())
+    }
 
     private fun client() = SchirmziitClient(server.url("/").toString(), OkHttpClient())
 
@@ -182,6 +201,80 @@ class CollectorTest {
                 .map { apps.getJSONObject(it) }
                 .filter { it.getString("package") == packageName }
                 .sumOf { it.getLong("foreground_ms") }
+        }
+
+    @Test
+    fun `background listening written by the listener reaches the ingest body`() {
+        // The notification listener and the sync worker never meet: the service
+        // writes when a media session changes, the worker collects on its own
+        // cadence hours later. Nothing joined the two, so a granted phone still
+        // shipped background_ms = 0 — observed on a real Fairphone with an
+        // audiobook running and notification access switched on.
+        listened(noon + 60_000, noon + 660_000)
+        val events = listOf(
+            RawEvent(noon, EventKind.ScreenOff),
+            RawEvent(noon + 900_000, EventKind.ScreenOn),
+        )
+
+        collector(events, noon + hour, FakePlaybackReader(granted = true)).collect()
+
+        assertEquals(600_000, backgroundMsFor("com.a"))
+    }
+
+    @Test
+    fun `a granted phone says the hour was measured`() {
+        listened(noon + 60_000, noon + 660_000)
+        val events = listOf(RawEvent(noon, EventKind.ScreenOff))
+
+        collector(events, noon + hour, FakePlaybackReader(granted = true)).collect()
+
+        assertTrue("granted means observed", backgroundMeasuredIn(pendingHours()))
+    }
+
+    @Test
+    fun `without the grant the hour says background was not measured`() {
+        // false is "this device could not observe it", never "nothing played".
+        // A reader that cannot tell the two apart shows a silent zero.
+        val events = listOf(
+            RawEvent(noon, EventKind.Resumed("com.a")),
+            RawEvent(noon + 600_000, EventKind.Paused("com.a")),
+        )
+
+        collector(events, noon + hour, FakePlaybackReader(granted = false)).collect()
+
+        assertFalse(backgroundMeasuredIn(pendingHours()))
+    }
+
+    @Test
+    fun `playback while the screen is on is foreground, never background`() {
+        // The same audiobook, watched rather than listened to. Adding it to
+        // background_ms would count the minute twice.
+        listened(noon + 60_000, noon + 660_000)
+        val events = listOf(
+            RawEvent(noon, EventKind.ScreenOn),
+            RawEvent(noon + 60_000, EventKind.Resumed("com.a")),
+            RawEvent(noon + 660_000, EventKind.Paused("com.a")),
+        )
+
+        collector(events, noon + hour, FakePlaybackReader(granted = true)).collect()
+
+        assertEquals(0, backgroundMsFor("com.a"))
+        assertEquals(600_000, foregroundMsFor("com.a"))
+    }
+
+    private fun pendingHours(): List<org.json.JSONObject> =
+        db.queue().pending().map { org.json.JSONObject(it.json).getJSONArray("hours").getJSONObject(0) }
+
+    private fun backgroundMeasuredIn(hours: List<org.json.JSONObject>): Boolean =
+        hours.isNotEmpty() && hours.all { it.getBoolean("background_measured") }
+
+    private fun backgroundMsFor(packageName: String): Long =
+        pendingHours().sumOf { hour ->
+            val apps = hour.getJSONArray("apps")
+            (0 until apps.length())
+                .map { apps.getJSONObject(it) }
+                .filter { it.getString("package") == packageName }
+                .sumOf { it.getLong("background_ms") }
         }
 
     @Test

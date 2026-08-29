@@ -3,18 +3,34 @@ package ch.jorisda.schirmziit.agent.playback
 import ch.jorisda.schirmziit.agent.store.CarryOverRow
 import ch.jorisda.schirmziit.agent.store.PendingHourRow
 import ch.jorisda.schirmziit.agent.store.PlaybackCarryRow
+import ch.jorisda.schirmziit.agent.store.PlaybackEventRow
 import ch.jorisda.schirmziit.agent.store.QueueDao
 import ch.jorisda.schirmziit.agent.store.RawEventRow
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 private class FakeQueueDao : QueueDao {
     val raw = mutableListOf<RawEventRow>()
+    val playback = mutableListOf<PlaybackEventRow>()
 
     override fun appendRaw(rows: List<RawEventRow>) {
         raw += rows
     }
+
+    override fun appendPlayback(rows: List<PlaybackEventRow>) {
+        playback += rows
+    }
+
+    override fun playbackEvents(fromMillis: Long, toMillis: Long): List<PlaybackEventRow> =
+        playback.filter { it.atMillis in fromMillis..toMillis }.sortedBy { it.atMillis }
+
+    override fun prunePlaybackBefore(millis: Long) {
+        playback.removeAll { it.atMillis < millis }
+    }
+
+    override fun playbackEventCount(): Int = playback.size
 
     override fun upsert(rows: List<PendingHourRow>) = Unit
     override fun pending(): List<PendingHourRow> = emptyList()
@@ -45,10 +61,10 @@ class PlaybackHandlerTest {
 
         handler.onSnapshot(playing)
 
-        assertEquals(1, dao.raw.size)
-        assertEquals(42L, dao.raw.first().atMillis)
-        assertTrue(dao.raw.first().json, dao.raw.first().json.contains("PlaybackStarted"))
-        assertTrue(dao.raw.first().json.contains("com.audiobookshelf.app"))
+        assertEquals(1, dao.playback.size)
+        assertEquals(42L, dao.playback.first().atMillis)
+        assertTrue("a reconnect must open the stretch", dao.playback.first().started)
+        assertEquals("com.audiobookshelf.app", dao.playback.first().packageName)
     }
 
     @Test
@@ -59,7 +75,7 @@ class PlaybackHandlerTest {
         handler.onSnapshot(playing)
         handler.onSnapshot(playing)
 
-        assertEquals(1, dao.raw.size)
+        assertEquals(1, dao.playback.size)
     }
 
     @Test
@@ -70,8 +86,8 @@ class PlaybackHandlerTest {
         handler.onSnapshot(playing)
         handler.onSnapshot(emptyList())
 
-        assertEquals(2, dao.raw.size)
-        assertTrue(dao.raw.last().json.contains("PlaybackStopped"))
+        assertEquals(2, dao.playback.size)
+        assertFalse("the second event closes the stretch", dao.playback.last().started)
     }
 
     @Test
@@ -80,6 +96,6 @@ class PlaybackHandlerTest {
         // connect must not queue a stop for a stretch that never started.
         val dao = FakeQueueDao()
         PlaybackHandler(dao) { 42L }.onSnapshot(emptyList())
-        assertTrue(dao.raw.isEmpty())
+        assertTrue(dao.playback.isEmpty())
     }
 }

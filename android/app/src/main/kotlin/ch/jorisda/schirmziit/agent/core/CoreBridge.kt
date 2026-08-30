@@ -11,6 +11,7 @@ import ch.jorisda.schirmziit.core.SessionFfi
 import ch.jorisda.schirmziit.core.applyIngestResult
 import ch.jorisda.schirmziit.core.bucketSessions
 import ch.jorisda.schirmziit.core.ingestBody
+import ch.jorisda.schirmziit.core.localHourStartMillis
 import ch.jorisda.schirmziit.core.parseDayDetail
 import ch.jorisda.schirmziit.core.parseDayStrip
 import ch.jorisda.schirmziit.core.planNextSync
@@ -103,6 +104,9 @@ open class CoreBridge {
             ),
         )
     }
+
+    /** Start of the local hour containing [atMillis], in the given zone. */
+    open fun localHourStart(atMillis: Long, tz: String): Long = localHourStartMillis(atMillis, tz)
 
     open fun bucket(
         sessions: List<Session>,

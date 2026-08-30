@@ -34,6 +34,9 @@ private class RecordingDao : QueueDao {
     override fun playbackEvents(fromMillis: Long, toMillis: Long): List<PlaybackEventRow> =
         playback.filter { it.atMillis in fromMillis..toMillis }.sortedBy { it.atMillis }
 
+    override fun playbackBefore(millis: Long): PlaybackEventRow? =
+        playback.filter { it.atMillis < millis }.maxByOrNull { it.atMillis }
+
     override fun prunePlaybackBefore(millis: Long) = Unit
     override fun playbackEventCount(): Int = playback.size
     override fun appendRaw(rows: List<RawEventRow>) = Unit

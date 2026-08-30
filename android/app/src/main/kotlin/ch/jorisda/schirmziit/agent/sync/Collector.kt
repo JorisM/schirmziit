@@ -41,14 +41,35 @@ class Collector(
     fun collect(): Int {
         val now = nowMillis()
         val carry = dao.carryOver()
-        // Always look back a full window, and further if an app has been open
-        // longer. Starting at the carry-over watermark alone re-derives only
-        // PART of the current hour, and because both the queue and the server
-        // replace an hour rather than adding to it, the shorter recomputation
-        // silently overwrites the fuller one — totals shrink between syncs.
-        // Re-reading an already-collected span is harmless: hours are keyed, and
-        // a re-opened session starts at the same instant so it adds nothing.
-        val from = minOf(carry?.sinceMillis ?: Long.MAX_VALUE, now - DEFAULT_LOOKBACK_MS)
+        val playbackCarry = dao.playbackCarry()
+        // Always look back a full window, and further if something has been open
+        // longer — an app in the foreground, or a stretch of listening. Starting
+        // at a watermark alone re-derives only PART of an hour, and because both
+        // the queue and the server replace an hour rather than adding to it, the
+        // shorter recomputation silently overwrites the fuller one — totals
+        // shrink between syncs. Re-reading an already-collected span is
+        // harmless: hours are keyed, and a re-opened session starts at the same
+        // instant so it adds nothing.
+        //
+        // Listening is the watermark that reaches furthest. A stretch is only
+        // counted when it CLOSES, and closing it emits every hour it touched —
+        // a child asleep with an audiobook closes hours the lookback left
+        // behind long ago. Without this those hours arrive with the evening's
+        // screen time missing and replace the version a parent already saw.
+        val watermark = minOf(
+            carry?.sinceMillis ?: Long.MAX_VALUE,
+            playbackCarry?.sinceMillis ?: Long.MAX_VALUE,
+            now - DEFAULT_LOOKBACK_MS,
+        )
+        // Floored to the local hour, then one hour further: an hour derived
+        // from a window that starts in the middle of it is thinner than the
+        // hour itself, and the extra hour is what makes a session that began
+        // just before the boundary visible rather than half-counted. The
+        // margin is context — nothing happened in it means nothing is queued
+        // for it. A session that began even earlier than that and runs into a
+        // re-derived hour is still under-counted there; closing that needs a
+        // durable event log rather than a wider guess, and is not this fix.
+        val from = bridge.localHourStart(watermark, tz()) - HOUR_MS
 
         val usage = source.events(from, now)
         dao.appendRaw(usage.map { RawEventRow(atMillis = it.atMillis, json = it.kind.toString()) })
@@ -75,12 +96,19 @@ class Collector(
         // screen-on and background listening is counted as nothing at all.
         val events = (usage + playbackEvents).sortedBy { it.atMillis }
 
-        val playbackCarry = dao.playbackCarry()
+        // The carry says where to start reading; the events say what happened.
+        // Handing the carry's own instants back to the stitch as well would date
+        // a stretch from the END of the last window, which now lies inside this
+        // one — and a stretch already "open" at an instant the window has
+        // rewound past swallows every transition before it. Playback state at
+        // the window start comes from the log instead: whatever was playing just
+        // before it opened, with no stretch running yet. A stretch that WAS
+        // running is impossible here, because its own start is what pushed
+        // `from` an hour further back.
+        val playingAtStart = dao.playbackBefore(from)?.takeIf { it.started }?.packageName
         val stitched = bridge.stitch(
             prevOpen = carry?.let { OpenApp(it.packageName, it.sinceMillis) },
-            prevPlayback = playbackCarry?.let {
-                PlaybackCarry(it.playing, it.screenOff, it.sinceMillis)
-            },
+            prevPlayback = PlaybackCarry(playing = playingAtStart, screenOff = false, sinceMillis = null),
             events = events,
             windowEndMillis = now,
         )
@@ -181,7 +209,8 @@ class Collector(
     }.getOrNull()
 
     private companion object {
-        const val DEFAULT_LOOKBACK_MS = 2 * 60 * 60 * 1000L
+        const val HOUR_MS = 60 * 60 * 1000L
+        const val DEFAULT_LOOKBACK_MS = 2 * HOUR_MS
         const val RAW_RETENTION_MS = 7 * 24 * 60 * 60 * 1000L
     }
 }

@@ -27,6 +27,9 @@ private class FakeQueueDao : QueueDao {
     override fun playbackEvents(fromMillis: Long, toMillis: Long): List<PlaybackEventRow> =
         playback.filter { it.atMillis in fromMillis..toMillis }.sortedBy { it.atMillis }
 
+    override fun playbackBefore(millis: Long): PlaybackEventRow? =
+        playback.filter { it.atMillis < millis }.maxByOrNull { it.atMillis }
+
     override fun prunePlaybackBefore(millis: Long) {
         playback.removeAll { it.atMillis < millis }
     }

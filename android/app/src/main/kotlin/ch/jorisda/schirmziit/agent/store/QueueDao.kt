@@ -113,6 +113,14 @@ interface QueueDao {
     )
     fun playbackEvents(fromMillis: Long, toMillis: Long): List<PlaybackEventRow>
 
+    /**
+     * What was playing immediately before an instant, if anything. The window
+     * starts before every watermark, so this — not the carry — is what says
+     * whether something was already playing when the window opens.
+     */
+    @Query("SELECT * FROM playback_events WHERE atMillis < :millis ORDER BY atMillis DESC LIMIT 1")
+    fun playbackBefore(millis: Long): PlaybackEventRow?
+
     @Query("DELETE FROM playback_events WHERE atMillis < :millis")
     fun prunePlaybackBefore(millis: Long)
 

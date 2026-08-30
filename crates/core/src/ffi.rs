@@ -3,7 +3,7 @@
 //! nowhere else. Keep this module a translator: rules belong in the modules it
 //! calls.
 
-use crate::buckets::bucket_hours;
+use crate::buckets::{bucket_hours, local_hour_start};
 use crate::codes::ErrorCode;
 use crate::error::CoreError;
 use crate::events::{EventKind, RawEvent};
@@ -12,6 +12,7 @@ use crate::selfusage::{day_detail, day_strip};
 use crate::sessions::{OpenApp, PlaybackCarry, Session, stitch};
 use crate::wire::{IngestApp, IngestHour, IngestRequest, IngestResponse, SCHEMA_VERSION};
 use chrono::{DateTime, TimeZone, Utc};
+use chrono_tz::Tz;
 use std::collections::HashMap;
 
 #[derive(Debug, thiserror::Error, uniffi::Error)]
@@ -194,6 +195,22 @@ pub fn stitch_events(
             since_millis: result.playback.since.map(|s| s.timestamp_millis()),
         },
     }
+}
+
+/// Start of the local hour containing `at_millis`.
+///
+/// The collector widens its read window to a whole local hour before deriving
+/// anything: an hour re-derived from a window that starts partway through it
+/// comes out thinner than the one already queued, and both the queue and the
+/// server replace an hour rather than adding to it. Local rather than UTC for
+/// the same reason `bucket_hours` is — half-hour zones have no whole UTC hour
+/// to fall back on.
+#[uniffi::export]
+pub fn local_hour_start_millis(at_millis: i64, tz: String) -> Result<i64, FfiError> {
+    let zone: Tz = tz
+        .parse()
+        .map_err(|_| CoreError::UnknownTimezone(tz.clone()))?;
+    Ok(local_hour_start(to_utc(at_millis), zone).timestamp_millis())
 }
 
 #[uniffi::export]
@@ -408,6 +425,7 @@ pub fn parse_day_detail(json: String) -> Result<DayDetailFfi, FfiError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use chrono::Timelike;
 
     const HOUR: i64 = 3_600_000;
     // 2026-08-21T12:00:00Z
@@ -688,5 +706,30 @@ mod tests {
         assert_eq!(plan.send.len(), 1);
         assert_eq!(plan.send[0].hour_start_millis, NOON);
         assert_eq!(plan.deferred.len(), 1);
+    }
+
+    /// The collector floors its window to this before reading anything, so a
+    /// zone whose offset is not a whole hour has to land on ITS hour, not on a
+    /// UTC one — otherwise the widened window still starts partway through the
+    /// local hour it was widened for.
+    #[test]
+    fn a_local_hour_starts_where_the_zone_says_it_does() {
+        // 2026-08-29T09:37:46Z is 15:07:46 in Kolkata (+05:30).
+        let at = 1_787_996_266_000;
+        let start = local_hour_start_millis(at, "Asia/Kolkata".into()).unwrap();
+
+        let local = to_utc(start).with_timezone(&"Asia/Kolkata".parse::<Tz>().unwrap());
+        assert_eq!(local.minute(), 0);
+        assert_eq!(local.second(), 0);
+        assert!(start <= at, "flooring must never move forwards");
+        assert!(
+            at - start < 3_600_000,
+            "and never further back than one hour"
+        );
+    }
+
+    #[test]
+    fn an_unknown_zone_is_an_error_rather_than_a_silent_utc_fallback() {
+        assert!(local_hour_start_millis(0, "Mars/Olympus".into()).is_err());
     }
 }

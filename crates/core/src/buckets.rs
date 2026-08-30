@@ -34,7 +34,7 @@ pub struct Buckets {
 /// Local rather than UTC hours: zones like Asia/Kolkata (+05:30) and
 /// Asia/Kathmandu (+05:45) are not whole-hour offsets, so UTC-hour buckets can
 /// never be re-cut into correct local hours after the fact.
-fn local_hour_start(at: DateTime<Utc>, tz: Tz) -> DateTime<Utc> {
+pub(crate) fn local_hour_start(at: DateTime<Utc>, tz: Tz) -> DateTime<Utc> {
     let local = at.with_timezone(&tz);
     let naive = local
         .date_naive()

@@ -280,6 +280,80 @@ class CollectorTest {
         }
 
     @Test
+    fun `a night of listening must not wipe the hours it spans`() {
+        // The shape a child asleep with an audiobook makes: listening starts in
+        // the evening and closes hours later, long after the two-hour lookback
+        // has moved past the hour the phone was actually used in.
+        //
+        // A stretch is only counted when it CLOSES, and closing it emits every
+        // hour it touched. Derived from a window that no longer reaches those
+        // hours, they come out with the screen time missing — and because the
+        // queue and the server both replace an hour rather than adding to it,
+        // the emptier version wins. Screen time and unlocks a parent already
+        // saw would disappear from the evening.
+        val events = listOf(
+            RawEvent(noon, EventKind.ScreenOff),
+            RawEvent(noon + 1_800_000, EventKind.ScreenOn),
+            RawEvent(noon + 1_800_000, EventKind.Unlock),
+            RawEvent(noon + 1_800_000, EventKind.Resumed("com.a")),
+            RawEvent(noon + 2_400_000, EventKind.Paused("com.a")),
+            RawEvent(noon + 2_400_000, EventKind.ScreenOff),
+        )
+        listened(noon + 300_000, noon + 4 * hour)
+        val granted = FakePlaybackReader(granted = true)
+
+        collector(events, noon + 3_000_000, granted).collect()
+        assertEquals("the evening as it was first seen", 600_000, foregroundMsFor("com.a"))
+        assertEquals(600_000, screenOnMsFor(noon))
+
+        // Four hours later the stretch closes and every hour it touched is
+        // re-derived. `now - 2h` alone starts the window inside hour four.
+        collector(events, noon + 4 * hour + 300_000, granted).collect()
+
+        assertEquals("the evening's screen time survived the night", 600_000, foregroundMsFor("com.a"))
+        assertEquals(600_000, screenOnMsFor(noon))
+        assertEquals(1, unlockCountFor(noon))
+        // 25 min before the phone was picked up and 3 h 20 after it was put
+        // down, of which 45 min fall in this first hour.
+        assertEquals("and the listening was added beside it", 13_500_000, backgroundMsFor("com.a"))
+        assertEquals(2_700_000, backgroundMsInHour(noon))
+    }
+
+    @Test
+    fun `re-deriving an old hour does not invent the empty hours before it`() {
+        // The window is widened to a whole hour and one more before it, so that
+        // a session crossing into the first re-derived hour is visible. That
+        // margin is context, not content: an hour nothing happened in must not
+        // arrive as a row of zeroes.
+        val events = listOf(RawEvent(noon, EventKind.ScreenOff))
+        listened(noon + 300_000, noon + 4 * hour)
+        val granted = FakePlaybackReader(granted = true)
+
+        // The first collect leaves only the watermark behind: a stretch still
+        // running is not an hour yet.
+        collector(events, noon + 1_800_000, granted).collect()
+        collector(events, noon + 4 * hour + 300_000, granted).collect()
+
+        val hours = db.queue().pending().map { it.hourStartMillis }
+        assertEquals(listOf(noon, noon + hour, noon + 2 * hour, noon + 3 * hour), hours)
+    }
+
+    private fun backgroundMsInHour(hourStart: Long): Long =
+        hoursStartingAt(hourStart).sumOf { hour ->
+            val apps = hour.getJSONArray("apps")
+            (0 until apps.length()).sumOf { apps.getJSONObject(it).getLong("background_ms") }
+        }
+
+    private fun hoursStartingAt(hourStart: Long): List<org.json.JSONObject> =
+        pendingHours().filter { it.getString("hour_start") == java.time.Instant.ofEpochMilli(hourStart).toString() }
+
+    private fun screenOnMsFor(hourStart: Long): Long =
+        hoursStartingAt(hourStart).sumOf { it.getLong("screen_on_ms") }
+
+    private fun unlockCountFor(hourStart: Long): Int =
+        hoursStartingAt(hourStart).sumOf { it.getInt("unlock_count") }
+
+    @Test
     fun `raw events are kept for debugging and pruned past the window`() {
         val stale = RawEvent(noon - 8 * 24 * hour, EventKind.Unlock)
         val fresh = RawEvent(noon, EventKind.Unlock)

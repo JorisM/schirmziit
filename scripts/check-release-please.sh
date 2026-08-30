@@ -77,10 +77,17 @@ while read -r type path; do
                 || note "$path has no version = \"$version\" line for the extra-files entry to write"
             ;;
         generic)
-            grep -qF 'x-release-please-version' "$path" \
-                || note "$path has no x-release-please-version marker, so release-please would not touch it"
-            grep -qF "\"$version\" // x-release-please-version" "$path" \
-                || note "the marked line in $path does not carry $version"
+            # The comment syntax is the file's own — `//` in build.gradle.kts,
+            # `#` in project.yml — and release-please does not care which: it
+            # looks for the marker and replaces the version on that line. So
+            # check the same two things it acts on, and nothing about the
+            # comment around them.
+            marked=$(grep -F 'x-release-please-version' "$path" || true)
+            if [ -z "$marked" ]; then
+                note "$path has no x-release-please-version marker, so release-please would not touch it"
+            elif ! grep -qF "\"$version\"" <<< "$marked"; then
+                note "the marked line in $path does not carry \"$version\": $marked"
+            fi
             ;;
         json)
             found=$(jq -r '.version // "«absent»"' "$path")
@@ -88,8 +95,13 @@ while read -r type path; do
                 || note "$path version is $found, expected $version"
             ;;
         yaml)
-            grep -qF "MARKETING_VERSION: \"$version\"" "$path" \
-                || note "$path has no MARKETING_VERSION: \"$version\""
+            # Not a missing check: a refusal. release-please's yaml updater
+            # re-emits the whole document from its parse tree rather than
+            # patching the line the jsonpath names, so a "yaml" entry silently
+            # strips every comment in the file and requotes every scalar —
+            # which is what it did to ios/project.yml in the 0.2.0 release.
+            # A marked line and "generic" do the same job to one line.
+            note "$path is an extra-files \"yaml\" entry; use \"generic\" with an x-release-please-version marker instead, or the yaml updater will rewrite the whole file"
             ;;
         *)
             note "no check is written for extra-files type \"$type\" ($path)"

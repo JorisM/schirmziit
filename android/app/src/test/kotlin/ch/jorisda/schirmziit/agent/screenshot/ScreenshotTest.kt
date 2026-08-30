@@ -36,6 +36,10 @@ class ScreenshotTest {
         const val LIGHT_DE = "de-rCH-w411dp-h891dp-xxhdpi"
         const val DARK_DE = "de-rCH-w411dp-h891dp-night-xxhdpi"
         const val LIGHT_EN = "en-w411dp-h891dp-xxhdpi"
+
+        /// 2026-08-29T10:00:00Z. Any fixed instant does; what matters is that
+        /// the screen is rendered against a clock the test owns.
+        const val LAST_SYNC = 1_787_997_600_000L
     }
 
     /// Skia rounds premultiplied alpha differently on macOS/arm64 than on the
@@ -153,8 +157,14 @@ class ScreenshotTest {
             settings = FakeAgentSettings(
                 baseUrl = "https://api.schirmziit.ch",
                 deviceToken = "tok",
-                lastSyncMillis = 1_787_997_600_000,
+                lastSyncMillis = LAST_SYNC,
             ),
+            // Pinned three hours after the last sync: without a fixed clock the
+            // reference image says something different every day it is checked.
+            // Three rather than one because `status_hours_ago` has no plural
+            // form in any of the four languages — "vor 1 Stunden" is wrong, and
+            // a golden image is the last place to settle for it.
+            nowMillis = { LAST_SYNC + 3 * 3_600_000 },
             pendingHours = 2,
             hasPermission = hasPermission,
             batteryHint = batteryHint,

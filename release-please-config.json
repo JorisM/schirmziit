@@ -18,9 +18,9 @@
           "path": "android/app/build.gradle.kts"
         },
         {
-          "type": "yaml",
-          "path": "ios/project.yml",
-          "jsonpath": "$.settings.base.MARKETING_VERSION"
+          "//": "\"generic\", not \"yaml\", for the same reason release-type is not \"rust\". The yaml updater does not patch the line the jsonpath names, it re-emits the whole document from its parse tree: the 0.2.0 release deleted all 71 comment lines in ios/project.yml, renamed the &appInfo anchor to &ref_0 and requoted every scalar. The marked line reads MARKETING_VERSION: \"x.y.z\" # x-release-please-version, and generic replaces the version on that line alone.",
+          "type": "generic",
+          "path": "ios/project.yml"
         },
         {
           "type": "json",

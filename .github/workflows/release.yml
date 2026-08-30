@@ -7,6 +7,10 @@ name: release
 # `needs: release-please` in the same run instead. That run is also the push
 # that merged the Release PR, so its commit is the one the tag points at.
 #
+# RELEASE_PLEASE_TOKEN below lifts that suppression for the tag as well, but
+# the shape stays: there is no tag trigger to fire, and adding one would build
+# the same commit a second time.
+#
 # The container image self-hosters pull is published here. A package inherits
 # the repository's visibility only when it is first created, and this one was
 # created private; making the repository public does not follow it, and there is
@@ -42,6 +46,17 @@ jobs:
       - id: release
         uses: googleapis/release-please-action@v4
         with:
+          # The same reason renovate.yml uses RENOVATE_TOKEN: a pull request
+          # opened with the workflow's own GITHUB_TOKEN does not start ci.yml.
+          # Release PRs #55 and #58 both merged with no test results at all —
+          # every run against them held at action_required with zero jobs — and
+          # a release is the last pull request that should merge unproven.
+          #
+          # Unset (a fork, or before the secret exists) falls back to
+          # GITHUB_TOKEN, which still cuts the release; only the checks on the
+          # Release PR go missing. Needs contents:write and pull-requests:write
+          # and nothing else.
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 

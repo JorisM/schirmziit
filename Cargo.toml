@@ -4,7 +4,7 @@ members = ["crates/copygen", "crates/core", "crates/server"]
 
 [workspace.package]
 edition = "2024"
-version = "0.2.0"
+version = "0.3.0"
 
 [workspace.dependencies]
 chrono = { version = "0.4", features = ["serde"] }

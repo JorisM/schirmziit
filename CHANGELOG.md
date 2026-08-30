@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3.0](https://github.com/JorisM/schirmziit/compare/v0.2.0...v0.3.0) (2026-08-30)
+
+
+### Features
+
+* **ios:** show background listening beside screen time ([996afe3](https://github.com/JorisM/schirmziit/commit/996afe340ed7da30e0545215a7d449b372445848))
+
+
+### Bug Fixes
+
+* **android:** join the notification listener to the collector ([92b8bbb](https://github.com/JorisM/schirmziit/commit/92b8bbb8e6768c87f82743fbd4e7212603c87562))
+* **android:** record the press of play, off the main thread ([5219d56](https://github.com/JorisM/schirmziit/commit/5219d564d9fff678bf693dc892992d7fecd2b16b))
+
 ## [0.2.0](https://github.com/JorisM/schirmziit/compare/v0.1.0...v0.2.0) (2026-08-28)
 
 

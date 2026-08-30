@@ -48,6 +48,13 @@ import kotlinx.coroutines.launch
 @Composable
 fun StatusScreen(
     settings: AgentSettings,
+    /**
+     * "Last sent" is a distance from now, so a screenshot of this screen ages:
+     * recorded against the wall clock it read "noch nie" one day and "vor 21
+     * Stunden" the next, and the gate went red for everyone on a screen nobody
+     * had touched. The tests pin it; the app passes the real clock.
+     */
+    nowMillis: () -> Long = System::currentTimeMillis,
     pendingHours: Int,
     hasPermission: Boolean,
     batteryHint: BatteryHint,
@@ -115,7 +122,7 @@ fun StatusScreen(
                     Text(
                         StatusText.lastSync(
                             LocalContext.current,
-                            System.currentTimeMillis(),
+                            nowMillis(),
                             settings.lastSyncMillis,
                         ),
                     )

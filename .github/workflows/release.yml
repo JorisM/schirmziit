@@ -83,9 +83,14 @@ jobs:
       # and makes a --locked build disagree with the manifests it was told to
       # build. Fixed twice by hand before this step existed.
       #
-      # --offline and --workspace: nothing here may reach the network or move a
-      # third-party pin. The only lines that change are the three workspace
-      # members, and if none do, there is nothing to commit and nothing to push.
+      # --workspace and nothing else: it re-resolves the workspace members
+      # only, so the three version lines move and no third-party pin can. It
+      # was written `--offline` for the same intent, which cannot work — a
+      # fresh runner holds no registry index, so resolving even a path
+      # dependency's own requirements fails with "no matching package named
+      # `toml` found" and exit 101. The pins this repo cares about are exact in
+      # the manifests; the index is read here, never allowed to choose. If none
+      # of the three lines move there is nothing to commit and nothing to push.
       #
       # The branch name is parsed in the shell, not with fromJSON in `env`. A
       # release run leaves `outputs.pr` empty, fromJSON('') is a template
@@ -101,7 +106,7 @@ jobs:
           BRANCH=$(printf '%s' "$PR" | jq -r '.headBranchName')
           git fetch origin "$BRANCH"
           git checkout "$BRANCH"
-          cargo update --workspace --offline
+          cargo update --workspace
           if git diff --quiet -- Cargo.lock; then
             echo "the lockfile already carries this version"
             exit 0

@@ -25,6 +25,9 @@ need_dev_shell() {
   command -v nix >/dev/null 2>&1 || die "nix is not installed — run bin/setup first"
 
   say "entering the dev shell"
+  # The shell needs the checkout to find bin/ca-bundle, and `nix develop` leaves
+  # the cwd where it was — which for these scripts can be anywhere.
+  export SCHIRMZIIT_ROOT="$root"
   exec nix develop "$root" --command "$0" "$@"
 }
 

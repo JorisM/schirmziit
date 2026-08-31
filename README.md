@@ -65,6 +65,16 @@ leave. The gates live in the `justfile` and can be run directly
 over them. `bin/android-install` and `bin/ios-install` put a build on a real
 phone over wifi, and `bin/record` re-records the screen goldens, deliberately.
 
+If your machine's TLS is inspected — Cloudflare WARP / Zero Trust, or a
+corporate proxy — the shell handles it: nix-built tools trust only the cacert
+bundle in the nix store and never the macOS keychain, so every download is
+re-signed by a root they have never heard of and `cargo` dies in
+`Downloading crates ...` with `self-signed certificate in certificate chain`
+while `/usr/bin/curl` fetches the same URL happily. `bin/ca-bundle` merges the
+keychain's roots into the nix bundle and the shell exports the result. It only
+adds roots the operating system already trusts, and on a machine with nothing
+inspecting it changes nothing.
+
 ## Contributing
 
 Pull requests welcome — bug reports and translation fixes just as much as code.

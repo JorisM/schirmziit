@@ -517,7 +517,7 @@ dependencies = [
 
 [[package]]
 name = "copygen"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "schirmziit-core",
  "serde",
@@ -2290,7 +2290,7 @@ dependencies = [
 
 [[package]]
 name = "schirmziit-core"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "chrono",
  "chrono-tz",
@@ -2304,7 +2304,7 @@ dependencies = [
 
 [[package]]
 name = "schirmziit-server"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "argon2",
  "axum",

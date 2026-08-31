@@ -140,6 +140,7 @@ ios-project: ios-core
 
 # Both apps, on the simulator, unsigned. Not part of `check`: CI runs on Linux.
 ios-check: ios-project
+    bash scripts/check-privacy-manifest.sh
     cd ios && {{ xcb }} -project Schirmziit.xcodeproj -scheme Schirmziit \
         -destination 'platform=iOS Simulator,name={{ ios_sim }}' test CODE_SIGNING_ALLOWED=NO
 

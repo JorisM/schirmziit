@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  What Apple's privacy report says about this app.
+
+  It sits in Sources/Resources, which both app targets take whole, so the real
+  build and the free-team build carry the same answers. One file covers the two
+  DeviceActivity extensions as well: neither reaches a required-reason API and
+  neither sends anything anywhere — the report extension writes an hour into the
+  App Group container and the app is what uploads it.
+
+  `scripts/check-privacy-manifest.sh` fails the build when this file and the
+  sources disagree, in either direction. A manifest that over-declares is as
+  wrong as one that omits: both end up in the report a family reads.
+-->
+<plist version="1.0">
+<dict>
+	<!-- No tracking, and no domain to name. Nothing in this app talks to an
+	     analytics service, an ad network or anyone but the server the family
+	     runs. The check script asserts both keys rather than trusting them. -->
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<!-- 1C8F.1: the App Group suite. `RoleStore` keeps which role
+				     this phone is in group.ch.jorisda.schirmziit, because the
+				     app and both extensions have to agree on it. -->
+				<string>1C8F.1</string>
+				<!-- CA92.1: the app's own defaults. `RootView` remembers the
+				     server address there, and `RoleStore` falls back to it on a
+				     build with no App Group entitlement. -->
+				<string>CA92.1</string>
+			</array>
+		</dict>
+	</array>
+
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array>
+		<!-- Per-app foreground time, per hour, plus the pickup count. Apple has
+		     no category for "how long another app was open", and this is the
+		     closest one it does have: the data is app launches and time spent.
+		     It goes to the family's own server and nowhere else, which is why
+		     every entry here is linked, none is tracking, and the purpose is
+		     the app working at all. -->
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeProductInteraction</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<!-- The parent's sign-in. On a child's phone it is asked once, traded
+		     for a device token, and the session ends. -->
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeEmailAddress</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<!-- The child's name, typed by the parent when the child is added, so
+		     the numbers have someone to belong to. -->
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeName</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

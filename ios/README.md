@@ -175,6 +175,31 @@ The App Group then falls back to the app's own container, which the status
 screen also states (`agent.status.shared.warning`). Nothing here pretends to
 work.
 
+**The entitlement is not the only thing standing between here and TestFlight.**
+App Store Connect rejects an upload with no `PrivacyInfo.xcprivacy`, and that is
+a separate piece of work from the Apple request — the grant can land and the
+upload still fail. `Sources/Resources/PrivacyInfo.xcprivacy` is that file, and
+both app targets take the directory whole, so the real build and the free-team
+build answer the same. It covers the two extensions as well: neither reaches a
+required-reason API and neither sends anything anywhere, since the report
+extension writes an hour into the App Group container and the app is what
+uploads it.
+
+What it declares is `UserDefaults` (`1C8F.1` for the App Group suite `RoleStore`
+uses, `CA92.1` for the app's own defaults behind `@AppStorage` and the
+no-entitlement fallback), and three collected types — per-app time, the parent's
+email, the child's name — all linked, none tracking, all for app functionality.
+Apple has no category for "how long another app was open", so the time is filed
+under product interaction, which is the closest thing it does have.
+
+Apple accepts any manifest at all, including one describing a different app, so
+`scripts/check-privacy-manifest.sh` fails the build when the file and the
+sources disagree **in either direction**: a required-reason API used but not
+declared, and a category declared that nothing uses. Over-declaring is not the
+safe side here — the privacy report a family reads is generated from this file.
+`just ios-check` runs it before the build, the way `android-check` runs
+`check-no-content.sh`.
+
 `docs/platform-matrix.md` is the table of what runs where, iPhone against
 Android against the dashboard; it and `site/src/content/matrix.ts` change
 together.

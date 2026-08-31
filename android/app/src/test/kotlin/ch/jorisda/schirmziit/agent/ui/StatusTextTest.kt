@@ -5,6 +5,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 class StatusTextTest {
@@ -43,6 +44,32 @@ class StatusTextTest {
         assertEquals("never", StatusText.lastSync(context, now, 0L))
         assertEquals("3 minutes ago", StatusText.lastSync(context, now, now - 3 * minute))
         assertEquals("2 hours ago", StatusText.lastSync(context, now, now - 120 * minute))
+    }
+
+    @Test
+    fun `one is not written as a plural`() {
+        // "1 hours ago" and "vor 1 Stunden" both shipped, on the one screen a
+        // child is invited to open and read about themselves. A count that can
+        // be one needs a plural form, not an %1$d in a sentence written for
+        // many, and not an "(n)" bolted onto the end either.
+        assertEquals("1 minute ago", StatusText.lastSync(context, now, now - minute))
+        assertEquals("1 hour ago", StatusText.lastSync(context, now, now - 60 * minute))
+    }
+
+    @Test
+    @Config(qualifiers = "de-rCH")
+    fun `german says Stunde for one and Stunden for more`() {
+        assertEquals("vor 1 Minute", StatusText.lastSync(context, now, now - minute))
+        assertEquals("vor 5 Minuten", StatusText.lastSync(context, now, now - 5 * minute))
+        assertEquals("vor 1 Stunde", StatusText.lastSync(context, now, now - 60 * minute))
+        assertEquals("vor 3 Stunden", StatusText.lastSync(context, now, now - 180 * minute))
+    }
+
+    @Test
+    @Config(qualifiers = "de-rCH")
+    fun `the queued-hours count is a plural too, not Stunde-in-brackets-n`() {
+        assertEquals("1 Stunde", StatusText.pendingHours(context, 1))
+        assertEquals("2 Stunden", StatusText.pendingHours(context, 2))
     }
 
     @Test

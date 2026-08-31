@@ -39,12 +39,21 @@
     <string name="status_not_paired">non collegato</string>
     <string name="status_last_sent">Ultimo invio</string>
     <string name="status_waiting">In attesa di invio</string>
-    <string name="status_hours">%1$d ora/e</string>
+    <plurals name="status_hours">
+        <item quantity="one">%1$d ora</item>
+        <item quantity="other">%1$d ore</item>
+    </plurals>
     <string name="status_last_error">Ultimo problema</string>
     <string name="status_send_now">Invia ora</string>
     <string name="status_never">mai</string>
-    <string name="status_minutes_ago">%1$d minuti fa</string>
-    <string name="status_hours_ago">%1$d ore fa</string>
+    <plurals name="status_minutes_ago">
+        <item quantity="one">%1$d minuto fa</item>
+        <item quantity="other">%1$d minuti fa</item>
+    </plurals>
+    <plurals name="status_hours_ago">
+        <item quantity="one">%1$d ora fa</item>
+        <item quantity="other">%1$d ore fa</item>
+    </plurals>
     <string name="status_over_a_day">più di un giorno fa</string>
 
     <string name="battery_title">Android può sospendere l’invio</string>

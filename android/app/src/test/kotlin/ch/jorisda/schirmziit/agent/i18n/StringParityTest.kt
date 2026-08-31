@@ -25,6 +25,17 @@ class StringParityTest {
             .findAll(File(res, "$dir/strings.xml").readText())
             .associate { it.groupValues[1] to it.groupValues[2] }
 
+    /** Every `<plurals>` block, as "key/quantity" to the text of that item. */
+    private fun plurals(dir: String): Map<String, String> =
+        Regex("""<plurals name="([^"]+)">(.*?)</plurals>""", RegexOption.DOT_MATCHES_ALL)
+            .findAll(File(res, "$dir/strings.xml").readText())
+            .flatMap { block ->
+                Regex("""<item quantity="([^"]+)">(.*?)</item>""", RegexOption.DOT_MATCHES_ALL)
+                    .findAll(block.groupValues[2])
+                    .map { "${block.groupValues[1]}/${it.groupValues[1]}" to it.groupValues[2] }
+            }
+            .toMap()
+
     @Test
     fun `every locale has every key`() {
         val reference = keys("values")
@@ -108,5 +119,44 @@ class StringParityTest {
             .map { it.groupValues[1] }
             .toSet()
         assertEquals(setOf("en", "de", "fr", "it"), declared)
+    }
+
+    @Test
+    fun `every locale has every plural, with the same quantities`() {
+        // A `<plurals>` is invisible to the `<string>` checks above, so a
+        // language that has "other" but not "one" reads as fully translated
+        // right up until a child's phone says "vor 1 Stunden".
+        val reference = plurals("values")
+        assertTrue("the default locale has no plurals to compare against", reference.isNotEmpty())
+        for (locale in locales) {
+            val missing = reference.keys - plurals(locale).keys
+            assertTrue("$locale is missing plural items: $missing", missing.isEmpty())
+            val extra = plurals(locale).keys - reference.keys
+            assertTrue("$locale has plural items the default does not: $extra", extra.isEmpty())
+        }
+    }
+
+    @Test
+    fun `plural placeholders match the default`() {
+        val reference = plurals("values")
+        val placeholder = Regex("""%\d\$[sd]""")
+        for (locale in locales) {
+            plurals(locale).forEach { (key, text) ->
+                assertEquals(
+                    "$key has different placeholders in $locale",
+                    placeholder.findAll(reference.getValue(key)).map { it.value }.toSet(),
+                    placeholder.findAll(text).map { it.value }.toSet(),
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `no locale left a plural item empty`() {
+        for (locale in locales + "values") {
+            plurals(locale).forEach { (key, text) ->
+                assertTrue("$locale/$key is empty", text.isNotBlank())
+            }
+        }
     }
 }

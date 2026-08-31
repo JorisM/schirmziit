@@ -44,12 +44,21 @@
     <string name="status_not_paired">not connected</string>
     <string name="status_last_sent">Last sent</string>
     <string name="status_waiting">Waiting to send</string>
-    <string name="status_hours">%1$d hour(s)</string>
+    <plurals name="status_hours">
+        <item quantity="one">%1$d hour</item>
+        <item quantity="other">%1$d hours</item>
+    </plurals>
     <string name="status_last_error">Last problem</string>
     <string name="status_send_now">Send now</string>
     <string name="status_never">never</string>
-    <string name="status_minutes_ago">%1$d minutes ago</string>
-    <string name="status_hours_ago">%1$d hours ago</string>
+    <plurals name="status_minutes_ago">
+        <item quantity="one">%1$d minute ago</item>
+        <item quantity="other">%1$d minutes ago</item>
+    </plurals>
+    <plurals name="status_hours_ago">
+        <item quantity="one">%1$d hour ago</item>
+        <item quantity="other">%1$d hours ago</item>
+    </plurals>
     <string name="status_over_a_day">over a day ago</string>
 
     <string name="battery_title">Android may pause the reporting</string>

@@ -135,7 +135,7 @@ fun StatusScreen(
                         stringResource(R.string.status_waiting),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    Text(stringResource(R.string.status_hours, pendingHours))
+                    Text(StatusText.pendingHours(LocalContext.current, pendingHours))
                 }
                 Row(
                     Modifier.fillMaxWidth(),

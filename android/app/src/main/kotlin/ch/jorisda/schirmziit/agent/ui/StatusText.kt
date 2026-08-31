@@ -26,10 +26,30 @@ object StatusText {
     fun lastSync(context: Context, nowMillis: Long, lastSyncMillis: Long): String =
         when (val bucket = bucket(nowMillis, lastSyncMillis)) {
             Bucket.Never -> context.getString(R.string.status_never)
-            is Bucket.Minutes -> context.getString(R.string.status_minutes_ago, bucket.value)
-            is Bucket.Hours -> context.getString(R.string.status_hours_ago, bucket.value)
+            is Bucket.Minutes ->
+                context.resources.getQuantityString(
+                    R.plurals.status_minutes_ago,
+                    bucket.value,
+                    bucket.value,
+                )
+            is Bucket.Hours ->
+                context.resources.getQuantityString(
+                    R.plurals.status_hours_ago,
+                    bucket.value,
+                    bucket.value,
+                )
             Bucket.OverADay -> context.getString(R.string.status_over_a_day)
         }
+
+    /**
+     * How many hours are waiting to be sent.
+     *
+     * Here rather than inline in the screen for the same reason [lastSync] is:
+     * a count that can be one needs the language's own plural rule, and
+     * `getQuantityString` is easy to reach for once and forget the second time.
+     */
+    fun pendingHours(context: Context, hours: Int): String =
+        context.resources.getQuantityString(R.plurals.status_hours, hours, hours)
 
     /**
      * When a phone last reported, as a fixed local stamp — "2026-08-20 18:04".

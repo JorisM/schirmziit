@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Prints the path to a CA bundle that nix-built tools can use on a machine
+# whose TLS is being inspected — Cloudflare WARP / Zero Trust Gateway, or any
+# corporate proxy that installs its own root into the macOS keychain.
+#
+# Why this exists: nix-built openssl, curl, cargo and node trust *only* the
+# cacert bundle in the nix store; they never look at the keychain. Under an
+# inspecting proxy every connection is re-signed by that proxy's own CA, so a
+# nix-built tool sees
+#
+#   self-signed certificate in certificate chain
+#
+# while /usr/bin/curl — which reads the keychain through SecureTransport —
+# works fine. The failure lands where it is least obvious: `just rust-check`
+# dies in `Downloading crates ...` on a random dependency, which reads as
+# crates.io being broken rather than as this machine re-signing the download.
+#
+# So concatenate the nix bundle with the keychain's own roots and hand back the
+# combined file. The dev shell exports it — see `shellHook` in flake.nix.
+#
+# On a machine with nothing inspecting, this is the nix bundle plus roots it
+# already has, so it is safe to use unconditionally. Nothing here loosens
+# verification: no --insecure, no skipped checks. It only *adds* roots the
+# operating system is already configured to trust.
+
+# Non-macOS: no keychain to merge, hand back whatever nix already uses.
+if [ "$(uname -s)" != "Darwin" ]; then
+  echo "${NIX_SSL_CERT_FILE:-${SSL_CERT_FILE:-/etc/ssl/certs/ca-certificates.crt}}"
+  exit 0
+fi
+
+# The same cache the dev shell already writes its Android SDK farm into, so
+# nothing generated lands in the checkout.
+out_dir="${XDG_CACHE_HOME:-$HOME/.cache}/schirmziit"
+out="$out_dir/ca-bundle.crt"
+# What the bundle was built from, recorded beside it — see the freshness check.
+stamp="$out.source"
+mkdir -p "$out_dir"
+
+default_bundle=/nix/var/nix/profiles/default/etc/ssl/certs/ca-bundle.crt
+
+nix_bundle="${NIX_SSL_CERT_FILE:-${SSL_CERT_FILE:-}}"
+
+# A `nix develop` entered from a shell that already ran this script inherits
+# the merged bundle as NIX_SSL_CERT_FILE. Merging that with the keychain again
+# would append the same roots to a file that already has them, once per level
+# of nesting, so read back what it was built from instead.
+if [ -n "$nix_bundle" ] && [ "$nix_bundle" = "$out" ]; then
+  nix_bundle="$(cat "$stamp" 2>/dev/null || true)"
+fi
+if [ -z "$nix_bundle" ] || [ ! -r "$nix_bundle" ] || [ "$nix_bundle" = "$out" ]; then
+  nix_bundle="$default_bundle"
+fi
+
+# Only the machine-wide keychains: the login keychain would need an unlock
+# prompt, and certificates a user added by hand have no business here.
+keychains=(
+  /Library/Keychains/System.keychain
+  /System/Library/Keychains/SystemRootCertificates.keychain
+)
+
+# Rebuild when a keychain has been touched since the bundle was written, or
+# when the nix bundle we merged is no longer the one in use.
+#
+# The source path is recorded in a sidecar rather than compared by mtime:
+# everything in the nix store is stamped 1970, so `-nt` can never see a cacert
+# update — the store path changes instead.
+if [ -f "$out" ] && [ -f "$stamp" ] && [ "$(cat "$stamp")" = "$nix_bundle" ]; then
+  stale=0
+  for kc in "${keychains[@]}"; do
+    [ -e "$kc" ] && [ "$kc" -nt "$out" ] && stale=1
+  done
+  if [ "$stale" = 0 ]; then
+    echo "$out"
+    exit 0
+  fi
+fi
+
+tmp="$(mktemp "$out_dir/ca-bundle.XXXXXX")"
+trap 'rm -f "$tmp"' EXIT
+
+cat "$nix_bundle" >"$tmp"
+for kc in "${keychains[@]}"; do
+  [ -e "$kc" ] || continue
+  # `-a -p` prints every certificate in PEM form. It cannot fail usefully on a
+  # keychain that holds none, so tolerate a non-zero exit.
+  security find-certificate -a -p "$kc" >>"$tmp" 2>/dev/null || true
+done
+
+# Atomic replace, and the stamp only after it: a half-written bundle would
+# break TLS for every tool that has already exported this path, and a stamp
+# written before the bundle would make the next run trust a file that is not
+# there.
+mv "$tmp" "$out"
+trap - EXIT
+printf '%s\n' "$nix_bundle" >"$stamp"
+
+echo "$out"

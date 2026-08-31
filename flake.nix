@@ -109,6 +109,33 @@
             done
             export ANDROID_HOME="$sdk"
             export ANDROID_SDK_ROOT="$sdk"
+
+            # Everything in this shell is nix-built, and nix-built tools trust
+            # only the cacert bundle in the store — never the macOS keychain. On
+            # a machine whose TLS is inspected (Cloudflare WARP / Zero Trust, a
+            # corporate proxy) every connection is re-signed by a root that lives
+            # in the keychain and nowhere else, so cargo dies in "Downloading
+            # crates ..." with "self-signed certificate in certificate chain"
+            # while /usr/bin/curl fetches the same URL happily. bin/ca-bundle
+            # merges the two; on a machine with nothing inspecting it is the nix
+            # bundle plus roots it already had.
+            #
+            # Found by walking up from $PWD, because `nix develop` leaves the cwd
+            # where it was: SCHIRMZIIT_ROOT is what bin/* set when they re-enter
+            # from outside the checkout, and the walk covers direnv and the
+            # justfile, which both run at the root.
+            caroot="''${SCHIRMZIIT_ROOT:-$PWD}"
+            while [ "$caroot" != / ] && [ ! -x "$caroot/bin/ca-bundle" ]; do
+              caroot="$(dirname "$caroot")"
+            done
+            if [ -x "$caroot/bin/ca-bundle" ] && cabundle="$("$caroot/bin/ca-bundle")"; then
+              export SSL_CERT_FILE="$cabundle"
+              export NIX_SSL_CERT_FILE="$cabundle"
+              export CURL_CA_BUNDLE="$cabundle"
+              # cargo carries its own libcurl and reads neither of the two above.
+              export CARGO_HTTP_CAINFO="$cabundle"
+              export NODE_EXTRA_CA_CERTS="$cabundle"
+            fi
           '';
         };
       });

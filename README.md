@@ -55,7 +55,12 @@ bin/check     # every gate, all of them even after one fails
 ```
 
 Nothing needs a special terminal — every script re-enters the nix dev shell
-itself. The gates live in the `justfile` and can be run directly
+itself. If you would rather have the shell always on, `direnv allow` once and
+entering the directory is enough; `.envrc` pulls in nix-direnv, so the shell is
+cached and only rebuilt when `flake.nix` or `flake.lock` changes. direnv ships
+hooks for bash, zsh and fish; nushell needs the hook written by hand, and
+`docs/direnv-nushell.md` has one that also unsets what the shell added when you
+leave. The gates live in the `justfile` and can be run directly
 (`just rust-check web-check android-check ios-check`); `bin/*` are thin wrappers
 over them. `bin/android-install` and `bin/ios-install` put a build on a real
 phone over wifi, and `bin/record` re-records the screen goldens, deliberately.

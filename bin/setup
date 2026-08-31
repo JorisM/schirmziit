@@ -37,6 +37,11 @@ say "building the dev shell (first run downloads the Android SDK and NDK — sev
 nix develop "$root" --command true
 ok "dev shell ready"
 
+if command -v direnv >/dev/null 2>&1; then
+  say "direnv found — run 'direnv allow' in $root to have the shell always on"
+  say "  nushell needs its hook written by hand: docs/direnv-nushell.md"
+fi
+
 if [ "$(uname)" = "Darwin" ]; then
   if command -v xcodebuild >/dev/null 2>&1; then
     developer_dir="$(xcode-select -p 2>/dev/null || true)"

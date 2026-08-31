@@ -27,6 +27,16 @@ have() {
 bold "Shell"
 ok "dev shell" "active"
 have nix nix 'nix --version'
+# Optional, always: every script re-enters the shell on its own. It only says
+# whether the always-on path is wired, and never turns it on for you — allowing
+# an .envrc is the user's call, not a script's.
+if ! command -v direnv >/dev/null 2>&1; then
+  note direnv "not installed — optional, the scripts enter the shell themselves"
+elif [ -n "${DIRENV_FILE:-}" ]; then
+  ok direnv "$DIRENV_FILE"
+else
+  note direnv "installed, but this shell is not in it — direnv allow"
+fi
 
 bold "Rust"
 have rustc rustc 'rustc --version'

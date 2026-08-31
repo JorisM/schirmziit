@@ -6,7 +6,7 @@
     "license": {
       "name": ""
     },
-    "version": "0.2.0"
+    "version": "1"
   },
   "paths": {
     "/v1/auth/login": {

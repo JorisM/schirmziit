@@ -141,3 +141,28 @@ fn the_error_code_enum_reaches_the_document() {
     assert!(values.iter().any(|v| v == "SZ-E101"), "{values:?}");
     assert!(values.iter().any(|v| v == "SZ-E901"), "{values:?}");
 }
+
+/// The committed `api/openapi.json` is compared against a fresh export by the
+/// openapi gate, so anything in it that moves on its own breaks that gate for a
+/// reason no reviewer can act on. `info.version` used to be
+/// `CARGO_PKG_VERSION`: every release bumped the manifests, the export changed,
+/// nobody regenerated the file, and the rust gate went red on main — twice in
+/// three days, and both times the diff was one digit.
+///
+/// The document describes the API, so it carries the API's own version. The
+/// build that served it is still available, from `/health`.
+#[test]
+fn the_document_is_versioned_by_the_api_not_by_the_build() {
+    let doc = serde_json::to_value(schirmziit_server::openapi::ApiDoc::openapi()).unwrap();
+
+    assert_eq!(
+        doc["info"]["version"].as_str(),
+        Some(schirmziit_core::wire::SCHEMA_VERSION.to_string().as_str()),
+        "the OpenAPI version must be the wire schema version, not the crate version"
+    );
+    assert_ne!(
+        doc["info"]["version"].as_str(),
+        Some(env!("CARGO_PKG_VERSION")),
+        "a release must not be able to change the generated document"
+    );
+}

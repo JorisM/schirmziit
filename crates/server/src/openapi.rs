@@ -1,10 +1,21 @@
 use utoipa::OpenApi;
 
+/// `schirmziit_core::wire::SCHEMA_VERSION`, as the string utoipa's attribute
+/// needs. `contract.rs` fails if the two ever disagree.
+const API_VERSION: &str = "1";
+
 /// The document is generated from the real handlers and committed to
 /// `api/openapi.json`, which the dashboard's TypeScript is generated from.
+///
+/// `info.version` is the wire schema version, not the crate version. A
+/// generated file that is compared against its own export must only change
+/// when something a reader cares about changes: stamped with the build, every
+/// release rewrote this document by one digit, nobody regenerated it, and the
+/// rust gate went red on main until someone did. Which build served a
+/// document is a question `/health` answers.
 #[derive(OpenApi)]
 #[openapi(
-    info(title = "Schirmziit API", version = env!("CARGO_PKG_VERSION")),
+    info(title = "Schirmziit API", version = API_VERSION),
     paths(
         crate::auth::routes::register,
         crate::auth::routes::login,

@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.3.1](https://github.com/JorisM/schirmziit/compare/v0.3.0...v0.3.1) (2026-08-31)
+
+
+### Bug Fixes
+
+* **android:** give the hour and minute counts real plural forms ([8b4e5ea](https://github.com/JorisM/schirmziit/commit/8b4e5ea19c63d6226fa80733423219ad464abc31))
+* **android:** keep the hours a night of listening spans ([4cb8ad3](https://github.com/JorisM/schirmziit/commit/4cb8ad3a53d068013634d5ec8e32c2adb9660ec6))
+* **ios:** stop apps iOS will not identify sharing one row ([07563ca](https://github.com/JorisM/schirmziit/commit/07563ca8857870cea8cbe6bd26f0da453eea78b6))
+* stop every release from breaking the openapi gate ([f7c0adf](https://github.com/JorisM/schirmziit/commit/f7c0adf787a5bd338e34ed562bcf4991926a7932))
+* update release-please configuration and validation for versioning ([0566898](https://github.com/JorisM/schirmziit/commit/05668984c03c435ef0c37b23ef8f3d0833fa0120))
+
 ## [0.3.0](https://github.com/JorisM/schirmziit/compare/v0.2.0...v0.3.0) (2026-08-30)
 
 

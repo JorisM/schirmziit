@@ -15,7 +15,7 @@ than the code does is the one lie this repo cannot afford.
 | Time of day (the hourly ribbon) | ✓ | ✓ |
 | Unlocks | ✓ `KEYGUARD_HIDDEN` | `~` no unlock count on iOS; `totalPickupsWithoutApplicationActivity` is uploaded as `unlock_count` |
 | `background_ms` (audio with the screen off) | `~` MediaSession, needs the notification-listener grant; `background_measured` says which | `·` iOS exposes nothing equivalent, so `background_measured: false` |
-| App display names | ✓ | `~` iOS withholds some, and the bundle id is uploaded instead |
+| App display names | ✓ | `~` iOS withholds the name for some apps and the bundle id for others; the row is keyed by whichever it gave |
 | Offline queue, nothing lost | ✓ | ✓ |
 | Minimum OS | Android 8 (`minSdk = 26`) | iOS 17 |
 | Install without a developer machine | `~` signed APK from the release workflow, no Play Store listing | `·` TestFlight/App Store need **Family Controls (Distribution)**, which Apple grants per bundle id and which is still outstanding |
@@ -80,6 +80,20 @@ measured only by someone who builds and installs the app themselves.
   travels with the numbers so a week against silence reads as a first week
   rather than a doubling. It names what moved and never who: no target, no
   streak, no score.
+
+- **An app iOS will not identify still gets its own row.** The report
+  extension keyed every app by `bundleIdentifier ?? "unknown"`, so all the apps
+  iOS declined to identify shared one key: their minutes were summed into a
+  single row that carried whichever display name happened to arrive first, and
+  a parent read one app's name over several apps' time. `SnapshotApp.fold` is
+  where that judgement lives now — keyed by the bundle id, or failing that by
+  the app's own name, so a named app iOS will not identify keeps its name and
+  lands in the same row next hour. An app with neither gets no row: there is
+  nothing to put in it, and one shared word for all of them is how the merge
+  happened. That loses no time — `screen_on_ms` comes from the segment total,
+  which counts an app whether or not it can be named. The loop that reads
+  `DeviceActivityResults` is the one part of the extension no test can
+  construct, so it now only collects and decides nothing.
 
 - **The Android release is signed, and that key is the app's identity.** What
   the release workflow published before was build output with a name that read

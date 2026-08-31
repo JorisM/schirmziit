@@ -39,13 +39,22 @@ cargo_version=$(sed -n 's/^version = "\(.*\)"$/\1/p' Cargo.toml | head -1)
 [ "$cargo_version" = "$version" ] \
     || note "Cargo.toml says $cargo_version, the manifest says $version"
 
-# Deliberately no assertion on Cargo.lock: release-please does not write it
-# (the rust strategy that would have is not usable here — see the "//" comment
-# in release-please-config.json), nothing in this repo builds with --locked
-# (neither ci.yml nor the Dockerfile), so cargo self-heals the lock on its next
-# invocation regardless. The Release-PR checklist carries a manual
-# `cargo update --workspace` step instead. Asserting it here would turn every
-# legitimate post-release lag into a red main.
+# Cargo.lock IS asserted now, where it deliberately was not before. The old
+# reason was that release-please does not write it (the rust strategy that
+# would have is not usable here - see the "//" comment in
+# release-please-config.json), so a post-release lag was legitimate and
+# asserting it would have turned every release into a red main. release.yml
+# refreshes the lock on the Release PR branch itself, so there is no lag left
+# to be legitimate - and this is exactly the failure this script exists for: if
+# that step is renamed, skipped or silently stops matching, the versions quietly
+# stop moving and nothing else notices.
+lock_versions=$(awk '/^name = "(schirmziit-core|schirmziit-server|copygen)"$/ { getline; print }' Cargo.lock \
+    | sed -n 's/^version = "\(.*\)"$/\1/p' | sort -u)
+if [ -z "$lock_versions" ]; then
+    note "Cargo.lock lists none of the workspace crates, so its versions could not be checked"
+elif [ "$lock_versions" != "$version" ]; then
+    note "Cargo.lock carries $(echo "$lock_versions" | tr '\n' ' ')but the manifest says $version - run: cargo update --workspace --offline"
+fi
 
 # `done < <(jq ...)` would run the loop in the shell's own scope but hide a
 # failing or empty jq behind it: a background pipeline's exit status never

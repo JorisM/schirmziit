@@ -43,6 +43,15 @@ jobs:
       major: ${{ steps.release.outputs.major }}
       minor: ${{ steps.release.outputs.minor }}
     steps:
+      # release-please itself works entirely over the API and needs no
+      # checkout; the lockfile step below does, and it pushes, so it needs the
+      # same token for the same reason — a push made with GITHUB_TOKEN starts
+      # no workflow, and a release commit that skips ci.yml is the thing this
+      # file already went out of its way to prevent.
+      - uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
+
       - id: release
         uses: googleapis/release-please-action@v4
         with:
@@ -59,6 +68,34 @@ jobs:
           token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+      # Cargo.lock records the workspace members' own versions, and nothing in
+      # release-please updates it: the "simple" release type has no Cargo
+      # updater, and a lockfile cannot carry an x-release-please-version marker
+      # because cargo rewrites the file. So every release left the lockfile a
+      # version behind, which dirties the tree on the next build anyone runs
+      # and makes a --locked build disagree with the manifests it was told to
+      # build. Fixed twice by hand before this step existed.
+      #
+      # --offline and --workspace: nothing here may reach the network or move a
+      # third-party pin. The only lines that change are the three workspace
+      # members, and if none do, there is nothing to commit and nothing to push.
+      - if: ${{ steps.release.outputs.pr }}
+        env:
+          BRANCH: ${{ fromJSON(steps.release.outputs.pr).headBranchName }}
+        run: |
+          set -euo pipefail
+          git fetch origin "$BRANCH"
+          git checkout "$BRANCH"
+          cargo update --workspace --offline
+          if git diff --quiet -- Cargo.lock; then
+            echo "the lockfile already carries this version"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: refresh Cargo.lock for the release" -- Cargo.lock
+          git push origin "$BRANCH"
 
   image:
     # Runs on every push to main, release or not: `latest`, the branch tag and

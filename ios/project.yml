@@ -24,7 +24,7 @@ settings:
     # release-please-config.json is "generic", not "yaml": the yaml updater
     # re-emits the whole document from its parse tree, which in 0.2.0 took
     # every comment in this file with it and requoted the rest.
-    MARKETING_VERSION: "0.3.0" # x-release-please-version
+    MARKETING_VERSION: "0.3.1" # x-release-please-version
     CURRENT_PROJECT_VERSION: "1"
     ENABLE_USER_SCRIPT_SANDBOXING: YES
     SWIFT_STRICT_CONCURRENCY: complete

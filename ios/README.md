@@ -94,11 +94,11 @@ parent screen would still have a reporting phone.
     Sources/Design     palette, list style, formatting
     Sources/Views      role choice, child setup, sign-in, dashboard, ribbon
     Sources/Role       AppRole + RoleStore
-    AgentShared/       PendingHour, HourStore, UsageSnapshot, SnapshotInbox, HourMarker
+    AgentShared/       PendingHour, HourStore, UsageSnapshot, ReportedApp, SnapshotInbox, HourMarker
     AgentSources/      child-mode logic and UI: sync, keychain, Screen Time, setup
     AgentMonitor/      DeviceActivityMonitor extension — wakes on the hour
     AgentReport/       DeviceActivityReport extension — the only per-app durations
-    Tests/, AgentTests/  70 tests, no device and no entitlement needed
+    Tests/, AgentTests/  207 tests, no device and no entitlement needed
 
 Everything except `@main` lives in the **SchirmziitKit** framework. Not a style
 choice: the Family Controls extensions cannot be installed on a simulator, so a
@@ -118,13 +118,25 @@ access**, and it computes numbers only while a report view is on screen. So:
 1. the monitor extension wakes on the hour and writes `last-hour.json`;
 2. the app keeps an invisible `DeviceActivityReport` on the status screen
    (`UsageProbeView`), which makes iOS run the report extension;
-3. the report extension writes `snapshot-<hour>.json` into the App Group;
+3. the report extension folds what it was handed into one row per app
+   (`SnapshotApp.fold`) and writes `snapshot-<hour>.json` into the App Group;
 4. the app drains those, hands them to the **Rust core** (`planNextSync`,
    `ingestBody`, `applyIngestResult`) and POSTs `/v1/ingest`.
 
 Step 4 is the important one: the wire format is built by `crates/core`, exactly
 as on Android, so the two agents cannot drift. `AgentContractTests` additionally
 checks that body against `api/openapi.json`.
+
+**An app iOS will not identify is not the same app as the next one.** iOS
+hands the report extension a bundle id, a display name, both, or neither, once
+per app per category per segment. Keying on `bundleIdentifier ?? "unknown"`
+put every unidentified app in one row that carried whichever name arrived
+first, so a parent read one app's name over several apps' minutes.
+`SnapshotApp.fold` keys on the bundle id, or failing that on the app's own name
+(`ios.unnamed.<slug>`, never shown — the row's label is the name), and drops an
+app with neither: no time is lost, because `screenOnMs` comes from the segment
+total either way. The `DeviceActivityResults` loop is the one part of this
+extension no test can construct, so it collects and decides nothing.
 
 **The child can see their own fourteen days.** `AgentMyTimeView`, reached from a
 `NavigationLink` on `AgentStatusView`, reads the same `GET /v1/me/usage` a

@@ -30,7 +30,12 @@ struct HourlyTotalsScene: DeviceActivityReportScene {
     }
 
     func makeConfiguration(representing data: DeviceActivityResults<DeviceActivityData>) async -> UsageSnapshot {
-        var totals: [String: SnapshotApp] = [:]
+        // Read out flat and folded afterwards: what iOS reports is one entry
+        // per app per category per segment, and deciding an app's identity
+        // while reading means deciding it from the first entry that mentions
+        // it. `SnapshotApp.fold` is where that judgement lives, because this
+        // loop is the one part of the extension no test can reach.
+        var reported: [ReportedApp] = []
         var screenOn: TimeInterval = 0
         var pickups = 0
 
@@ -40,17 +45,12 @@ struct HourlyTotalsScene: DeviceActivityReportScene {
                 pickups += segment.totalPickupsWithoutApplicationActivity
                 for await category in segment.categories {
                     for await application in category.applications {
-                        let bundleId = application.application.bundleIdentifier ?? "unknown"
-                        let duration = Int64(application.totalActivityDuration * 1000)
-                        var app = totals[bundleId] ?? SnapshotApp(
-                            bundleId: bundleId,
+                        reported.append(ReportedApp(
+                            bundleId: application.application.bundleIdentifier,
                             name: application.application.localizedDisplayName,
-                            durationMs: 0,
-                            launchCount: 0
-                        )
-                        app.durationMs += duration
-                        app.launchCount += Int32(application.numberOfPickups)
-                        totals[bundleId] = app
+                            durationMs: Int64(application.totalActivityDuration * 1000),
+                            launchCount: Int32(application.numberOfPickups)
+                        ))
                     }
                 }
             }
@@ -62,7 +62,7 @@ struct HourlyTotalsScene: DeviceActivityReportScene {
             computedAtMillis: Int64(Date().timeIntervalSince1970 * 1000),
             screenOnMs: Int64(screenOn * 1000),
             pickups: Int32(pickups),
-            apps: Array(totals.values)
+            apps: SnapshotApp.fold(reported)
         )
         try? inbox.write(snapshot)
         return snapshot

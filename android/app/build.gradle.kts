@@ -7,7 +7,7 @@ plugins {
 // The one place a version is written on Android. release-please rewrites this
 // string on release — see release-please-config.json — and versionCode is
 // computed from it in buildSrc, so the two cannot drift apart.
-val appVersion = "0.3.0" // x-release-please-version
+val appVersion = "0.3.1" // x-release-please-version
 
 // Where the release key comes from, and what an absent one means, is decided in
 // buildSrc/ReleaseSigning.kt where it can be tested. A Gradle property wins over

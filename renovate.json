@@ -53,13 +53,6 @@
       "groupName": "site"
     },
     {
-      "description": "Astro 7 does not build under pnpm — its prerender entry imports `cookie` by bare specifier from dist/, where only the site's own direct dependencies resolve, so the build dies at generatePages. Held for a PR of its own. This does pin the site to an astro 6 carrying GHSA-4g3v-8h47-v7g6, GHSA-7pw4-f3q4-r2p2 and GHSA-f48w-9m4c-m7f5, which is the trade being made here: the site is static, prerendered and has no user input, and the alternative is a red build every week. Lift this and take the majors together.",
-      "matchManagers": ["npm"],
-      "matchPackageNames": ["astro"],
-      "matchUpdateTypes": ["major"],
-      "enabled": false
-    },
-    {
       "description": "TypeScript 7 is the native port, and it no longer exposes `ts.factory`: openapi-typescript builds the generated schema through it, so `just gen` dies before the parity chain runs, and `astro check` says outright that the API it needs is missing. Held rather than left to reopen the same PR every week — lift this once both toolchains ship a 7-compatible release.",
       "matchManagers": ["npm"],
       "matchPackageNames": ["typescript"],
